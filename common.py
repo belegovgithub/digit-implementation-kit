@@ -220,7 +220,6 @@ def get_used_localities(auth_token, boundary_data, boundary_type):
         URL = config.URL_SEARCH_LOCALITIES_USED_IN_ADMIN
 
     tenant_id = boundary_data["tenantId"]
-
     resp = requests.post(URL, data=json.dumps({
         "RequestInfo": {
             "authToken": auth_token
@@ -252,6 +251,9 @@ def create_boundary(config_function, boundary_type):
     wards = get_sheet(dfs, config.SHEET_WARDS)
     zones = get_sheet(dfs, config.SHEET_ZONES)
     locality = get_sheet(dfs, config.SHEET_LOCALITY)
+    wards = wards.astype(str)
+    zones = zones.astype(str)
+    locality = locality.astype(str)
 
     offset = 1
 
@@ -270,7 +272,7 @@ def create_boundary(config_function, boundary_type):
                                           "localname": row[index_name].strip(),
                                           "longitude": None,
                                           "latitude": None,
-                                          "label": "Block",
+                                          "label": "Ward",
                                           "code": row[index_code].strip(),
                                           "zone": row[index_zone_name].strip(),
                                           "children": []}
@@ -306,8 +308,9 @@ def create_boundary(config_function, boundary_type):
             "-", "")
         area_code = area.replace("AREA", "A")
 
-        if current_boundary_type == "REVENUE" and area not in ("AREA1", "AREA2", "AREA3"):
-            raise InvalidArgumentException("Area type is not valid - " + area)
+        ### Currently No check added on this ###
+        # if current_boundary_type == "REVENUE" and area not in ("AREA1", "AREA2", "AREA3"):
+        #     raise InvalidArgumentException("Area type is not valid - " + area)
 
         if area_code:
             area_code = " - " + area_code
@@ -434,10 +437,10 @@ def create_boundary(config_function, boundary_type):
         else:
             # the file doesn't exists already, so we can safely generate current boundary
             print("Boundary didn't exist. Creating one")
-            print("File Path : ", boundary_path + "boundary-data.json")
+            print("File Path : ", str(boundary_path) + "boundary-data.json")
             existing_boundary_data = final_data
 
-        with open(boundary_path / "boundary-data.json", "w") as f:
+        with open(os.path.join(boundary_path , "boundary-data.json"), "w") as f:
             json.dump(existing_boundary_data, f, indent=2)
 
 

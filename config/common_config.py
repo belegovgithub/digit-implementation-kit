@@ -128,21 +128,21 @@ def load_admin_boundary_config():
 
 
 def load_revenue_boundary_config():
-    config.SHEET_ZONES = "Revenue Zone"
-    config.SHEET_WARDS = "Revenue Block or Ward"
-    config.SHEET_LOCALITY = "Locality"
+    config.SHEET_ZONES = "Zone"
+    config.SHEET_WARDS = "Wards"
+    config.SHEET_LOCALITY = "Mohalla"
 
-    config.COLUMN_WARD_CODE = "Rev Block/Ward Code"
-    config.COLUMN_WARD_NAME = "Rev Block/Ward Name"
-    config.COLUMN_WARD_ADMIN_ZONE_NAME = "Rev Zone Name"
+    config.COLUMN_WARD_CODE = "Revenue_Ward_Code*"
+    config.COLUMN_WARD_NAME = "Ward_name_English*"
+    config.COLUMN_WARD_ADMIN_ZONE_NAME = "Zone Code"
 
-    config.COLUMN_ZONE_CODE = "Rev Zone Code"
-    config.COLUMN_ZONE_NAME = "Rev Zone Name"
+    config.COLUMN_ZONE_CODE = "Zone Code*"
+    config.COLUMN_ZONE_NAME = "Zone Name*"
 
-    config.COLUMN_LOCALITY_CODE = "Locality Code"
-    config.COLUMN_LOCALITY_NAME = "Locality Name"
-    config.COLUMN_LOCALITY_ADMIN_BLOCK = "Rev Block/Ward Name"
-    config.COLUMN_LOCALITY_AREA = "Area Name"
+    config.COLUMN_LOCALITY_CODE = "Locality Code*"
+    config.COLUMN_LOCALITY_NAME = "Locality Name(English)*"
+    config.COLUMN_LOCALITY_ADMIN_BLOCK = "Revenue Ward (Code)*"
+    config.COLUMN_LOCALITY_AREA = "Zone Code"
 
 
 def load_new_revenue_boundary_config():
