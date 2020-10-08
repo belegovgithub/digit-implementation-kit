@@ -246,7 +246,7 @@ def create_boundary(config_function, boundary_type):
     # load_admin_boundary_config()
     current_boundary_type = boundary_type
     config_function()
-    dfs = open_excel_file(config.SHEET)
+    dfs = open_excel_file(config.BDY_WORKBOOK)
 
     wards = get_sheet(dfs, config.SHEET_WARDS)
     zones = get_sheet(dfs, config.SHEET_ZONES)

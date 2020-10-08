@@ -95,6 +95,9 @@ def load_config():
 
     config.SHEET_NAME = config.CITY_NAME.lower() + ".xlsx"
     config.SHEET = config.BOUNDARIES_FOLDER / config.SHEET_NAME
+    config.TENANT_WORKBOOK=config.BOUNDARIES_FOLDER / "Tenant Information template.xlsx"
+    config.BDY_WORKBOOK =config.BOUNDARIES_FOLDER / "Boundaries/CB-Boundary Or Jurisdiction_Template.xlsx"
+
     if not os.path.isfile(config.SHEET):
         config.SHEET_NAME = config.CITY_NAME.lower() + ".xls"
         config.SHEET = config.BOUNDARIES_FOLDER / config.SHEET_NAME
@@ -103,7 +106,7 @@ def load_config():
 
     config.SHEET_DESIGNATION = config.SHEET_DEPARTMENTS
     config.SHEET_EMPLOYEE = config.SHEET_DEPARTMENTS
-    config.SHEET_TENANT_DETAILS = "City"
+    config.SHEET_TENANT_DETAILS = "Tenant Detail"
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
