@@ -91,6 +91,8 @@ def load_config():
     config.CITY_MODULES_JSON = config.MDMS_LOCATION / "tenant" / "citymodule.json"
     config.TENANT_JSON = config.MDMS_LOCATION / "tenant" / "tenants.json"
     config.TENANTINFO_JSON = config.MDMS_LOCATION / "tenant" / "tenantInfo.json"
+    config.FOOTER_JSON = config.MDMS_LOCATION / "tenant" / "footer.json"
+    config.HELP_JSON = config.MDMS_LOCATION / "common-masters" / "Help.json"
 
     config.TENANT_ID = config.TENANT + "." + config.CITY_NAME.lower()
 
