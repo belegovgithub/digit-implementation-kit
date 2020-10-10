@@ -33,7 +33,7 @@ def main():
                 print("Tenant - " + config.TENANT_ID + " doesn't exists, adding details")
                 for found_index, tenant in enumerate(tenants_data["citymodule"] ):
                   tenant["tenants"].append(cityModule_object)
-                json.dump(tenants_data, f, indent=2,  ensure_ascii=False)
+            json.dump(tenants_data, f, indent=2,  ensure_ascii=False)
 
         print("Added the city module to MDMS data")
     else:
