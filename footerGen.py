@@ -55,7 +55,10 @@ def main():
 
     json.dump(footer_object, sys.stdout, indent=2)
 
-    response = os.getenv("ASSUME_YES", None) or input("\nDo you want to append the data in repo (y/[n])? ")
+    if config.ASSUME_YES:
+        response = os.getenv("ASSUME_YES", None) or input("\nDo you want to append the data in repo (y/[n])? ")
+    else:
+        response = "y"
 
     if response.lower() == "y":
         with io.open(config.FOOTER_JSON, mode="w", encoding="utf-8") as f:
