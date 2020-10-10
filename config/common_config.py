@@ -71,6 +71,7 @@ config.ROLE_CODE_MAP = {
 
 
 def load_config():
+    config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
 
     config.URL_LOGIN = config.HOST + "/user/oauth/token"
