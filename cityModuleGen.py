@@ -35,9 +35,10 @@ def main():
                   tenant["tenants"].append(cityModule_object)
                 json.dump(tenants_data, f, indent=2,  ensure_ascii=False)
 
-        print("Added the help to MDMS data")
+        print("Added the city module to MDMS data")
     else:
-        print("Not adding the help to MDMS data")
+        print("Not adding the city module to MDMS data")
+    print("tenant data",tenants_data["citymodule"])
 
 
 if __name__ == "__main__":
