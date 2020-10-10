@@ -7,10 +7,11 @@ def main():
     print("CITY_MODULE_JSON",config.CITY_MODULE_JSON)
     with io.open(config.CITY_MODULE_JSON, encoding="utf-8") as f:
         tenants_data = json.load(f)
-    print("tenant data",tenants_data)
+    print("tenant data",tenants_data["citymodule"])
     found = False
-    for found_index, tenant in enumerate(tenants_data["citymodule"]["tenants"]):
-        if tenant["code"] == config.TENANT_ID:
+    for found_index, tenant in enumerate(tenants_data["citymodule"] ):
+      for found_index1, t in enumerate(tenant["tenants"] ):  
+        if t["code"] == config.TENANT_ID:
             found = True
             break
 
@@ -28,15 +29,11 @@ def main():
 
     if response.lower() == "y":
         with io.open(config.CITY_MODULE_JSON, mode="w", encoding="utf-8") as f:
-            if found:
-                print("Tenant - " + config.TENANT_ID + " already exists, overwriting")
-                assert tenants_data["citymodule"]["tenants"][found_index][
-                           "tenant"] == config.TENANT_ID, "Updating for correct tenant id"
-                tenants_data["citymodule"]["tenants"][found_index] = cityModule_object
-            else:
+            if not found:
                 print("Tenant - " + config.TENANT_ID + " doesn't exists, adding details")
-                tenants_data["citymodule"]["tenants"].append(cityModule_object)
-            json.dump(tenants_data, f, indent=2,  ensure_ascii=False)
+                for found_index, tenant in enumerate(tenants_data["citymodule"] ):
+                  tenant["tenants"].append(cityModule_object)
+                json.dump(tenants_data, f, indent=2,  ensure_ascii=False)
 
         print("Added the help to MDMS data")
     else:
