@@ -18,7 +18,7 @@ def main():
     help_object = {
       "tenant": config.TENANT_ID,
       "code": "TL",
-      "URL": "https://github.com/belegovgithub/webaccess/raw/master/pdf/delhi/TradeTypeSubtypeDetails_Delhi.pdf"
+      "URL": "https://github.com/belegovgithub/webaccess/raw/master/pdf/{}/TradeTypeSubtypeDetails_{}.pdf".format(config.CITY_NAME.lower(),config.CITY_NAME)
     }
     import sys
 

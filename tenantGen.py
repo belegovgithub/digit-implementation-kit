@@ -61,6 +61,7 @@ def main():
     regionCode=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
     municipalityName=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
     population=fix_value(tenant.iloc[INDEX_TENANT_POPULATION][COL_INDEX])
+
     tenant_object = {
         "code": config.TENANT_ID,
         "name": ulbName,

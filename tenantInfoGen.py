@@ -74,14 +74,25 @@ def main():
     languageSpoken1 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_1][COL_INDEX])
     languageSpoken2 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_2][COL_INDEX])
     languageSpoken3 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_3][COL_INDEX])
-
+    thisdict = {
+        "hindi": "HI",
+        "english": "EN",
+        "Marathi": "MI"
+    }
+    languageArr =[]
+    if languageSpoken1.lower() in thisdict : 
+        languageArr.append(thisdict[languageSpoken1.lower()])
+    if languageSpoken2.lower() in thisdict : 
+        languageArr.append(thisdict[languageSpoken2.lower()])
+    if languageSpoken3.lower() in thisdict : 
+        languageArr.append(thisdict[languageSpoken3.lower()])
     tenantInfo_object = {        
       "code": config.TENANT_ID,
       "districtCode": config.CITY_NAME,
       "population": population,
       "malePopulation": malePopulation,
       "femalePopultion": femalePopulation,
-      "languagesSpoken": [languageSpoken1,languageSpoken2,languageSpoken3]    
+      "languagesSpoken": languageArr    
     }
     import sys
 
