@@ -404,7 +404,10 @@ def create_boundary(config_function, boundary_type):
         return
 
     import os
-    response = os.getenv("ASSUME_YES", None) or input("Do you want to append the data in repo (y/[n])?")
+    if config.ASSUME_YES:
+        response = os.getenv("ASSUME_YES", None) or input("\nDo you want to append the data in repo (y/[n])? ")
+    else:
+        response = "y"
 
     if response.lower() == "y":
 
