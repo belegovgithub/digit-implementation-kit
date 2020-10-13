@@ -75,10 +75,11 @@ def main():
     languageSpoken2 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_2][COL_INDEX])
     languageSpoken3 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_3][COL_INDEX])
     thisdict = {
-        "hindi": "HI",
+        "hindi": "HN",
         "english": "EN",
         "marathi": "MA",
-        "telegu": "TE"
+        "telugu": "TE",
+        "Kumauni": "KU"
     }
     languageArr =[]
     if languageSpoken1.lower() in thisdict : 
