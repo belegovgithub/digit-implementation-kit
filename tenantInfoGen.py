@@ -79,7 +79,7 @@ def main():
         "english": "EN",
         "marathi": "MA",
         "telugu": "TE",
-        "Kumauni": "KU"
+        "kumauni": "KU"
     }
     languageArr =[]
     if languageSpoken1.lower() in thisdict : 
