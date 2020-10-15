@@ -96,12 +96,14 @@ def load_config():
     config.CITY_MODULE_JSON = config.MDMS_LOCATION / "tenant" / "citymodule.json"
     config.HELP_JSON = config.MDMS_LOCATION / "common-masters" / "Help.json"
 
+
     config.TENANT_ID = config.TENANT + "." + config.CITY_NAME.lower()
 
     config.SHEET_NAME = config.CITY_NAME.lower() + ".xlsx"
     config.SHEET = config.BOUNDARIES_FOLDER / config.SHEET_NAME
     config.TENANT_WORKBOOK=config.BOUNDARIES_FOLDER / "Tenant Information template.xlsx"
     config.BDY_WORKBOOK =config.BOUNDARIES_FOLDER / "Boundaries/CB-Boundary Or Jurisdiction_Template.xlsx"
+    config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
 
     if not os.path.isfile(config.SHEET):
         config.SHEET_NAME = config.CITY_NAME.lower() + ".xls"
@@ -112,6 +114,7 @@ def load_config():
     config.SHEET_DESIGNATION = config.SHEET_DEPARTMENTS
     config.SHEET_EMPLOYEE = config.SHEET_DEPARTMENTS
     config.SHEET_TENANT_DETAILS = "Tenant Detail"
+    config.SHEET_MCOLLECT = "mCollect"
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
@@ -195,7 +198,11 @@ def load_tl_billing_slab_download_config():
     config.TRADE_COLUMN_UOM_FROM="UOM From"
     config.TRADE_COLUMN_UOM_TO = "UOM To"
 
-
+def load_mCollect_config():
+    config.COLUMN_GL_CODE = "GLCODE"
+    config.COLUMN_CB_NAME = "CB CODE"
+    config.COLUMN_DEPT_CODE = "DEPT CODE"
+    config.COLUMN_FUND_NAME = "FUND CODE"
 
 
 load_config()
