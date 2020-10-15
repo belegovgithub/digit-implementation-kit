@@ -95,6 +95,7 @@ def load_config():
     config.FOOTER_JSON = config.MDMS_LOCATION / "tenant" / "footer.json"
     config.CITY_MODULE_JSON = config.MDMS_LOCATION / "tenant" / "citymodule.json"
     config.HELP_JSON = config.MDMS_LOCATION / "common-masters" / "Help.json"
+    config.BUSINESS_SERVICE_JSON = config.MDMS_LOCATION / "BillingService" / "BusinessService.json"
 
 
     config.TENANT_ID = config.TENANT + "." + config.CITY_NAME.lower()
@@ -199,7 +200,9 @@ def load_tl_billing_slab_download_config():
     config.TRADE_COLUMN_UOM_TO = "UOM To"
 
 def load_mCollect_config():
-    config.COLUMN_GL_CODE = "GLCODE"
+    config.COLUMN_SERVICE_CAT = "*Service Category"
+    config.COLUMN_SERVICE_SUBCAT = "*Service Subcategory  (English)"
+    config.COLUMN_GL_CODE = "*GLCODE"
     config.COLUMN_CB_NAME = "CB CODE"
     config.COLUMN_DEPT_CODE = "DEPT CODE"
     config.COLUMN_FUND_NAME = "FUND CODE"
