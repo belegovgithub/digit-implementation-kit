@@ -7,11 +7,13 @@ from config import load_mCollect_config
 def main():
     load_mCollect_config()
     print("BUSINESS_SERVICE_JSON",config.BUSINESS_SERVICE_JSON)
+    #load json data from MDMS
     with io.open(config.BUSINESS_SERVICE_JSON, encoding="utf-8") as f:
         businessservice_data = json.load(f)
     #print("tenant data",businessservice_data)
     found = False
     businessService = {}
+    #make array of key value pair
     for found_index, service in enumerate(businessservice_data["BusinessService"]):
         businessService[service["businessService"].lower()]=service["code"]
 
@@ -20,6 +22,7 @@ def main():
     glcodes = get_sheet(dfs, config.SHEET_MCOLLECT)
     #print(glcodes)
     glcodes = glcodes.astype(str)
+    #create a new column in dataframe
     glcodes['businessService'] = glcodes.apply(get_businessService, axis=1)
     #print(glcodes['businessService'])
     #print(glcodes.columns)
@@ -35,7 +38,7 @@ def main():
     INDEX_CB_CODE = 5
     INDEX_DEPT_CODE = 6
     INDEX_FUND = 7
-    
+    #find the code in json and make objects
     glcodes_data=[]
     for i in range(len(glcodes)) : 
         #print(glcodes.iloc[i, 4], glcodes.loc[i, "businessService"]) 
