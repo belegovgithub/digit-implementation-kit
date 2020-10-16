@@ -7,7 +7,7 @@ def main():
     print("HELP_JSON",config.HELP_JSON)
     with io.open(config.HELP_JSON, encoding="utf-8") as f:
         tenants_data = json.load(f)
-    print("tenant data",tenants_data)
+    #print("tenant data",tenants_data)
     found = False
     for found_index, tenant in enumerate(tenants_data["Help"]):
         if tenant["tenant"] == config.TENANT_ID:

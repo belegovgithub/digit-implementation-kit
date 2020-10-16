@@ -7,7 +7,7 @@ def main():
     print("TENANTINFO_JSON",config.TENANTINFO_JSON)
     with io.open(config.TENANTINFO_JSON, encoding="utf-8") as f:
         tenants_data = json.load(f)
-    print("tennt data",tenants_data)
+    #print("tennt data",tenants_data)
     found = False
     for found_index, tenant in enumerate(tenants_data["tenantInfo"]):
         if tenant["code"] == config.TENANT_ID:
@@ -44,7 +44,7 @@ def main():
     INDEX_TENANT_LANGUAG_SPOKEN_3 = 27
 
 
-    COL_INDEX=4
+    COL_INDEX=2
     # ° N
     # ° E
 
@@ -79,14 +79,15 @@ def main():
         "english": "EN",
         "marathi": "MA",
         "telugu": "TE",
-        "kumauni": "KU"
+        "kumauni": "KU",
+        
     }
     languageArr =[]
-    if languageSpoken1.lower() in thisdict : 
+    if str(languageSpoken1).lower() in thisdict : 
         languageArr.append(thisdict[languageSpoken1.lower()])
-    if languageSpoken2.lower() in thisdict : 
+    if str(languageSpoken2).lower() in thisdict : 
         languageArr.append(thisdict[languageSpoken2.lower()])
-    if languageSpoken3.lower() in thisdict : 
+    if str(languageSpoken3).lower() in thisdict : 
         languageArr.append(thisdict[languageSpoken3.lower()])
     tenantInfo_object = {        
       "code": config.TENANT_ID,
