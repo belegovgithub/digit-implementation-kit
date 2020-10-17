@@ -60,8 +60,8 @@ def main():
     print(glcodes_data)
     final_data = {
         "tenantId": config.TENANT_ID,
-        "moduleName": "mCollect",
-        "BillingService": [
+        "moduleName": "BillingService",
+        "GLCode": [
             glcodes_data
         ]
     }

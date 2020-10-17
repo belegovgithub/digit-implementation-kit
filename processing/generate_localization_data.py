@@ -13,8 +13,8 @@ def get_code(prefix, code):
     return (patt.sub("_", prefix) + "_" + patt.sub("_", code)).upper()
 
 
-with io.open("existing_local.json", mode="r") as f:
-    existing_locale = json.load(f)
+#with io.open("existing_local.json", mode="r") as f:
+#    existing_locale = json.load(f)
 
 auth_token = superuser_login()["access_token"]
 

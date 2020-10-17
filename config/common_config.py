@@ -103,7 +103,7 @@ def load_config():
     config.SHEET_NAME = config.CITY_NAME.lower() + ".xlsx"
     config.SHEET = config.BOUNDARIES_FOLDER / config.SHEET_NAME
     config.TENANT_WORKBOOK=config.BOUNDARIES_FOLDER / "02-Common/Tenant Information Template.xlsx"
-    config.BDY_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/Boundaries/Boundary Or Jurisdiction_Template.xlsx"
+    config.BDY_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/Boundary Or Jurisdiction_Template.xlsx"
     config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
 
     if not os.path.isfile(config.SHEET):
