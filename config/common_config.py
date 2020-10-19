@@ -96,6 +96,7 @@ def load_config():
     config.CITY_MODULE_JSON = config.MDMS_LOCATION / "tenant" / "citymodule.json"
     config.HELP_JSON = config.MDMS_LOCATION / "common-masters" / "Help.json"
     config.BUSINESS_SERVICE_JSON = config.MDMS_LOCATION / "BillingService" / "BusinessService.json"
+    config.DOCUMENT_TYPE_MASTER_JSON = config.MDMS_LOCATION / "common-masters" / "DocumentType.json"
 
 
     config.TENANT_ID = config.TENANT + "." + config.CITY_NAME.lower()
@@ -105,6 +106,8 @@ def load_config():
     config.TENANT_WORKBOOK=config.BOUNDARIES_FOLDER / "02-Common/Tenant Information Template.xlsx"
     config.BDY_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/Boundary Or Jurisdiction_Template.xlsx"
     config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
+    config.DOCUMENT_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeDocument.xlsx"
+
 
     if not os.path.isfile(config.SHEET):
         config.SHEET_NAME = config.CITY_NAME.lower() + ".xls"
@@ -116,6 +119,7 @@ def load_config():
     config.SHEET_EMPLOYEE = config.SHEET_DEPARTMENTS
     config.SHEET_TENANT_DETAILS = "Tenant Detail"
     config.SHEET_MCOLLECT = "mCollect"
+    config.SHEET_DOCLIST = "TL- Documents"
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
