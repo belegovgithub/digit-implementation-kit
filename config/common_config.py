@@ -108,6 +108,7 @@ def load_config():
     config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
     config.DOCUMENT_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeDocument.xlsx"
     config.TRADE_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeCategoryFee.xlsx"
+    config.BANK_WORKBOOK=config.BOUNDARIES_FOLDER / "02-Common/Bank_Details_Template.xlsx"
 
     if not os.path.isfile(config.SHEET):
         config.SHEET_NAME = config.CITY_NAME.lower() + ".xls"
@@ -121,6 +122,12 @@ def load_config():
     config.SHEET_MCOLLECT = "mCollect"
     config.SHEET_DOCLIST = "TL- Documents"
     config.SHEET_TRADETYPE_LIST = "TL- LicenseFee"
+    config.SHEET_BANK_BRANCH = "Bank Branch"
+    config.SHEET_BANK_ACCOUNT = "Bank Account"
+    config.SHEET_ACCOUNT_CODE_PURPOSE = "Account Code Purpose"
+    config.SHEET_CHART_ACCOUNT = "Chart of Account"
+    config.SHEET_FUND = "Fund"
+
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
@@ -162,9 +169,11 @@ def load_revenue_boundary_config():
 
     config.COLUMN_ZONE_CODE = "Zone Code*"
     config.COLUMN_ZONE_NAME = "Zone Name*"
+    config.COLUMN_ZONE_NAME_HINDI = "Zone Name Hindi*"
 
     config.COLUMN_LOCALITY_CODE = "Locality Code*"
     config.COLUMN_LOCALITY_NAME = "Locality Name(English)*"
+    config.COLUMN_LOCALITY_NAME_HINDI = "Locality Name(Hindi)*"
     config.COLUMN_LOCALITY_ADMIN_BLOCK = "Revenue Ward (Code)*"
     config.COLUMN_LOCALITY_AREA = "Zone Code"
 

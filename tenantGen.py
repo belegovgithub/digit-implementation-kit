@@ -3,6 +3,7 @@ from config import config
 import io
 import os
 import numpy
+from processing.generate_localization_data import *
 def main():
     print("TENANT_JSON",config.TENANT_JSON)
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
@@ -36,6 +37,7 @@ def main():
     INDEX_TENANT_TWITTER = 18
     INDEX_TENANT_POPULATION = 20
     INDEX_TENANT_GRADE = "Cantonment Board"
+    INDEX_STATE = 30
 
     COL_INDEX=2
     # ° N
@@ -61,7 +63,7 @@ def main():
     regionCode=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
     municipalityName=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
     population=fix_value(tenant.iloc[INDEX_TENANT_POPULATION][COL_INDEX])
-
+    state = fix_value(tenant.iloc[INDEX_STATE][COL_INDEX])
     tenant_object = {
         "code": config.TENANT_ID,
         "name": ulbName,
@@ -119,7 +121,7 @@ def main():
         print("Added the tenant to MDMS data")
     else:
         print("Not adding the tenant to MDMS data")
-
+    process_CB_localization(config.TENANT_ID.upper(),district_name,state)
 
 if __name__ == "__main__":
     main()

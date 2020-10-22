@@ -1,14 +1,18 @@
 import json
 import uuid
 from urllib.parse import urljoin
-
+import sys  
+from pathlib import Path
+import io
+#sys.path.insert(0, './processing')
+#sys.path.append(r"D:/egovSrc/digit-implementation-kit/processing/process_boundary_localization")  
 import numpy
 import pandas as pd
 import re
 import requests
 
 from config import config
-
+from config import load_revenue_boundary_config
 
 def get_employee_types(tenantid, auth_token):
     headers = {'Content-Type': 'application/json'}
@@ -318,8 +322,8 @@ def create_boundary(config_function, boundary_type):
         return {
             "id": str(uuid.uuid4()),
             "boundaryNum": 1,
-            "name": row[index_name].strip() + " - " + ward_to_code_map[row[index_admin_block].strip()] + area_code,
-            "localname": row[index_name].strip() + " - " + ward_to_code_map[row[index_admin_block].strip()] + area_code,
+            "name": row[index_name].strip() + " - " + ward_to_code_map[row[index_admin_block].strip()],
+            "localname": row[index_name].strip() + " - " + ward_to_code_map[row[index_admin_block].strip()],
             "longitude": None,
             "latitude": None,
             "label": "Locality",
@@ -446,7 +450,59 @@ def create_boundary(config_function, boundary_type):
         with open(os.path.join(boundary_path , "boundary-data.json"), "w") as f:
             json.dump(existing_boundary_data, f, indent=2)
 
+    process_boundary_localization_hindi(zones, wards, locality)
 
+def process_boundary_localization_hindi(zones, wards, locality):
+    load_revenue_boundary_config()    
+    locale_module = "rainmaker-" + config.TENANT_ID
+    locale_data = []
+    locale_data_zone = []
+    locale_data_ward = []
+    locale_data_locality = []
+    for i in range(len(zones)) :         
+        locale_data.append({
+                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_ZONE_" + zones.iloc[i,1].strip(),
+                        "message": zones.iloc[i,3].strip(),
+                        "module": locale_module,
+                        "locale": "hi_IN"
+                    })
+    for i in range(len(wards)) :         
+        locale_data.append({
+                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_BLOCK_" + wards.iloc[i,1].strip(),
+                        "message": wards.iloc[i,3].strip(),
+                        "module": locale_module,
+                        "locale": "hi_IN"
+                    })
+    for i in range(len(locality)) :         
+        locale_data.append({
+                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_" + locality.iloc[i,2].strip(),
+                        "message": locality.iloc[i,4].strip(),
+                        "module": locale_module,
+                        "locale": "hi_IN"
+                    })
+    # locale_data.append(locale_data_zone)
+    # locale_data.append(locale_data_ward)
+    # locale_data.append(locale_data_locality)
+
+    outputpath = Path(".") / "localization" / config.CONFIG_ENV / (
+                    "boundary_" + "REVENUE" + "_" + config.TENANT_ID + ".json")
+
+    data = {
+        "RequestInfo": {
+            "authToken": "{{access_token}}"
+        },
+        "tenantId": config.TENANT_ID,
+        "messages": locale_data
+    }
+
+    # with io.open(outputpath, mode="w") as f:        
+    #     json.dump(data, indent=2, fp=f)
+    #print(data)
+    auth_token = superuser_login()["access_token"]
+    localize_response = upsert_localization(auth_token, data)
+    print("Boundary localization for hindi is pushed.")
+    #print(localize_response)
+    
 def fix_value(val, default_str="", default_nan=None):
     if val is None:
         return default_str

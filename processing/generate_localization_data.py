@@ -2,7 +2,6 @@ import json
 import io
 import os
 from pathlib import Path
-
 from common import superuser_login, upsert_localization
 from config import config
 
@@ -165,11 +164,11 @@ def process_boundary_file(auth_token, boundary_path, generate_file=True, write_l
                     # print(json.dumps(locale_data, indent=2))
                     json.dump(data
                               , indent=2, fp=f)
-
+            #print(data)
             if write_localization:
                 localize_response = upsert_localization(auth_token, data)
-
-            print(localize_response)
+    print("Boundary localization for english is pushed.")
+            #print(localize_response)
 
 
 def process_boundary(auth_token):
@@ -180,7 +179,39 @@ def process_boundary(auth_token):
         if os.path.isfile(boundary_path):
             process_boundary_file(auth_token, boundary_path)
 
-
+def process_CB_localization(CBNAME, district, state):
+    locale_data = []
+    locale_module = "pb." + config.CITY_NAME.lower()
+    locale_data.append({
+                        "code": "TENANT_TENATS_PB_"+ CBNAME,
+                        "message": config.CITY_NAME,
+                        "module": locale_module,
+                        "locale": "en_IN"
+                    })
+    locale_data.append({
+                        "code": "PB_"+ CBNAME + "_" + CBNAME + "LABEL",
+                        "message": district,
+                        "module": locale_module,
+                        "locale": "en_IN"
+                    })
+    locale_data.append({
+                        "code": "MYCITY_"+ CBNAME + "_" + "STATE_LABEL",
+                        "message": state,
+                        "module": locale_module,
+                        "locale": "en_IN"
+                    })
+    data = {
+        "RequestInfo": {
+            "authToken": "{{access_token}}"
+        },
+        "tenantId": config.TENANT_ID,
+        "messages": locale_data
+    }
+    print(locale_data)
+    auth_token = superuser_login()["access_token"]
+    localize_response = upsert_localization(auth_token, data)
+    print("Tenant localization for english is pushed.")
+    
 if __name__ == "__main__":
     # process_master("common-masters", "Department", None, None, "rainmaker-common")
     # process_master("common-masters", "Designation", None, None, "rainmaker-common")
