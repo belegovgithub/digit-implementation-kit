@@ -107,7 +107,7 @@ def load_config():
     config.BDY_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/Boundary Or Jurisdiction_Template.xlsx"
     config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
     config.DOCUMENT_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeDocument.xlsx"
-
+    config.TRADE_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeCategoryFee.xlsx"
 
     if not os.path.isfile(config.SHEET):
         config.SHEET_NAME = config.CITY_NAME.lower() + ".xls"
@@ -120,9 +120,17 @@ def load_config():
     config.SHEET_TENANT_DETAILS = "Tenant Detail"
     config.SHEET_MCOLLECT = "mCollect"
     config.SHEET_DOCLIST = "TL- Documents"
+    config.SHEET_TRADETYPE_LIST = "TL- LicenseFee"
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
+
+    config.TRADETYPE_EATING = "EATING"
+    config.TRADETYPE_MEDICAL=  "MEDICAL"
+    config.TRADETYPE_VETERINARY = "VETERINARY"
+    config.TRADETYPE_DANGEROUS = "DANGEROUS"
+    config.TRADETYPE_GENERAL = "GENERAL"
+    config.TRADETYPE_PRIVATE = "PRIVATE"
 
 
 def load_admin_boundary_config():
