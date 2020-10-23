@@ -61,7 +61,20 @@ def bankbranch():
     contact_person = fix_value(bankbranch.iloc[INDEX_CONTACT_PERSON][COL_INDEX])
     person_desig = fix_value(bankbranch.iloc[INDEX_PERSON_DESIGNATION][COL_INDEX])
     phone_number = fix_value(bankbranch.iloc[INDEX_PHONE_NUMBER][COL_INDEX])
+    bank = search_bank()
+    print(bank)
+    body["RequestInfo"]["authToken"] = {{auth_token}}
+    data = requests.post(url=config.HOST + '/localization/messages/v1/_upsert', json=body)
+    return data.json()
+    bankbranch_data = []
 
+    bankbranch_data.append({
+                        "code": bank_code.strip(),
+                        "name": bank_name.strip(),
+                        "active": True,
+                        "type": "I",
+                        "tenantId": config.TENANT_ID
+                    })
 
     # "bankBranches": [
     #     {
