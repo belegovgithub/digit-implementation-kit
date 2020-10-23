@@ -26,8 +26,8 @@ def main():
 
   INDEX_TRADE_TYPE = 1
   INDEX_TRADE_CAT = 2
-  INDEX_TRADE_NEW_FEE = 7
-  INDEX_TRADE_RENEW_FEE = 9
+  INDEX_TRADE_NEW_FEE = 6
+  INDEX_TRADE_RENEW_FEE = 8
   INDEX_TRADE_UOM = 8
   COL_INDEX=1
 
@@ -39,30 +39,52 @@ def main():
   docCodes_renew=[]
   i=1
   j=1
-  tradeType_eating = "EATING"
-  tradeType_medical=  "MEDICAL"
-  tradeType_Veterinary = "VETERINARY"
-  tradeType_dangerous = "DANGEROUS"
-  tradeType_general = "GENERAL"
-  tradeType_private = "PRIVATE"
-  tradeType_category = "";
+ 
+  tradeType_category = "TRADE";
+  tradeType_uom = "";
+  tradeType_trade = [];
+
+  print(tradeTypeCodes.iloc[2, 7])
+
 
   for j in range(1,len(tradeTypeCodes)) :
-    print(tradeTypeCodes.iloc[j, INDEX_TRADE_CAT])
-    
-    #if tradeTypeCodes.iloc[j, INDEX_TRADE_CAT] in tradeType_eating:
-     # tradeType_category = tradeType_eating;
-
-  print(tradeType_category)
-
-
-  for i in range(1,len(docCodes)) :
-      if docCodes.iloc[i, INDEX_APPL_TYPE_1] == "NEW" :
+    if tradeTypeCodes.iloc[j, INDEX_TRADE_NEW_FEE] is not None:
+      tradeType_category = tradeType_category+"."+tradeTypeCodes.iloc[j, INDEX_TRADE_TYPE]
+    if config.TRADETYPE_EATING in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_EATING 
+    if tradeTypeCodes.iloc[j, INDEX_TRADE_UOM] == "FIXED":
+      tradeType_uom = null
+    else :
+      tradeType_uom = tradeTypeCodes.iloc[j, INDEX_TRADE_UOM]
+      docCodes_new=[]
+      docCodes_renew=[]
+      for i in range(1,len(docCodes)) :
+         if docCodes.iloc[i, INDEX_APPL_TYPE_1] == "NEW" :
           docCodes_new.append(docCodes.iloc[i, INDEX_DOC_NAME])
-      if docCodes.iloc[i, INDEX_APPL_TYPE_2] == "RENEWAL" :
+         if docCodes.iloc[i, INDEX_APPL_TYPE_2] == "RENEWAL" :
           docCodes_renew.append(docCodes.iloc[i, INDEX_DOC_NAME])
-  print(docCodes_new)
-  print(docCodes_renew)
+    tradeType_trade.append({"code": tradeType_category,
+                            "uom" : tradeType_uom,
+                            "applicationDocument" :[
+                              {
+                              "applicationType": "NEW",
+                               "documentList": docCodes_new
+                              },
+                              {
+                              "applicationType": "RENEWAL",
+                               "documentList": docCodes_renew
+                              }
+                            ],
+                            "active": "true",
+                            "type": "TL",
+                            "validityPeriod": "null",
+                            "verificationDocument": []
+                            })
+  
+  
+  print(tradeType_trade)
+  #print(docCodes_new)
+  #print(docCodes_renew)
 
 
 
