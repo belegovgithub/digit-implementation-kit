@@ -80,7 +80,14 @@ def main():
         "marathi": "MA",
         "telugu": "TE",
         "kumauni": "KU",
-        
+        "bengali": "BE",
+        "tamil": "TA",
+        "gujarati": "GU",
+        "urdu": "UR",
+        "kannada": "KA",
+        "odia": "OD",
+        "malayalam": "ML",
+        "punjabi": "PU"
     }
     languageArr =[]
     if str(languageSpoken1).lower() in thisdict : 
