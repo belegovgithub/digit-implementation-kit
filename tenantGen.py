@@ -3,7 +3,7 @@ from config import config
 import io
 import os
 import numpy
-from processing.generate_localization_data import *
+from processing.generate_localization_data import process_CB_localization
 def main():
     print("TENANT_JSON",config.TENANT_JSON)
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
@@ -121,7 +121,7 @@ def main():
         print("Added the tenant to MDMS data")
     else:
         print("Not adding the tenant to MDMS data")
-    process_CB_localization(config.TENANT_ID.upper(),district_name,state)
+    process_CB_localization(config.CITY_NAME.upper().upper(),district_name,state)
 
 if __name__ == "__main__":
     main()

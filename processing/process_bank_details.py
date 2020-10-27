@@ -14,8 +14,8 @@ def bank():
     bank = bank.astype(str)
     INDEX_BANK_NAME = 10
     INDEX_BANK_CODE = 11
-    bank_name = fix_value(bankbranch.iloc[INDEX_BANK_NAME][COL_INDEX])
-    bank_code = fix_value(bankbranch.iloc[INDEX_BANK_CODE][COL_INDEX])
+    bank_name = fix_value(bank.iloc[INDEX_BANK_NAME][COL_INDEX])
+    bank_code = fix_value(bank.iloc[INDEX_BANK_CODE][COL_INDEX])
 
     bank_data = []
     bank_data.append({
@@ -32,10 +32,12 @@ def bank():
         },        
         "banks": bank_data
     }
+    print(data)
 
     auth_token = superuser_login()["access_token"]
+    print("auth token ",auth_token)
     response = upsert_localization(auth_token, data)
-    print(response)
+    #print(response)
     #print("bank created in DB.")
 
 def bankbranch():   
@@ -61,7 +63,20 @@ def bankbranch():
     contact_person = fix_value(bankbranch.iloc[INDEX_CONTACT_PERSON][COL_INDEX])
     person_desig = fix_value(bankbranch.iloc[INDEX_PERSON_DESIGNATION][COL_INDEX])
     phone_number = fix_value(bankbranch.iloc[INDEX_PHONE_NUMBER][COL_INDEX])
+    bank = search_bank()
+    print(bank)
+    body["RequestInfo"]["authToken"] = {{auth_token}}
+    data = requests.post(url=config.HOST + '/localization/messages/v1/_upsert', json=body)
+    return data.json()
+    bankbranch_data = []
 
+    bankbranch_data.append({
+                        "code": bank_code.strip(),
+                        "name": bank_name.strip(),
+                        "active": True,
+                        "type": "I",
+                        "tenantId": config.TENANT_ID
+                    })
 
     # "bankBranches": [
     #     {
@@ -235,8 +250,8 @@ def process_CB_localization(CBNAME, district, state):
     localize_response = upsert_localization(auth_token, data)
     print("Tenant localization for english is pushed.")
     
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
-def main():
-    bank()
+# def main():
+#     bank()

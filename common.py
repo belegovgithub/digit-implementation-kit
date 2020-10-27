@@ -819,6 +819,13 @@ def search_localization(auth_token, module_name, locale, tenant_id=config.TENANT
     params = {"tenantId": tenant_id, "module": module_name, "locale": locale}
     return requests.post(url, params=params, json=request_body).json()
 
+def search_bank(tenant_id=config.TENANT_ID):
+    url = urljoin(config.HOST, '/egf-master/banks/_search')
+    auth_token = superuser_login()["access_token"]
+    request_body = {}
+    request_body["RequestInfo"] = {"authToken": auth_token}
+    params = {"tenantId": tenant_id}
+    return requests.post(url, params=params, json=request_body).json()
 
 def search_tl_billing_slab(auth_token, tenant_id=config.TENANT_ID):
     url = urljoin(config.HOST, '/tl-calculator/billingslab/_search')

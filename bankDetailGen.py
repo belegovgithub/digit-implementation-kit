@@ -1,10 +1,10 @@
 from common import *
 from config import config
 import io
-import os
-import numpy
+import os 
+from  processing import process_bank_details
 def main():
-    exec(open('./processing/process_bank_details.py').read())
+    process_bank_details.bank()
 
 
 if __name__ == "__main__":

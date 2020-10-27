@@ -181,15 +181,15 @@ def process_boundary(auth_token):
 
 def process_CB_localization(CBNAME, district, state):
     locale_data = []
-    locale_module = "pb." + config.CITY_NAME.lower()
+    locale_module = "rainmaker-common"
     locale_data.append({
-                        "code": "TENANT_TENATS_PB_"+ CBNAME,
+                        "code": "TENANT_TENANTS_PB_"+ CBNAME,
                         "message": config.CITY_NAME,
                         "module": locale_module,
                         "locale": "en_IN"
                     })
     locale_data.append({
-                        "code": "PB_"+ CBNAME + "_" + CBNAME + "LABEL",
+                        "code": "PB_"+ CBNAME + "_" + CBNAME + "_LABEL",
                         "message": district,
                         "module": locale_module,
                         "locale": "en_IN"
@@ -210,6 +210,7 @@ def process_CB_localization(CBNAME, district, state):
     print(locale_data)
     auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)
+    print(localize_response)
     print("Tenant localization for english is pushed.")
     
 if __name__ == "__main__":
