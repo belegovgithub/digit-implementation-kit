@@ -28,7 +28,7 @@ def main():
   INDEX_TRADE_CAT = 2
   INDEX_TRADE_NEW_FEE = 6
   INDEX_TRADE_RENEW_FEE = 8
-  INDEX_TRADE_UOM = 8
+  INDEX_TRADE_UOM = 7
   COL_INDEX=1
 
     
@@ -40,20 +40,32 @@ def main():
   i=1
   j=1
  
-  tradeType_category = "TRADE";
+  
   tradeType_uom = "";
   tradeType_trade = [];
 
-  print(tradeTypeCodes.iloc[2, 7])
+  print(tradeTypeCodes.columns)
+  print(tradeTypeCodes.iloc[3, 6])
 
 
   for j in range(1,len(tradeTypeCodes)) :
     if tradeTypeCodes.iloc[j, INDEX_TRADE_NEW_FEE] is not None:
-      tradeType_category = tradeType_category+"."+tradeTypeCodes.iloc[j, INDEX_TRADE_TYPE]
+      tradeType_category = "TRADE"
     if config.TRADETYPE_EATING in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-      tradeType_category = tradeType_category+"."+config.TRADETYPE_EATING 
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_EATING
+    elif config.TRADETYPE_MEDICAL in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_MEDICAL 
+    elif config.TRADETYPE_VETERINARY in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_VETERINARY
+    elif config.TRADETYPE_DANGEROUS in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_DANGEROUS
+    elif config.TRADETYPE_GENERAL in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_GENERAL 
+    elif config.TRADETYPE_PRIVATE in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+      tradeType_category = tradeType_category+"."+config.TRADETYPE_PRIVATE
+    tradeType_category = tradeType_category+"."+tradeTypeCodes.iloc[j, INDEX_TRADE_TYPE]
     if tradeTypeCodes.iloc[j, INDEX_TRADE_UOM] == "FIXED":
-      tradeType_uom = null
+      tradeType_uom = "null"
     else :
       tradeType_uom = tradeTypeCodes.iloc[j, INDEX_TRADE_UOM]
       docCodes_new=[]
