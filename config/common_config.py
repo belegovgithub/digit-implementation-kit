@@ -128,7 +128,7 @@ def load_config():
     config.SHEET_ACCOUNT_CODE_PURPOSE = "Account Code Purpose"
     config.SHEET_CHART_ACCOUNT = "Chart of Account"
     config.SHEET_FUND = "Fund"
-
+    config.SHEET_APPLFEE = "TL - ApplnFee"
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
@@ -139,6 +139,9 @@ def load_config():
     config.TRADETYPE_DANGEROUS = "DANGEROUS"
     config.TRADETYPE_GENERAL = "GENERAL"
     config.TRADETYPE_PRIVATE = "PRIVATE"
+    config.PERSQFEET = "PER SQ FEET"
+    config.UNIT = "PER UNIT"
+    
 
 
 def load_admin_boundary_config():

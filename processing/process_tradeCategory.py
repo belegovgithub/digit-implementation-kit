@@ -11,7 +11,7 @@ def tradeType():
     tradeTypeCodes = tradeTypeCodes.astype(str)
 
     applFee = get_sheet(dfs, config.SHEET_APPLFEE)
-    applFee = tradeTypeCodes.astype(str)
+    applFee = applFee.astype(str)
 
     INDEX_DOC_NAME = 1
     INDEX_APPL_TYPE_1 = 2
@@ -31,8 +31,8 @@ def tradeType():
     docCodes_renew=[]
     i=1
     j=1
+    print(tradeTypeCodes.iloc[3, INDEX_TRADE_NEW_FEE] != 'nan')
     
-    print(applFee.iloc[1,1])
     tradeType_uom = ""
     tradeType_trade = []
     uom = ""
@@ -41,55 +41,70 @@ def tradeType():
     applicationFee = ""
     rate = ""
       
-    for j in range(1,len(tradeTypeCodes)) :
-        if tradeTypeCodes.iloc[j, INDEX_TRADE_NEW_FEE] is not None:
+    for j in range(0,len(tradeTypeCodes)) :
+        if tradeTypeCodes.iloc[j, INDEX_TRADE_NEW_FEE] != 'nan':
           tradeType_category = "TRADE"
-        if config.TRADETYPE_EATING in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-          tradeType_category = tradeType_category+"."+config.TRADETYPE_EATING
-        elif config.TRADETYPE_MEDICAL in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-          tradeType_category = tradeType_category+"."+config.TRADETYPE_MEDICAL 
-        elif config.TRADETYPE_VETERINARY in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-          tradeType_category = tradeType_category+"."+config.TRADETYPE_VETERINARY
-        elif config.TRADETYPE_DANGEROUS in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-          tradeType_category = tradeType_category+"."+config.TRADETYPE_DANGEROUS
-        elif config.TRADETYPE_GENERAL in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-          tradeType_category = tradeType_category+"."+config.TRADETYPE_GENERAL 
-        elif config.TRADETYPE_PRIVATE in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
-          tradeType_category = tradeType_category+"."+config.TRADETYPE_PRIVATE
-        tradeType_category = tradeType_category+"."+tradeTypeCodes.iloc[j, INDEX_TRADE_TYPE]
-        if tradeTypeCodes.iloc[j, INDEX_TRADE_UOM] == "FIXED":
-          tradeType_uom = "FLAT"
-          uom = 'null'
-          fromUom = 0
-          toUom = 0
-        else :
-          tradeType_uom = "RATE"
-          if config.PERSQFEET in tradeTypeCodes.iloc[j, INDEX_TRADE_UOM].upper():
-            uom = "SFT"
+          if config.TRADETYPE_EATING in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+            tradeType_category = tradeType_category+"."+config.TRADETYPE_EATING
+          elif config.TRADETYPE_MEDICAL in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+            tradeType_category = tradeType_category+"."+config.TRADETYPE_MEDICAL 
+          elif config.TRADETYPE_VETERINARY in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+            tradeType_category = tradeType_category+"."+config.TRADETYPE_VETERINARY
+          elif config.TRADETYPE_DANGEROUS in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+            tradeType_category = tradeType_category+"."+config.TRADETYPE_DANGEROUS
+          elif config.TRADETYPE_GENERAL in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+            tradeType_category = tradeType_category+"."+config.TRADETYPE_GENERAL 
+          elif config.TRADETYPE_PRIVATE in tradeTypeCodes.iloc[j, INDEX_TRADE_CAT].upper():
+            tradeType_category = tradeType_category+"."+config.TRADETYPE_PRIVATE
+          tradeType_category = tradeType_category+"."+tradeTypeCodes.iloc[j, INDEX_TRADE_TYPE]
+          if tradeTypeCodes.iloc[j, INDEX_TRADE_UOM] == "FIXED":
+            tradeType_uom = "FLAT"
+            uom = 'null'
             fromUom = 0
-            toUom = 999999999999999
-          elif config.UNIT in tradeTypeCodes.iloc[j, INDEX_TRADE_UOM].upper():
-            uom = "UNIT"
-            fromUom = 0
-            toUom = 999999999999999
+            toUom = 0
+          else :
+            tradeType_uom = "RATE"
+            if config.PERSQFEET in tradeTypeCodes.iloc[j, INDEX_TRADE_UOM].upper():
+              uom = "SFT"
+              fromUom = 0
+              toUom = 999999999999999
+            elif config.UNIT in tradeTypeCodes.iloc[j, INDEX_TRADE_UOM].upper():
+              uom = "UNIT"
+              fromUom = 0
+              toUom = 999999999999999
             
           rate = tradeTypeCodes.iloc[j, INDEX_TRADE_NEW_FEE]
           docCodes_new=[]
           docCodes_renew=[]
-        tradeType_trade.append({ "tenantId": "pb.delhi",
-                                "licenseType": "PERMANENT",
-                                "structureType": "IMMOVABLE.PUCCA",
-                                "tradeType": tradeType_category,
-                                "accessoryCategory": null,
-                                "type": tradeType_uom,
-                                "uom": uom,
-                                "fromUom": fromUom,
-                                "toUom": toUom,
-                                "rate": rate,
-                                "applicationFee":'null'
-                                })
+          if applFee.iloc[0,1] == 'nan':
+              applicationFee = "null"
+            #print('in if',applicationFee)
+          else:
+            #print('in else',applFee.iloc[0,1])
+              applicationFee = applFee.iloc[0,1]
+
+          tradeType_trade.append({ "tenantId": config.TENANT_ID,
+                                   "licenseType": "PERMANENT",
+                                   "structureType": "IMMOVABLE.PUCCA",
+                                   "tradeType": tradeType_category,
+                                   "accessoryCategory": 'null',
+                                   "type": tradeType_uom,
+                                   "uom": uom,
+                                   "fromUom": fromUom,
+                                   "toUom": toUom,
+                                   "rate": rate,
+                                   "applicationFee":applicationFee
+                                   })
       
       
-    print(tradeType_trade)
+    #print(tradeType_trade)
+    auth_token = superuser_login()["access_token"]
+    data = {
+            "RequestInfo": {
+                            "authToken": auth_token
+                           },        
+            "billingSlab": tradeType_trade
+            }
+    print(data)
 
     
