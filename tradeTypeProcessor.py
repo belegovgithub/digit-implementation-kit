@@ -67,7 +67,11 @@ def main():
     if tradeTypeCodes.iloc[j, INDEX_TRADE_UOM] == "FIXED":
       tradeType_uom = "null"
     else :
-      tradeType_uom = tradeTypeCodes.iloc[j, INDEX_TRADE_UOM]
+      if config.PERSQFEET in tradeTypeCodes.iloc[j, INDEX_TRADE_UOM].upper():
+        tradeType_uom = "SFT"
+      elif config.UNIT in tradeTypeCodes.iloc[j, INDEX_TRADE_UOM].upper():
+        tradeType_uom = "UNIT"
+        
       docCodes_new=[]
       docCodes_renew=[]
       for i in range(1,len(docCodes)) :
