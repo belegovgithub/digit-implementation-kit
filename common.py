@@ -856,13 +856,14 @@ def search_bankbranch(tenant_id=config.TENANT_ID):
         raise SystemExit("Bank branch Search Failed")
 
 def create_bankbranch(body):
-    url = urljoin(config.HOST, '/egf-master/bankbranchess/_create')
+    url = urljoin(config.HOST, '/egf-master/bankbranches/_create')
     params = {"tenantId": config.TENANT_ID}
     data = requests.post(url, params=params, json=body)
+    #print(body)
     if(data.status_code == 201):
         return data.json()
     else:
-        print(data)
+        print(data.json())
         raise SystemExit("Bank branch creation Failed")    
 
 def create_accountcodepurpose(body):
@@ -872,7 +873,7 @@ def create_accountcodepurpose(body):
     if(data.status_code == 201):
         return data.json()
     else:
-        print(data)
+        print(data.json())
         raise SystemExit("account code purpose creation Failed")
 
 def search_accountcodepurpose(tenant_id=config.TENANT_ID):
@@ -910,6 +911,54 @@ def search_fund(tenant_id=config.TENANT_ID):
         return obj.json()
     else:
         raise SystemExit("fund Search Failed")
+
+def create_chartaccount(body):
+    url = urljoin(config.HOST, '/egf-master/chartofaccounts/_create')
+    params = {"tenantId": config.TENANT_ID}
+    data = requests.post(url, params=params, json=body)
+    print(body)
+    print(data.status_code)
+    if(data.status_code == 201):
+        return data.json()
+    else:
+        print(data.json())
+        raise SystemExit("chart account purpose creation Failed")
+
+def search_chartaccount(tenant_id=config.TENANT_ID):
+    url = urljoin(config.HOST, '/egf-master/chartofaccounts/_search')
+    auth_token = superuser_login()["access_token"]
+    request_body = {}
+    request_body["RequestInfo"] = {"authToken": auth_token}
+    params = {"tenantId": tenant_id}
+
+    obj = requests.post(url, params=params, json=request_body)
+    if(obj.status_code == 200):
+        return obj.json()
+    else:
+        raise SystemExit("chart account purpose Search Failed")
+
+def create_bankaccount(body):
+    url = urljoin(config.HOST, '/egf-master/bankaccounts/_create')
+    params = {"tenantId": config.TENANT_ID}
+    data = requests.post(url, params=params, json=body)
+    if(data.status_code == 201):
+        return data.json()
+    else:
+        print(data)
+        raise SystemExit("bank account purpose creation Failed")
+
+def search_bankaccount(tenant_id=config.TENANT_ID):
+    url = urljoin(config.HOST, '/egf-master/bankaccounts/_search')
+    auth_token = superuser_login()["access_token"]
+    request_body = {}
+    request_body["RequestInfo"] = {"authToken": auth_token}
+    params = {"tenantId": tenant_id}
+
+    obj = requests.post(url, params=params, json=request_body)
+    if(obj.status_code == 200):
+        return obj.json()
+    else:
+        raise SystemExit("bank account purpose Search Failed")
 
 def search_tl_billing_slab(auth_token, tenant_id=config.TENANT_ID):
     url = urljoin(config.HOST, '/tl-calculator/billingslab/_search')
@@ -988,3 +1037,10 @@ def cleanup_property(auth_token, properties):
         # # cancel_property, cancel the all the assessments where no receipt was there
         # assessment_numbers = "????"
         # cancel_property(auth_token, tenant_id, property_id, assessment_numbers, action="CANCEL_ASSESSMENT")
+
+def replaceNone(data_dict,v,rv):
+    for key in data_dict.keys():
+        if data_dict[key] == v:
+            data_dict[key] = rv
+        elif type(data_dict[key]) is dict:
+            replaceNone(data_dict[key],v,rv)

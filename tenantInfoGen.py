@@ -19,25 +19,11 @@ def main():
 
     tenant = get_sheet(dfs, config.SHEET_TENANT_DETAILS)
     
-    INDEX_TENANT_ULB_NAME = 0
-    INDEX_TENANT_WEBSITE = 11
-    INDEX_TENANT_CITYCODE = 3
-    INDEX_TENANT_LOCALNAME = 2
-    INDEX_TENANT_DISTRICTNAME = 5
     INDEX_TENANT_DISTRICTCODE = 6
-    INDEX_TENANT_REGIONNAME = 7
-    INDEX_TENANT_REGIONCODE = 8
-    INDEX_TENANT_LATITUDE = 9
-    INDEX_TENANT_LONGITUDE = 10
-    INDEX_TENANT_CONTACT = 12
-    INDEX_TENANT_EMAIL = 13
-    INDEX_TENANT_ADDRESS = 14
-    INDEX_TENANT_FB = 17
-    INDEX_TENANT_TWITTER = 18
     INDEX_TENANT_POPULATION = 20
-    INDEX_TENANT_GRADE = "Cantonment Board"
     INDEX_TENANT_MALE_POPULATION = 21
     INDEX_TENANT_FEMALE_POPULATION = 22
+    INDEX_TENANT_WORKING_POPULATION = 23
     INDEX_TENANT_LITERACY_RATE = 24
     INDEX_TENANT_LANGUAG_SPOKEN_1 = 25
     INDEX_TENANT_LANGUAG_SPOKEN_2 = 26
@@ -48,28 +34,11 @@ def main():
     # ° N
     # ° E
 
-    ulbName = fix_value(tenant.iloc[INDEX_TENANT_ULB_NAME][COL_INDEX])
-    website = fix_value(tenant.iloc[INDEX_TENANT_WEBSITE][COL_INDEX])
-    citycode = fix_value(tenant.iloc[INDEX_TENANT_CITYCODE][COL_INDEX])
-    local_name = fix_value(tenant.iloc[INDEX_TENANT_LOCALNAME][COL_INDEX])
-    district_name = fix_value(tenant.iloc[INDEX_TENANT_DISTRICTNAME][COL_INDEX])
     district_code = fix_value(tenant.iloc[INDEX_TENANT_DISTRICTCODE][COL_INDEX])
-    region_name = fix_value(tenant.iloc[INDEX_TENANT_REGIONNAME][COL_INDEX])
-    region_code = fix_value(tenant.iloc[INDEX_TENANT_REGIONCODE][COL_INDEX])
-    grade = fix_value(INDEX_TENANT_GRADE)
-    lat = float(fix_value(tenant.iloc[INDEX_TENANT_LATITUDE][COL_INDEX]))
-    long = float(fix_value(tenant.iloc[INDEX_TENANT_LONGITUDE][COL_INDEX]))
-    contact = fix_value(tenant.iloc[INDEX_TENANT_CONTACT][COL_INDEX])
-    email = fix_value(tenant.iloc[INDEX_TENANT_EMAIL][COL_INDEX])
-    address = fix_value(tenant.iloc[INDEX_TENANT_ADDRESS][COL_INDEX])
-    fb = fix_value(tenant.iloc[INDEX_TENANT_FB][COL_INDEX])
-    twitter = fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
-    logoIdPdf=config.CITY_NAME.lower()+".png"
-    regionCode=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
-    municipalityName=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
     population=fix_value(tenant.iloc[INDEX_TENANT_POPULATION][COL_INDEX])
     malePopulation = fix_value(tenant.iloc[INDEX_TENANT_MALE_POPULATION][COL_INDEX])
     femalePopulation = fix_value(tenant.iloc[INDEX_TENANT_FEMALE_POPULATION][COL_INDEX])
+    workingPopulation = fix_value(tenant.iloc[INDEX_TENANT_WORKING_POPULATION][COL_INDEX])
     literacyRate = fix_value(tenant.iloc[INDEX_TENANT_LITERACY_RATE][COL_INDEX])
     languageSpoken1 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_1][COL_INDEX])
     languageSpoken2 = fix_value(tenant.iloc[INDEX_TENANT_LANGUAG_SPOKEN_2][COL_INDEX])
@@ -87,7 +56,8 @@ def main():
         "kannada": "KA",
         "odia": "OD",
         "malayalam": "ML",
-        "punjabi": "PU"
+        "punjabi": "PU",
+        "marwadi": "MR"
     }
     languageArr =[]
     if str(languageSpoken1).lower() in thisdict : 
@@ -98,10 +68,12 @@ def main():
         languageArr.append(thisdict[languageSpoken3.lower()])
     tenantInfo_object = {        
       "code": config.TENANT_ID,
-      "districtCode": config.CITY_NAME,
+      "districtCode": district_code,
       "population": population,
       "malePopulation": malePopulation,
       "femalePopultion": femalePopulation,
+      "workingPopulation": workingPopulation,
+      "literacyRate": literacyRate,
       "languagesSpoken": languageArr    
     }
     import sys

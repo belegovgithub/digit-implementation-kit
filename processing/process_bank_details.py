@@ -37,14 +37,13 @@ def bank():
             "banks": bank_data
         }
         response = create_bank(data)
-        print(response)
         print("bank created in DB.")
         return response['banks'][0]
 
 def bankbranch(bank): 
     bankbranch  = search_bankbranch()  
-    if(len(bankbranch['bankbranches']) == 1):
-        return bankbranch['bankbranches'][0]
+    if(len(bankbranch['bankBranches']) == 1):
+        return bankbranch['bankBranches'][0]
     else:
         bankbranch = get_sheet(dfs, config.SHEET_BANK_BRANCH)
         bankbranch = bankbranch.astype(str)
@@ -98,11 +97,11 @@ def bankbranch(bank):
             "RequestInfo": {
                 "authToken": auth_token
             },        
-            "bankbranches": bankbranch_data
+            "bankBranches": bankbranch_data
         }
-        response = create_bank(data)
-        print("bank branch created in DB.")
-        return response['banks'][0]
+        response = create_bankbranch(data)
+        print("bank branch created in DB.",response)
+        return response['bankBranches'][0]
 
 
 def accountcodepurpose():   
@@ -113,7 +112,7 @@ def accountcodepurpose():
         accountcodepurpose = get_sheet(dfs, config.SHEET_ACCOUNT_CODE_PURPOSE)
         accountcodepurpose = accountcodepurpose.astype(str)
         INDEX_PURPOSE = 0
-        purpose = fix_value(bankbranch.iloc[INDEX_PURPOSE][COL_INDEX])
+        purpose = fix_value(accountcodepurpose.iloc[INDEX_PURPOSE][COL_INDEX])
         accountcodepurpose_data = []
 
         accountcodepurpose_data.append({
@@ -132,8 +131,40 @@ def accountcodepurpose():
         return response['accountCodePurposes'][0]
 
 def chartaccount(accountcodepurpose):   
-    chartaccount = get_sheet(dfs, config.SHEET_CHART_ACCOUNT)
-    chartaccount = chartaccount.astype(str)
+    chartaccount = search_chartaccount()
+    if(len(chartaccount['chartOfAccounts']) >= 1):
+        return chartaccount['chartOfAccounts'][0]
+    else:
+        chartaccount = get_sheet(dfs, config.SHEET_CHART_ACCOUNT)
+        chartaccount = chartaccount.astype(str)
+        INDEX_GLCODE = 0
+        INDEX_NAME = 1
+        glcode = fix_value(chartaccount.iloc[INDEX_GLCODE][COL_INDEX])
+        name = fix_value(chartaccount.iloc[INDEX_NAME][COL_INDEX])
+        chartaccount_data = []
+        chartaccount_data.append({
+                                "glcode": glcode,
+                                "name": name,                            
+                                "tenantId": config.TENANT_ID,
+                                "type": "A",
+                                "classification": 1,
+                                "functionRequired": False,
+                                "budgetCheckRequired": False,
+                                "isActiveForPosting": True,
+                                "accountCodePurpose": accountcodepurpose
+                            })
+        auth_token = superuser_login()["access_token"]
+        data = {
+            "RequestInfo": {
+                "authToken": auth_token
+            },        
+            "chartOfAccounts": chartaccount_data
+        }
+        #print(data)
+        response = create_accountcodepurpose(data)
+        print("chart of account created in DB.",response)
+        return response['chartOfAccounts'][0]
+
 
 def fund():       
     fund = search_fund()
@@ -143,18 +174,18 @@ def fund():
         fund = get_sheet(dfs, config.SHEET_FUND)
         fund = fund.astype(str)
         INDEX_FUND_NAME = 0
-        NDEX_FUND_CODE = 0
-        NDEX_FUND_IDENTIFIER = 0
-        NDEX_FUND_LEVEL = 0
-        name = fix_value(bankbranch.iloc[INDEX_FUND_NAME][COL_INDEX])
-        code = fix_value(bankbranch.iloc[NDEX_FUND_CODE][COL_INDEX])
-        identifier = fix_value(bankbranch.iloc[NDEX_FUND_IDENTIFIER][COL_INDEX])
-        level = fix_value(bankbranch.iloc[NDEX_FUND_LEVEL][COL_INDEX])
+        NDEX_FUND_CODE = 1
+        NDEX_FUND_IDENTIFIER = 2
+        NDEX_FUND_LEVEL = 3
+        name = fix_value(fund.iloc[INDEX_FUND_NAME][COL_INDEX])
+        code = fix_value(fund.iloc[NDEX_FUND_CODE][COL_INDEX])
+        identifier = fix_value(fund.iloc[NDEX_FUND_IDENTIFIER][COL_INDEX])
+        level = fix_value(fund.iloc[NDEX_FUND_LEVEL][COL_INDEX])
         fund_data = []
 
         fund_data.append({
                             "name" :name,
-                            "code" : code, 
+                            "code" : code.zfill(2), 
                             "identifier" : identifier,
                             "level" : level,
                             "active" : True,
@@ -167,14 +198,48 @@ def fund():
             },        
             "funds": fund_data
         }
+        print(data)
         response = create_fund(data)
         print("fund created in DB.")
         return response['funds'][0]
 
-def bankaccount():   
-    bankaccount = get_sheet(dfs, config.SHEET_BANK_ACCOUNT)
-    bankaccount = bankaccount.astype(str)
+def bankaccount(bankbranch, chartaccount, fund):  
+    bankaccount = search_bankaccount()
+    if(len(bankaccount['bankAccounts']) >= 1):
+        return bankaccount['bankAccounts'][0]
+    else:    
+        bankaccount = get_sheet(dfs, config.SHEET_BANK_ACCOUNT)
+        bankaccount = bankaccount.astype(str)
+        INDEX_ACCOUNT_NO = 2
+        INDEX_ACCOUNT_TYPE = 4
+        INDEX_DESC = 6
 
+        acc = fix_value(bankaccount.iloc[INDEX_ACCOUNT_NO][COL_INDEX])
+        accType = fix_value(bankaccount.iloc[INDEX_ACCOUNT_TYPE][COL_INDEX])
+        desc = fix_value(bankaccount.iloc[INDEX_DESC][COL_INDEX])
+        bankaccount_data = []
+        bankaccount_data.append({
+                                    "accountNumber": acc,
+                                    "accountType": accType,
+                                    "active": True,
+                                    "description": desc,
+                                    "type": "RECEIPTS_PAYMENTS",
+                                    "tenantId": config.TENANT_ID,
+                                    "bankBranch": bankbranch,
+                                    "chartOfAccount": chartaccount,
+                                    "fund": fund
+
+                                })
+        auth_token = superuser_login()["access_token"]
+        data = {
+            "RequestInfo": {
+                "authToken": auth_token
+            },        
+            "bankAccounts": bankaccount_data
+        }
+        response = create_bankaccount(data)
+        print("bank account created in DB.")
+        return response['bankAccounts'][0]
 
 
 # if __name__ == "__main__":

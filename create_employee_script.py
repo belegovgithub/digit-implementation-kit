@@ -7,6 +7,11 @@ from config import config
 
 
 def main():
+    auth_token = superuser_login()["access_token"]
+    print (auth_token)
+    if True :
+        return
+
     city = config.CITY_NAME
 
     sheets = config.BASE_PPATH / "employees"

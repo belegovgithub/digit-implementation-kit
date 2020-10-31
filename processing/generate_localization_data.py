@@ -204,7 +204,7 @@ def process_CB_localization(CBNAME, district, state):
         "RequestInfo": {
             "authToken": "{{access_token}}"
         },
-        "tenantId": config.TENANT_ID,
+        "tenantId": config.TENANT,
         "messages": locale_data
     }
     print(locale_data)
