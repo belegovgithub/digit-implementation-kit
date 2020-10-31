@@ -121,7 +121,7 @@ def main():
         print("Added the tenant to MDMS data")
     else:
         print("Not adding the tenant to MDMS data")
-    process_CB_localization(config.CITY_NAME.upper().upper(),district_name,state)
+    process_CB_localization(config.CITY_NAME.upper(),district_name,state)
 
 if __name__ == "__main__":
     main()

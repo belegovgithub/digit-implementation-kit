@@ -179,7 +179,7 @@ def process_boundary(auth_token):
         if os.path.isfile(boundary_path):
             process_boundary_file(auth_token, boundary_path)
 
-def process_CB_localization(CBNAME, district, state):
+def process_CB_localization(CBNAME, district, district_code, state):
     locale_data = []
     locale_module = "rainmaker-common"
     locale_data.append({
@@ -189,7 +189,7 @@ def process_CB_localization(CBNAME, district, state):
                         "locale": "en_IN"
                     })
     locale_data.append({
-                        "code": "PB_"+ CBNAME + "_" + CBNAME + "_LABEL",
+                        "code": "PB_"+ CBNAME + "_" + district_code + "_LABEL",
                         "message": district,
                         "module": locale_module,
                         "locale": "en_IN"
@@ -207,7 +207,6 @@ def process_CB_localization(CBNAME, district, state):
         "tenantId": config.TENANT,
         "messages": locale_data
     }
-    print(locale_data)
     auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)
     print(localize_response)

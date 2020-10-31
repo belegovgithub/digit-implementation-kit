@@ -57,7 +57,8 @@ def main():
         "odia": "OD",
         "malayalam": "ML",
         "punjabi": "PU",
-        "marwadi": "MR"
+        "marwadi": "MR",
+        "pahari": "PA"
     }
     languageArr =[]
     if str(languageSpoken1).lower() in thisdict : 
