@@ -461,14 +461,14 @@ def process_boundary_localization_hindi(zones, wards, locality):
     locale_data_locality = []
     for i in range(len(zones)) :         
         locale_data.append({
-                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_ZONE_" + zones.iloc[i,1].strip(),
+                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_" + zones.iloc[i,1].strip(),
                         "message": zones.iloc[i,3].strip(),
                         "module": locale_module,
                         "locale": "hi_IN"
                     })
     for i in range(len(wards)) :         
         locale_data.append({
-                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_BLOCK_" + wards.iloc[i,1].strip(),
+                        "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_" + wards.iloc[i,1].strip(),
                         "message": wards.iloc[i,3].strip(),
                         "module": locale_module,
                         "locale": "hi_IN"

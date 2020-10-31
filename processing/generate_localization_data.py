@@ -116,7 +116,7 @@ def process_boundary_file(auth_token, boundary_path, generate_file=True, write_l
             locale_module = "rainmaker-" + tenant_id
 
             for l1 in b["boundary"]["children"]:
-                code = get_code(tenant_id + "_" + boundary_type + "_ZONE", l1["code"])
+                code = get_code(tenant_id + "_" + boundary_type , l1["code"])
                 if code not in used_codes:
                     used_codes.add(code)
                     locale_data.append({
@@ -127,7 +127,7 @@ def process_boundary_file(auth_token, boundary_path, generate_file=True, write_l
                     })
 
                 for l2 in l1["children"]:
-                    code = get_code(tenant_id + "_" + boundary_type + "_BLOCK", l2["code"])
+                    code = get_code(tenant_id + "_" + boundary_type , l2["code"])
                     if code not in used_codes:
                         used_codes.add(code)
                         locale_data.append({
