@@ -22,6 +22,14 @@ def main():
     glcodes = get_sheet(dfs, config.SHEET_MCOLLECT)
     #print(glcodes)
     glcodes = glcodes.astype(str)
+    glcodes = glcodes.infer_objects() 
+
+
+    glcodes = glcodes.replace(numpy.nan, '', regex=True)
+    glcodes = glcodes.fillna('')
+    glcodes = glcodes.replace('nan','')
+ 
+    
     #create a new column in dataframe
     glcodes['businessService'] = glcodes.apply(get_businessService, axis=1)
     #print(glcodes['businessService'])
@@ -57,7 +65,7 @@ def main():
     #                                             "dept": row[INDEX_DEPT_CODE].strip(),
     #                                             "fund": row[INDEX_FUND].strip()}
     #                                 , axis=1)
-    print(glcodes_data)
+    #print(glcodes_data)
     final_data = {
         "tenantId": config.TENANT_ID,
         "moduleName": "BillingService",
