@@ -90,7 +90,7 @@ def main():
             "latitude": lat,
             "shapeFileLocation": None,
             "captcha": None,
-            "code": str(int(float(citycode))),
+            "code": str(int(float(citycode))) if citycode else None,
             "regionCode": region_code,
             "municipalityName": ulbName,
             "population": population

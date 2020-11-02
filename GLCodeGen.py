@@ -44,9 +44,9 @@ def main():
         #print(glcodes.iloc[i, 4], glcodes.loc[i, "businessService"]) 
         if glcodes.loc[i, "businessService"] in businessService : 
             glcodes_data.append({"code": businessService[glcodes.loc[i, "businessService"]],
-                                                    "glcode": glcodes.iloc[i,INDEX_GLCODE].strip() if glcodes.iloc[i,INDEX_GLCODE].strip() else None,
-                                                    "dept": glcodes.iloc[i, INDEX_DEPT_CODE].strip() if glcodes.iloc[i, INDEX_DEPT_CODE].strip() else None,
-                                                    "fund": glcodes.iloc[i , INDEX_FUND].strip() if glcodes.iloc[i , INDEX_FUND].strip() else None})
+                                                    "glcode": glcodes.iloc[i,INDEX_GLCODE].strip() if fix_value(glcodes.iloc[i,INDEX_GLCODE]) else None,
+                                                    "dept": glcodes.iloc[i, INDEX_DEPT_CODE].strip() if fix_value(glcodes.iloc[i, INDEX_DEPT_CODE]) else None,
+                                                    "fund": glcodes.iloc[i , INDEX_FUND].strip() if fix_value(glcodes.iloc[i , INDEX_FUND]) else None})
 
 
     # for found_index, row in enumerate(glcodes):
