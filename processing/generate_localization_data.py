@@ -200,6 +200,12 @@ def process_CB_localization(CBNAME, district, district_code, state):
                         "module": locale_module,
                         "locale": "en_IN"
                     })
+    locale_data.append({
+                        "code": "PB_" + CBNAME + "_REVENUE_PB_" + CBNAME,
+                        "message": config.CITY_NAME,
+                        "module": "rainmaker-" + config.TENANT_ID,
+                        "locale": "en_IN"
+                    })
     data = {
         "RequestInfo": {
             "authToken": "{{access_token}}"
