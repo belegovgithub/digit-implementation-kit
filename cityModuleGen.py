@@ -7,7 +7,6 @@ def main():
     print("CITY_MODULE_JSON",config.CITY_MODULE_JSON)
     with io.open(config.CITY_MODULE_JSON, encoding="utf-8") as f:
         tenants_data = json.load(f)
-    print("tenant data",tenants_data["citymodule"])
     found = False
     for found_index, tenant in enumerate(tenants_data["citymodule"] ):
       for found_index1, t in enumerate(tenant["tenants"] ):  

@@ -4,6 +4,7 @@ import io
 import os
 import numpy
 from processing.generate_localization_data import process_CB_localization
+from processing.generate_localization_data import process_CB_localization_Hindi
 def main():
     print("TENANT_JSON",config.TENANT_JSON)
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
@@ -38,6 +39,9 @@ def main():
     INDEX_TENANT_POPULATION = 20
     INDEX_TENANT_GRADE = "Cantonment Board"
     INDEX_STATE = 30
+    INDEX_CITY_HINDI = 31
+    INDEX_DISTRICT_HINDI = 32
+    INDEX_STATE_HINDI = 33
 
     COL_INDEX=2
     # ° N
@@ -64,6 +68,9 @@ def main():
     municipalityName=fix_value(tenant.iloc[INDEX_TENANT_TWITTER][COL_INDEX])
     population=fix_value(tenant.iloc[INDEX_TENANT_POPULATION][COL_INDEX])
     state = fix_value(tenant.iloc[INDEX_STATE][COL_INDEX])
+    city_hindi = fix_value(tenant.iloc[INDEX_CITY_HINDI][COL_INDEX])
+    district_hindi = fix_value(tenant.iloc[INDEX_DISTRICT_HINDI][COL_INDEX])
+    state_hindi = fix_value(tenant.iloc[INDEX_STATE_HINDI][COL_INDEX])
     tenant_object = {
         "code": config.TENANT_ID,
         "name": ulbName,
@@ -90,7 +97,7 @@ def main():
             "latitude": lat,
             "shapeFileLocation": None,
             "captcha": None,
-            "code": str(int(float(citycode))) if citycode else None,
+            "code": citycode,
             "regionCode": region_code,
             "municipalityName": ulbName,
             "population": population
@@ -122,6 +129,7 @@ def main():
     else:
         print("Not adding the tenant to MDMS data")
     process_CB_localization(config.CITY_NAME.upper(),district_name,district_code,state)
+    process_CB_localization_Hindi(config.CITY_NAME.upper(),district_code, city_hindi, district_hindi, state_hindi)
 
 if __name__ == "__main__":
     main()

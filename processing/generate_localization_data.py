@@ -209,8 +209,43 @@ def process_CB_localization(CBNAME, district, district_code, state):
     }
     auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)
+    #localize_response = create_localization(auth_token, data)
     print(localize_response)
     print("Tenant localization for english is pushed.")
+
+def process_CB_localization_Hindi(CBNAME, district_code, city_hindi, district_hindi, state_hindi):
+    locale_data = []
+    locale_module = "rainmaker-common"    
+    locale_data.append({
+                        "code": "TENANT_TENANTS_PB_"+ CBNAME,
+                        "message": city_hindi,
+                        "module": locale_module,
+                        "locale": "hi_IN"
+                    })
+    locale_data.append({
+                        "code": "PB_"+ CBNAME + "_" + district_code + "_LABEL",
+                        "message": district_hindi,
+                        "module": locale_module,
+                        "locale": "hi_IN"
+                    })
+    locale_data.append({
+                        "code": "MYCITY_"+ CBNAME + "_" + "STATE_LABEL",
+                        "message": state_hindi,
+                        "module": locale_module,
+                        "locale": "hi_IN"
+                    })
+    data = {
+        "RequestInfo": {
+            "authToken": "{{access_token}}"
+        },
+        "tenantId": config.TENANT,
+        "messages": locale_data
+    }
+    auth_token = superuser_login()["access_token"]
+    localize_response = upsert_localization(auth_token, data)
+    #localize_response = create_localization(auth_token, data)
+    print(localize_response)
+    print("Tenant localization for Hindi is pushed.")
     
 if __name__ == "__main__":
     # process_master("common-masters", "Department", None, None, "rainmaker-common")
