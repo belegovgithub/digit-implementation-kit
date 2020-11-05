@@ -1,181 +1,264 @@
 import requests
 import csv
-
+from common import *
+from config import config
 from common import superuser_login, get_employee_types, get_employee_status, add_role_to_user, get_employees_by_phone, \
     get_employees_by_id
 from config import config
+import io
+import os
+import numpy
+import pandas as pd
+from datetime import datetime, timedelta
 
+ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
+              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP" ,"STADMIN" :"STADMIN" }
+
+def getValue(df, row,colName,defValue="") :
+    if not pd.isna(row[df.columns.get_loc(colName)] ) : 
+        return str(row[df.columns.get_loc(colName)]).strip() 
+    else : 
+        return defValue if defValue is not None else row[df.columns.get_loc(colName)] 
+
+def getCodeForName(dictArr, name) :
+    obj = next((item for item in dictArr if item.get("name") and item["name"] == name), None)
+    print("getCodeForName",obj)
+    return obj['code'] if obj is not None else None 
+    
+def getTime(df, row,colName,defValue=None) :
+    try : 
+        dObj = row[df.columns.get_loc(colName)]
+        if not isinstance(dObj, datetime) and type(dObj) is str: 
+            dObj=datetime.strptime(row[df.columns.get_loc(colName)], '%d-%m-%Y') 
+        milliseconds = int((dObj - datetime(1970, 1, 1)).total_seconds())*1000
+        return milliseconds
+    except Exception as ex:
+        print("Error in time conversion ",row[df.columns.get_loc(colName)],ex)
+    return None
+
+ 
 
 def main():
     city = config.CITY_NAME
-
-    sheets = config.BASE_PPATH / "employees"
-    sheet_name = sheets / (city.lower() + ".csv")
     tenant_id = "pb." + city.lower()
+    fileName = "User_Role Mapping"
+    sheetName = "User Role Mapping"
+    filePath = os.path.join(config.BOUNDARIES_FOLDER, fileName+".xlsx")
+    if not os.path.isfile(filePath) :
+        raise Exception("File Not Found ",filePath)
 
     auth_token = superuser_login()["access_token"]
-    start_row = 1
+    DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
+    DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
 
-    with open(sheet_name) as csvfile:
-        readCSV = csv.reader(csvfile, delimiter=',')
-        current_row = 0
-        for row in readCSV:
-            current_row += 1
+    print("auth token ", auth_token)
+    start_row = 0
+    dfs = open_excel_file(filePath)
+    df = get_sheet(dfs, sheetName)
+    
+    #df = df.replace('nan','')
+    #print(df.columns)
 
-            if current_row < start_row:
-                continue
+    stadmin_user={
+        "Role Name*" :"STADMIN",
+        "Employee ID*" : "STADMIN_" +city.upper(),
+        "Employee Mobile Number*" : "8197292570",
+        "Employee Date of Birth*" :"03-04-1986",
+        "Appointed From Date*" :"01-01-2001",
+        "Employee Full Name*" : "CB Admin",
+        "Designation*" : "Programmer",
+        "Department*" : "Information Technology"
+    }
+    df =df.append(stadmin_user, ignore_index=True)
+    print(df) 
+    for ind in df.index:
+ 
+        row = df.iloc[ind] 
+        headers = {'Content-Type': 'application/json'}
+        details = []
+        roles = []
+        assignments=[]
+        is_primary = True
+        departments = getValue(df,row,"Department*" ,"" ) 
+        role_codes = getValue(df,row,"Role Name*" ,"" ) 
+        role_names = role_codes
+        designation = getCodeForName(DESIG_LIST, getValue(df,row,"Designation*" ,"" ))  
+        password = "Bel@1234"
+        username = getValue(df,row,"Employee ID*" ,"" )   
+        mobile_number = getValue(df,row,"Employee Mobile Number*",None )    
+        name = getValue(df,row,"Employee Full Name*" ,None  )     
+        gender = getValue(df,row,"Gender*" ,"M" )    
+        fName = getValue(df,row,"Father/ Husband Name*" ,"FATHER_NAME" )  
+        empType =getValue(df,row,"Nature of Employment *" ,"PERMANENT" )    
+        dob =getTime(df,row,"Employee Date of Birth*" )  
+        emailId =getValue(df,row,"Employee Email Address*" ,"" )  
+        joiningDate =getTime(df,row,"Appointed From Date*" )  
+        address =getValue(df,row,"Correspondance Address*" ,"" )  
 
-            headers = {'Content-Type': 'application/json'}
+ 
+        ## Check for empty rows 
+        
+        if pd.isna(name) or  pd.isna(mobile_number) : 
+            continue
+        print("========================",name,mobile_number,"==========================")
+        
+        print("UserNAME",username)
+        existing_employees = get_employees_by_id(
+            auth_token, username, tenant_id)
+        print(existing_employees)
 
-            details = []
-            roles = []
-            is_primary = True
+        existing_employees = get_employees_by_id(
+            auth_token, username, tenant_id)
+        print("existing_employees",existing_employees)
+        roles_needed =  set(map(lambda role : ROLE_CODES[role.strip()], role_codes.split("|")))
+        roles_needed.add("EMPLOYEE")
+        print("roles_needed",roles_needed)
+        for role  in roles_needed:
+            roles.append({"code": role, "name": config.ROLE_CODE_MAP[role], "tenantId": tenant_id})
 
-            departments = row[6]
-            role_codes = row[10]
-            role_names = row[11]
-            designation = row[7]
-            password = row[9]
-            username = row[8]
-            mobile_number = row[2]
-            name = row[0]
+        if existing_employees:
+            # This employee already exists
+            existing_mobilenumber = existing_employees[0]['mobileNumber']
+            roles_currently = set(
+                map(lambda role: role['code'], existing_employees[0]['roles']))
+            ask_for_role_update = False
+            if existing_mobilenumber != mobile_number:
+                print(
+                    "The employee {} already exist with mobile number {}. You have specified a different mobile number {}".format(
+                        username, existing_mobilenumber, mobile_number))
+                ask_for_role_update = True
+            else:
+                print("Employee", username, tenant_id, name, mobile_number, "already exists - ",
+                      len(existing_employees))
 
-            existing_employees = get_employees_by_id(auth_token, username, tenant_id)
-
-            roles_needed = set(map(str.strip, role_codes.split("|")))
-
-            if existing_employees:
-                # This employee already exists
-                existing_mobilenumber = existing_employees[0]['mobileNumber']
-                roles_currently = set(map(lambda role: role['code'], existing_employees[0]['roles']))
-                ask_for_role_update = False
-
-                if existing_mobilenumber != mobile_number:
-                    print(
-                        "The employee {} already exist with mobile number {}. You have specified a different mobile number {}".format(
-                            username, existing_mobilenumber, mobile_number))
-                    ask_for_role_update = True
-                else:
-                    print("Employee", username, tenant_id, name, mobile_number, "already exists - ",
-                          len(existing_employees))
-
-                if roles_needed.issubset(roles_currently):
-                    print("The employee already has all required roles. Nothing needed")
-                else:
-                    if ask_for_role_update:
-                        username_update = input(
-                            "Would you like to add " + role_codes + " to " + username + "[Use n for skip]? ")
-                        if username_update.lower() == "n":
-                            print("Skipping adding required roles to user - {}".format(username))
-                            continue
-                    else:
-                        print("Adding required roles to user - {}".format(username))
-                    add_role_to_user(auth_token, username, tenant_id, roles_needed - roles_currently)
-                continue
-
-            existing_employees = get_employees_by_phone(auth_token, mobile_number, tenant_id)
-
-            if existing_employees:
-                info = map(lambda emp: "(username={}, mob={}, name={}, roles={}".format(
-                    emp["userName"],
-                    emp["mobileNumber"],
-                    emp["name"],
-                    "|".join(map(lambda role: role["code"], emp["roles"])))
-                           , existing_employees)
-                print("{} Employee(s) with mobile number {} already exists".format(len(existing_employees),
-                                                                                   mobile_number), list(info))
-                if len(existing_employees) > 1:
+            if roles_needed.issubset(roles_currently):
+                print("The employee already has all required roles. Nothing needed")
+            else:
+                if ask_for_role_update:
                     username_update = input(
-                        "Which user would you like to update with " + role_codes + " [Use n for skip]? ")
-                else:
-                    username_update = input(
-                        "Will you like to add the " + role_codes + " to user {} [Yn]? ".format(
-                            existing_employees[0]["userName"]))
-                    if username_update.strip().lower() == "n":
-                        print("Skipping the user creation for {}".format(username))
+                        "Would you like to add " + role_codes + " to " + username + "[Use n for skip]? ")
+                    if username_update.lower() == "n":
+                        print(
+                            "Skipping adding required roles to user - {}".format(username))
                         continue
-                    else:
-                        username_update = existing_employees[0]["userName"]
+                else:
+                    print("Adding required roles to user - {}".format(username))
+                add_role_to_user(auth_token, username, tenant_id,
+                                 roles_needed - roles_currently)
+            continue
 
+        ### Get Employee By Phone Detail 
+        existing_employees = get_employees_by_phone(
+            auth_token, mobile_number, tenant_id)
+
+        if existing_employees:
+            info = map(lambda emp: "(username={}, mob={}, name={}, roles={}".format(
+                emp["userName"],
+                emp["mobileNumber"],
+                emp["name"],
+                "|".join(map(lambda role: role["code"], emp["roles"]))), existing_employees)
+            print("{} Employee(s) with mobile number {} already exists".format(len(existing_employees),
+                                                                               mobile_number), list(info))
+            if len(existing_employees) > 1:
+                username_update = input(
+                    "Which user would you like to update with " + role_codes + " [Use n for skip]? ")
+            else:
+                username_update = input(
+                    "Will you like to add the " + role_codes + " to user {} [Yn]? ".format(
+                        existing_employees[0]["userName"]))
                 if username_update.strip().lower() == "n":
                     print("Skipping the user creation for {}".format(username))
                     continue
                 else:
-                    employee_found = list(filter(lambda emp: emp["userName"] == username_update, existing_employees))
-                    if not employee_found:
-                        print("Cannot find employee with username - " + username_update)
-                    else:
-                        roles_currently = set(map(lambda role: role['code'], employee_found[0]['roles']))
-                        add_role_to_user(auth_token, username_update, tenant_id, roles_needed - roles_currently)
+                    username_update = existing_employees[0]["userName"]
+
+            if username_update.strip().lower() == "n":
+                print("Skipping the user creation for {}".format(username))
                 continue
-
+            else:
+                employee_found = list(
+                    filter(lambda emp: emp["userName"] == username_update, existing_employees))
+                if not employee_found:
+                    print("Cannot find employee with username - " + username_update)
+                else:
+                    roles_currently = set(
+                        map(lambda role: role['code'], employee_found[0]['roles']))
+                    add_role_to_user(auth_token, username_update,
+                                     tenant_id, roles_needed - roles_currently)
+            continue
+        
+        # IF Employee does not exist in system
+        if designation is not None : 
             for department in departments.split("|"):
+                code =getCodeForName(DEPT_LIST, department)
+                if code is not None : 
+                    assignments.append({
+                        "fromDate": joiningDate,
+                        "toDate": None,
+                        "department": code,
+                        "isCurrentAssignment": True,
+                        "designation": designation ,
+                        "reportingTo": "",
+                        "isHod": True
+                    })
+
+
+        post_data = {
+            "RequestInfo": {
+                "authToken": auth_token
+            },
+            "Employees": [
                 {
-                    "fromDate": 0,
-                    "toDate": None,
-                    "department": department.strip(),
-                    "isCurrentAssignment": True,
-                    "designation": designation.strip(),
-                    "reportingTo": "",
-                    "isHod": True
-                }
-                is_primary = False
-
-            for role, role_name in zip(role_codes.split("|"), role_names.split("|")):
-                roles.append({"code": role, "name": role_name, "tenantId": tenant_id})
-
-            post_data = {
-                "RequestInfo": {
-                    "authToken": "{{access_token}}"
-                },
-                "Employees": [
-                    {
-                        "user": {
-                            "name": name,
-                            "userName": username,
-                            "fatherOrHusbandName": "F",
-                            "mobileNumber": mobile_number,
-                            "gender": "",
-                            "dob": 0,
-                            "roles": [
-                            ],
+                    "user": {
+                        "name": name,
+                        "userName": username,
+                        "fatherOrHusbandName": fName,
+                        "mobileNumber": mobile_number,
+                        "emailId" :emailId,
+                        "gender": "MALE" if gender == "M" else "FEMALE",
+                        "dob": dob,
+                        "roles": roles,
+                        "tenantId": tenant_id,
+                        "correspondenceAddress": address,
+                        "type": "EMPLOYEE"
+                    },
+                    "code": username,
+                    "dateOfAppointment": joiningDate,
+                    "employeeType": "PERMANENT",
+                    "employeeStatus": "EMPLOYED",
+                    "jurisdictions": [
+                        {
+                            "hierarchy": "REVENUE",
+                            "boundary": tenant_id,
+                            "boundaryType": "City",
                             "tenantId": tenant_id
-                        },
-                        "dateOfAppointment": 0,
-                        "employeeType": "PERMANENT",
-                        "employeeStatus": "EMPLOYED",
-                        "jurisdictions": [
-                            {
-                                "hierarchy": "ADMIN",
-                                "boundary": tenant_id,
-                                "boundaryType": "City",
-                                "tenantId": tenant_id
-                            }
-                        ],
-                        "active": True,
-                        "assignments": [
+                        }
+                    ],
+                    "active": True,
+                    "assignments":assignments,
+                    "serviceHistory": [
 
-                        ],
-                        "serviceHistory": [
+                    ],
+                    "education": [
+                    ],
+                    "tests": [
+                    ],
+                    "tenantId": tenant_id
+                }
+            ]
+        }
 
-                        ],
-                        "education": [
-                        ],
-                        "tests": [
-                        ],
-                        "tenantId": tenant_id
-                    }
-                ]
-            }
-            post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers=headers,
-                                          json=post_data)
-            print("==================================================")
-            print(post_data)
-            print("--------")
-            print(post_response.json())
-            print("==================================================")
-            print("\n\n")
-
+        post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers=headers,
+                                      json=post_data)
+        print("==================================================")
+        print(post_data)
+        print("--------")
+        print(post_response.json())
+        print(post_response.status_code)
+        if post_response.status_code == 202 : 
+            update_user_password(auth_token, tenant_id, username, "Bel@1234")
+        print("==================================================")
+        print("\n\n")
 
 if __name__ == "__main__":
     main()
