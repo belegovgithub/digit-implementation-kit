@@ -922,7 +922,7 @@ def create_chartaccount(body):
         return data.json()
     else:
         print(data.json())
-        raise SystemExit("chart account purpose creation Failed")
+        raise SystemExit("chart of account creation Failed")
 
 def search_chartaccount(tenant_id=config.TENANT_ID):
     url = urljoin(config.HOST, '/egf-master/chartofaccounts/_search')
@@ -935,7 +935,7 @@ def search_chartaccount(tenant_id=config.TENANT_ID):
     if(obj.status_code == 200):
         return obj.json()
     else:
-        raise SystemExit("chart account purpose Search Failed")
+        raise SystemExit("chart of account Search Failed")
 
 def create_bankaccount(body):
     url = urljoin(config.HOST, '/egf-master/bankaccounts/_create')
