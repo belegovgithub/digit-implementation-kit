@@ -130,7 +130,7 @@ def accountcodepurpose():
         print("account code purpose created in DB.")
         return response['accountCodePurposes'][0]
 
-def chartaccount(accountcodepurpose):   
+def chartaccount(accountcodepurpose): 
     chartaccount = search_chartaccount()
     if(len(chartaccount['chartOfAccounts']) >= 1):
         return chartaccount['chartOfAccounts'][0]
@@ -161,7 +161,7 @@ def chartaccount(accountcodepurpose):
             "chartOfAccounts": chartaccount_data
         }
         #print(data)
-        response = create_accountcodepurpose(data)
+        response = create_chartaccount(data)
         print("chart of account created in DB.",response)
         return response['chartOfAccounts'][0]
 

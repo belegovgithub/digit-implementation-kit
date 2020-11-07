@@ -10,8 +10,8 @@ config.HOST = "https://13.71.65.215.nip.io"
 
 SUPERUSER = AttrDict()
 
-SUPERUSER.username = ""
-SUPERUSER.password = ""
+SUPERUSER.username = "superuser"
+SUPERUSER.password = "UW1Wc1FERXlNelE9"
 SUPERUSER.tenant_id = "pb"
 
 config.SUPERUSER = SUPERUSER
