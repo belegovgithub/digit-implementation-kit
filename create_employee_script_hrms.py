@@ -1,9 +1,9 @@
 import requests
 import csv
 from common import *
-from config import config
+from config import config ,load_employee_creation_config
 from common import superuser_login, get_employee_types, get_employee_status, add_role_to_user, get_employees_by_phone, \
-    get_employees_by_id
+    get_employees_by_id 
 from config import config
 import io
 import os
@@ -36,14 +36,40 @@ def getTime(df, row,colName,defValue=None) :
         print("Error in time conversion ",row[df.columns.get_loc(colName)],ex)
     return None
 
- 
+
+def createSTADMIN():
+    return {
+        "Role Name*": "STADMIN",
+        "Employee ID*": "STADMIN_" + config.CITY_NAME.upper(),
+        "Employee Mobile Number*": config.HRMS_STADMIN_PHONE_NUMBER,
+        "Employee Date of Birth*": config.HRMS_STADMIN_DOB,
+        "Appointed From Date*": config.HRMS_STADMIN_JOINING,
+        "Employee Full Name*": "CB Admin",
+        "Designation*": config.HRMS_DEF_DESIG,
+        "Department*": config.HRMS_DEF_DEPT
+    } 
+
+def createDEV():
+    return {
+        "Role Name*": config.HRMS_DEV_ROLES,
+        "Employee ID*": "DEV_" + config.CITY_NAME.upper(),
+        "Employee Mobile Number*": config.HRMS_DEV_PHONE_NUMBER,
+        "Employee Date of Birth*": config.HRMS_STADMIN_DOB,
+        "Appointed From Date*": config.HRMS_STADMIN_JOINING,
+        "Employee Full Name*": "CB Admin",
+        "Designation*": config.HRMS_DEF_DESIG,
+        "Department*": config.HRMS_DEF_DEPT
+    }
+
+
 
 def main():
+    ## load default config
+    load_employee_creation_config()
     city = config.CITY_NAME
-    tenant_id = "pb." + city.lower()
-    fileName = "User_Role Mapping"
-    sheetName = "User Role Mapping"
-    filePath = os.path.join(config.BOUNDARIES_FOLDER, fileName+".xlsx")
+    tenant_id = config.SUPERUSER.tenant_id + "." + city.lower()
+  
+    filePath = os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
 
@@ -54,22 +80,18 @@ def main():
     print("auth token ", auth_token)
     start_row = 0
     dfs = open_excel_file(filePath)
-    df = get_sheet(dfs, sheetName)
+    df = get_sheet(dfs, config.HRMS_SHEET_NAME)
     
     #df = df.replace('nan','')
     #print(df.columns)
 
-    stadmin_user={
-        "Role Name*" :"STADMIN",
-        "Employee ID*" : "STADMIN_" +city.upper(),
-        "Employee Mobile Number*" : "8197292570",
-        "Employee Date of Birth*" :"03-04-1986",
-        "Appointed From Date*" :"01-01-2001",
-        "Employee Full Name*" : "CB Admin",
-        "Designation*" : "Programmer",
-        "Department*" : "Information Technology"
-    }
-    df =df.append(stadmin_user, ignore_index=True)
+ 
+    if config.HRMS_CREATE_STADMIN  : 
+        df =df.append(createSTADMIN(), ignore_index=True)
+    if config.HRMS_CREATE_DEV_USER : 
+        df =df.append(createDEV(), ignore_index=True)
+
+
     print(df) 
     for ind in df.index:
  
@@ -251,11 +273,11 @@ def main():
         post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers=headers,
                                       json=post_data)
         print("==================================================")
-        print(post_data)
+        #print(post_data)
         print("--------")
-        print(post_response.json())
-        print(post_response.status_code)
+        #print(post_response.json())
         if post_response.status_code == 202 : 
+            print ("User Created : ",username)
             update_user_password(auth_token, tenant_id, username, "Bel@1234")
         print("==================================================")
         print("\n\n")

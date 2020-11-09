@@ -197,5 +197,21 @@ def load_mCollect_config():
     config.COLUMN_DEPT_CODE = "DEPT CODE"
     config.COLUMN_FUND_NAME = "FUND CODE"
 
+def load_employee_creation_config() :
+    config.HRMS_EXCEL_NAME= "User_Role Mapping.xlsx"
+    config.HRMS_SHEET_NAME="User Role Mapping"
+    config.HRMS_STADMIN_PHONE_NUMBER ="8197292570"
+    config.HRMS_STADMIN_DOB ="03-04-1986" # DATE FORMAT should remain same
+    config.HRMS_STADMIN_JOINING ="01-01-2001" # DATE FORMAT should remain same
+    config.HRMS_DEF_DEPT ="Information Technology"
+    config.HRMS_DEF_DESIG ="Programmer"  
+    config.HRMS_CREATE_STADMIN=True
+    config.HRMS_CREATE_DEV_USER=True
+    config.HRMS_DEV_PHONE_NUMBER ="9900717640"
+    config.HRMS_DEV_ROLES=  "mCollect Employee"#"TL Counter Employee|TL Doc Verifier|TL Field Inspector|TL Approver|mCollect Employee" # SEPERATED BY PIPE
+
+
+
+
 
 load_config()
