@@ -22,14 +22,20 @@ def getValue(df, row,colName,defValue="") :
 
 def getCodeForName(dictArr, name) :
     obj = next((item for item in dictArr if item.get("name") and item["name"] == name), None)
-    print("getCodeForName",obj)
+    #print("getCodeForName",obj)
     return obj['code'] if obj is not None else None 
     
 def getTime(df, row,colName,defValue=None) :
     try : 
         dObj = row[df.columns.get_loc(colName)]
         if not isinstance(dObj, datetime) and type(dObj) is str: 
-            dObj=datetime.strptime(row[df.columns.get_loc(colName)], '%d-%m-%Y') 
+            dateStr =row[df.columns.get_loc(colName)].strip() 
+            if "/" in dateStr : 
+                dObj=datetime.strptime(dateStr, '%d/%m/%Y') 
+            elif "." in dateStr : 
+                dObj=datetime.strptime(dateStr, '%d.%m.%Y') 
+            else : 
+                dObj=datetime.strptime(dateStr, '%d-%m-%Y') 
         milliseconds = int((dObj - datetime(1970, 1, 1)).total_seconds())*1000
         return milliseconds
     except Exception as ex:
@@ -67,8 +73,9 @@ def main():
     ## load default config
     load_employee_creation_config()
     city = config.CITY_NAME
-    tenant_id = config.SUPERUSER.tenant_id + "." + city.lower()
-  
+    tenant_id = config.TENANT + "." + city.lower()
+    post_data_list=[]
+    post_data_resp_list=[]
     filePath = os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
@@ -123,7 +130,6 @@ def main():
         if pd.isna(name) or  pd.isna(mobile_number) : 
             continue
         print("========================",name,mobile_number,"==========================")
-        
         print("UserNAME",username)
         existing_employees = get_employees_by_id(
             auth_token, username, tenant_id)
@@ -134,7 +140,7 @@ def main():
         print("existing_employees",existing_employees)
         roles_needed =  set(map(lambda role : ROLE_CODES[role.strip()], role_codes.split("|")))
         roles_needed.add("EMPLOYEE")
-        print("roles_needed",roles_needed)
+        #print("roles_needed",roles_needed)
         for role  in roles_needed:
             roles.append({"code": role, "name": config.ROLE_CODE_MAP[role], "tenantId": tenant_id})
 
@@ -273,14 +279,23 @@ def main():
         post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers=headers,
                                       json=post_data)
         print("==================================================")
-        #print(post_data)
+        print(post_data)
+        post_data_list.append(post_data)
         print("--------")
-        #print(post_response.json())
+        print(post_response.json())
+        post_data_resp_list.append(post_response.json())
+        
         if post_response.status_code == 202 : 
             print ("User Created : ",username)
             update_user_password(auth_token, tenant_id, username, "Bel@1234")
         print("==================================================")
         print("\n\n")
+
+    # Save the request /response of newly created user in same  folder for reference
+    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-request.json"), mode="w", encoding="utf-8") as f:
+        json.dump(post_data_list, f, indent=2,  ensure_ascii=False)
+    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-response.json"), mode="w", encoding="utf-8") as f:
+        json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
