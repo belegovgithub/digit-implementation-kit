@@ -76,7 +76,7 @@ def main():
     tenant_id = config.TENANT + "." + city.lower()
     post_data_list=[]
     post_data_resp_list=[]
-    filePath = os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
+    filePath = config.HRMS_WORKBOOK  #os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
 

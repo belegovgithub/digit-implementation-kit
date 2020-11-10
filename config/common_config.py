@@ -75,6 +75,7 @@ def load_config():
     config.DOCUMENT_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeDocument.xlsx"
     config.TRADE_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeCategoryFee.xlsx"
     config.BANK_WORKBOOK=config.BOUNDARIES_FOLDER / "02-Common/Bank_Details_Template.xlsx"
+    config.HRMS_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/User_Role Mapping.xlsx"
 
     if not os.path.isfile(config.SHEET):
         config.SHEET_NAME = config.CITY_NAME.lower() + ".xls"
