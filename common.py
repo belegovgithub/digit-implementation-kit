@@ -13,6 +13,8 @@ import requests
 
 from config import config
 from config import load_revenue_boundary_config
+from datetime import datetime, timedelta,date
+from json import JSONEncoder
 
 def get_employee_types(tenantid, auth_token):
     headers = {'Content-Type': 'application/json'}
@@ -1044,3 +1046,12 @@ def replaceNone(data_dict,v,rv):
             data_dict[key] = rv
         elif type(data_dict[key]) is dict:
             replaceNone(data_dict[key],v,rv)
+
+epoch = datetime.utcfromtimestamp(0)
+def unix_time_millis(dt):
+    return (dt - epoch).total_seconds() * 1000.0
+class DateTimeEncoder(JSONEncoder):
+        #Override the default method
+        def default(self, obj):
+            if isinstance(obj, (date, datetime)):
+                return int((obj - epoch).total_seconds() * 1000.0)

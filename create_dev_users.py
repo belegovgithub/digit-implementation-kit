@@ -1,45 +1,52 @@
 import requests
 import csv
 from common import *
-from config import config ,load_employee_creation_config
+from config import config, load_employee_creation_config
 from common import superuser_login, get_employee_types, get_employee_status, add_role_to_user, get_employees_by_phone, \
-    get_employees_by_id 
+    get_employees_by_id
 from config import config
 import io
 import os
 import numpy
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,date
+from json import JSONEncoder
 
-ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
-              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP" ,"STADMIN" :"STADMIN" }
+ 
 
-def getValue(df, row,colName,defValue="") :
-    if not pd.isna(row[df.columns.get_loc(colName)] ) : 
-        return str(row[df.columns.get_loc(colName)]).strip() 
-    else : 
-        return defValue if defValue is not None else row[df.columns.get_loc(colName)] 
+post_data_list=[]
+post_data_resp_list=[]
 
-def getCodeForName(dictArr, name) :
-    obj = next((item for item in dictArr if item.get("name") and item["name"] == name), None)
-    #print("getCodeForName",obj)
-    return obj['code'] if obj is not None else None 
-    
-def getTime(df, row,colName,defValue=None) :
-    try : 
+def getValue(df, row, colName, defValue=""):
+    if not pd.isna(row[df.columns.get_loc(colName)]):
+        return str(row[df.columns.get_loc(colName)]).strip()
+    else:
+        return defValue if defValue is not None else row[df.columns.get_loc(colName)]
+
+
+def getCodeForName(dictArr, name):
+    obj = next((item for item in dictArr if item.get(
+        "name") and item["name"] == name), None)
+    # print("getCodeForName",obj)
+    return obj['code'] if obj is not None else None
+
+
+def getTime(df, row, colName, defValue=None):
+    try:
         dObj = row[df.columns.get_loc(colName)]
-        if not isinstance(dObj, datetime) and type(dObj) is str: 
-            dateStr =row[df.columns.get_loc(colName)].strip() 
-            if "/" in dateStr : 
-                dObj=datetime.strptime(dateStr, '%d/%m/%Y') 
-            elif "." in dateStr : 
-                dObj=datetime.strptime(dateStr, '%d.%m.%Y') 
-            else : 
-                dObj=datetime.strptime(dateStr, '%d-%m-%Y') 
+        if not isinstance(dObj, datetime) and type(dObj) is str:
+            dateStr = row[df.columns.get_loc(colName)].strip()
+            if "/" in dateStr:
+                dObj = datetime.strptime(dateStr, '%d/%m/%Y')
+            elif "." in dateStr:
+                dObj = datetime.strptime(dateStr, '%d.%m.%Y')
+            else:
+                dObj = datetime.strptime(dateStr, '%d-%m-%Y')
         milliseconds = int((dObj - datetime(1970, 1, 1)).total_seconds())*1000
         return milliseconds
     except Exception as ex:
-        print("Error in time conversion ",row[df.columns.get_loc(colName)],ex)
+        print("Error in time conversion ",
+              row[df.columns.get_loc(colName)], ex)
     return None
 
 
@@ -53,7 +60,8 @@ def createSTADMIN():
         "Employee Full Name*": "CB Admin",
         "Designation*": config.HRMS_DEF_DESIG,
         "Department*": config.HRMS_DEF_DEPT
-    } 
+    }
+
 
 def createDEV():
     return {
@@ -68,62 +76,89 @@ def createDEV():
     }
 
 
+def createCall(auth_token, name, mobile_number, roles, tenant_id):
+    username = name + "_"+tenant_id.split('.')[1][0:4].upper()
+    post_data = {
+        "RequestInfo": {
+            "authToken": auth_token
+        },
+        "Employees": [
+            {
+                "user": {
+                    "name": name,
+                    "userName": username,
+                    "fatherOrHusbandName": "FATHER_NAME",
+                    "mobileNumber": mobile_number,
+                    "emailId": "vipinpublicdomain@gmail.com",
+                    "gender": "MALE",
+                    "dob": datetime.strptime("01/01/1986", '%d/%m/%Y'),
+                    "roles": roles,
+                    "tenantId": tenant_id,
+                    "correspondenceAddress": "ABC",
+                    "type": "EMPLOYEE"
+                },
+                "code": username,
+                "dateOfAppointment": datetime.strptime("01/01/2005", '%d/%m/%Y'),
+                "employeeType": "PERMANENT",
+                "employeeStatus": "EMPLOYED",
+                "jurisdictions": [
+                    {
+                        "hierarchy": "REVENUE",
+                        "boundary": tenant_id,
+                        "boundaryType": "City",
+                        "tenantId": tenant_id
+                    }
+                ],
+                "active": True,
+                "assignments":  [
+                    {
+                        "fromDate": 571017600000,
+                        "toDate": None,
+                        "department": "DEPT_39",
+                        "isCurrentAssignment": True,
+                        "designation": "DESIG_48",
+                        "reportingTo": "",
+                        "isHod": True
+                    }
+                ],
+                "serviceHistory": [
 
-def main():
-    ## load default config
-    load_employee_creation_config()
-    city = config.CITY_NAME
-    tenant_id = config.TENANT + "." + city.lower()
-    post_data_list=[]
-    post_data_resp_list=[]
-    filePath = config.HRMS_WORKBOOK  #os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
-    if not os.path.isfile(filePath) :
-        raise Exception("File Not Found ",filePath)
+                ],
+                "education": [
+                ],
+                "tests": [
+                ],
+                "tenantId": tenant_id
+            }
+        ]
+    }
+    return post_data
+    # post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers={'Content-Type': 'application/json'},
+    #                                   json=post_data)
 
-    auth_token = superuser_login()["access_token"]
-    DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
-    DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
 
-    print("auth token ", auth_token)
-    start_row = 0
-    dfs = open_excel_file(filePath)
-    df = get_sheet(dfs, config.HRMS_SHEET_NAME)
+def createEmployee(auth_token, name,username, tenant_id, mobile_number,role_codes, DEPT_LIST, DESIG_LIST):
+    headers = {'Content-Type': 'application/json'}
+    details = []
+    roles = []
+    assignments = []
+    is_primary = True
+    departments = "Information Technology"
     
-    #df = df.replace('nan','')
-    #print(df.columns)
+    designation = getCodeForName(DESIG_LIST, "Programmer")  
+    role_names = role_codes
+    password = "Bel@1234"
+    
+    gender = "M"
+    fName = "FATHER_NAME"
+    empType = "PERMANENT"
+    dob =504921600000
+    emailId = "vipinpublicdomain@gmail.com"
+    joiningDate = 1104537600000
+    address = ""
 
- 
-    if config.HRMS_CREATE_STADMIN  : 
-        df =df.append(createSTADMIN(), ignore_index=True)
-    if config.HRMS_CREATE_DEV_USER : 
-        df =df.append(createDEV(), ignore_index=True)
-
-
-    print(df) 
-    for ind in df.index:
- 
-        row = df.iloc[ind] 
-        headers = {'Content-Type': 'application/json'}
-        details = []
-        roles = []
-        assignments=[]
-        is_primary = True
-        departments = getValue(df,row,"Department*" ,"" ) 
-        role_codes = getValue(df,row,"Role Name*" ,"" ) 
-        role_names = role_codes
-        designation = getCodeForName(DESIG_LIST, getValue(df,row,"Designation*" ,"" ))  
-        password = "Bel@1234"
-        username = getValue(df,row,"Employee ID*" ,"" )   
-        mobile_number = getValue(df,row,"Employee Mobile Number*",None )    
-        name = getValue(df,row,"Employee Full Name*" ,None  )     
-        gender = getValue(df,row,"Gender*" ,"M" )    
-        fName = getValue(df,row,"Father/ Husband Name*" ,"FATHER_NAME" )  
-        empType =getValue(df,row,"Nature of Employment *" ,"PERMANENT" )    
-        dob =getTime(df,row,"Employee Date of Birth*" )  
-        emailId =getValue(df,row,"Employee Email Address*" ,"" )  
-        joiningDate =getTime(df,row,"Appointed From Date*" )  
-        address =getValue(df,row,"Correspondance Address*" ,"" )  
-
+    ## To Keep the same hierachy as in create_employee_script_hrms
+    for x in range(1):
  
         ## Check for empty rows 
         
@@ -275,7 +310,7 @@ def main():
                 }
             ]
         }
-
+        #post_data=json.dumps(post_data, cls=DateTimeEncoder)
         post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers=headers,
                                       json=post_data)
         print("==================================================")
@@ -291,11 +326,55 @@ def main():
         print("==================================================")
         print("\n\n")
 
-    # Save the request /response of newly created user in same  folder for reference
-    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-request.json"), mode="w", encoding="utf-8") as f:
-        json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-response.json"), mode="w", encoding="utf-8") as f:
+ 
+ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
+              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP", "STADMIN": "STADMIN"}
+
+def main():
+    # load default config
+    print("TENANT_JSON", config.TENANT_JSON)
+    auth_token = superuser_login()["access_token"]
+    DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
+    DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
+ 
+
+    with io.open(config.TENANT_JSON, encoding="utf-8") as f:
+        tenants_data = json.load(f)
+    for found_index, tenant in enumerate(tenants_data["tenants"]):
+        print("=========================")
+        if(len(tenant['code'].split('.')) > 1):
+            tenant_id = tenant['code']
+            cityCode ="_"+tenant_id.split('.')[1][0:4].upper()
+            #State Admin
+            username = "STADMIN" + cityCode
+            roles ="STADMIN"
+            createEmployee(auth_token, "CB Admin",username , tenant_id, "8197292570",roles, DEPT_LIST, DESIG_LIST)
+            # Challan Counter Employee
+            username = "UC" + cityCode
+            roles ="mCollect Employee"
+            createEmployee(auth_token, "Challan Counter Employee",username , tenant_id, "8197292571",roles, DEPT_LIST, DESIG_LIST)
+            # PGR Counter Employee
+            username = "PGR_CE" + cityCode
+            roles ="PGR-CE"
+            createEmployee(auth_token, "PGR Counter Employee",username , tenant_id, "8197292572",roles, DEPT_LIST, DESIG_LIST)
+            # PGR RO Employee
+            username = "PGR_RO" + cityCode
+            roles ="RO"
+            createEmployee(auth_token, "PGR RO",username , tenant_id, "8197292573",roles, DEPT_LIST, DESIG_LIST)
+            # PGR RO Employee
+            username = "PGR_GRO" + cityCode
+            roles ="GRO"
+            createEmployee(auth_token, "PGR GRO",username , tenant_id, "8197292574",roles, DEPT_LIST, DESIG_LIST)
+            #break
+    dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
+    print(dateStr )
+    print(post_data_list)
+    print("BOUNDARIES_FOLDER",config.BOUNDARIES_FOLDER)
+    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-request"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
+        json.dump(post_data_list, f, indent=2,  ensure_ascii=False , cls=DateTimeEncoder)
+    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-response"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+
 
 if __name__ == "__main__":
     main()
