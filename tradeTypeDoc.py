@@ -5,22 +5,23 @@ import os
 import numpy
 from config import load_mCollect_config
 
-def getTradeCategory(keyword):
-  print("Hello from a function")
+def getTradeCategory(keyword,subType):
+  #print("keyword--",keyword,int(float(subType)))
   global letter;
+  subTypeVal = str(int(float(subType)))
   tradeType_category = "TRADE"
   if keyword.find("Eating") != -1:
-    letter = tradeType_category+"."+"EATING"
+    letter = tradeType_category+"."+"EATING"+"."+"A"+subTypeVal
   elif keyword.find("Medical") != -1:
-    letter = tradeType_category+"."+ "MEDICAL"
+    letter = tradeType_category+"."+ "MEDICAL"+"."+"B"+subTypeVal
   elif keyword.find("Veterinary") != -1:
-	  letter =tradeType_category+"."+"VETERINARY"
+	  letter =tradeType_category+"."+"VETERINARY"+"."+"C"+subTypeVal
   elif keyword.find("Flammables") != -1:
-	  letter =tradeType_category+"."+"DANGEROUS"
+	  letter =tradeType_category+"."+"DANGEROUS"+"."+"D"+subTypeVal
   elif keyword.find("Medium") != -1:
-	  letter =tradeType_category+"."+"MEDIUM"
+	  letter =tradeType_category+"."+"MEDIUM"+"."+"F"+subTypeVal
   elif keyword.find("Offices ") != -1:
-	  letter =tradeType_category+"."+"OTHERS"
+	  letter =tradeType_category+"."+"OTHERS"+"."+"E"+subTypeVal
     
   return letter
 
@@ -31,15 +32,15 @@ def main():
   dfs = open_excel_file(config.TRADE_DOC_TYPE_WORKBOOK)
   docCodes = get_sheet(dfs, config.SHEET_TRADEDOC)
   docCodes = docCodes.astype(str)
-  #print(docCodes)
+  #print(len(docCodes. columns))
   #print(docCodes.columns)
-  #print(docCodes.iloc[2, 1])
+  print(docCodes.iloc[0, 1])
 
   dfs = open_excel_file(config.TRADE_TYPE_NEW_WORKBOOK)
   tradeTypeCodes = get_sheet(dfs, config.SHEET_TRADERATE)
   tradeTypeCodes = tradeTypeCodes.astype(str)
   #print(tradeTypeCodes)
-  print(tradeTypeCodes.iloc[2, 4])
+  print(tradeTypeCodes.iloc[0, 1])
 
   INDEX_DOC_NAME = 1
   INDEX_APPL_TYPE_1 = 2
@@ -68,18 +69,88 @@ def main():
   tradeType_uom = "";
   tradeType_trade = [];
   #print(getTradeCategory(tradeTypeCodes.iloc[2, 1]))
+  docDict = {
+    "Applicant Photo":"OWNERPHOTO",
+    "Occupancy Related Doc":"OWNERSHIPPROOF",
+    "Proof Of Identity":"OWNERIDPROOF",
+    "Proof Of Address":"ADDPROOF",
+    "Self Decleration":"SELFDECLERATION",
+    "Medical Certificate":"MEDCERT",
+    "NOC from fire Department":"FIRENOC",
+    "Food Safety Certificate":"FOODCERT",
+    "Duly filled application form":"APPLETTER",
+    "Tax Receipt" : "TAXRECEIPT",
+    "Fire NOC" : "FIRENOC"
+  }
 
-  for j in range(1,len(tradeTypeCodes)) :
+  uomDict = {
+    "Flat/Fixed":"null",
+    "Area- per -Sq Ft":"SFT",
+    "Motor Power - HP":"HP",
+    "No of Beds - Number":"NOS",
+    "Star":"STAR"
+  }
+
+  for j in range(0,len(tradeTypeCodes)) :
     if tradeTypeCodes.iloc[j, INDEX_TRADE_APPLICABLE] == "Applicable":
-      print(getTradeCategory(tradeTypeCodes.iloc[2, 1]))
+      print(tradeTypeCodes.iloc[j, 2], docCodes.iloc[j,2])
+      tradeType_category = getTradeCategory(tradeTypeCodes.iloc[j, 1],tradeTypeCodes.iloc[j, 2])
+      tradeType_uom = uomDict[tradeTypeCodes.iloc[j,5]]
+      #print(tradeType_category)
+      if tradeTypeCodes.iloc[j, 2] == docCodes.iloc[j,2]:
+        k=0;
+        docCodes_new=[]
+        docCodes_renew=[]
+        for k in range(4,len(docCodes.columns)):
+          if docCodes.iloc[j, k] != 'nan':
+            docCodes_new.append(docDict[docCodes.iloc[j, k]])
+            docCodes_renew.append(docDict[docCodes.iloc[j, k]])
+
+        
+      #print(docCodes_new);
+      tradeType_trade.append({"code": tradeType_category,
+                            "uom" : tradeType_uom,
+                            "applicationDocument" :[
+                              {
+                              "applicationType": "NEW",
+                               "documentList": docCodes_new
+                              },
+                              {
+                              "applicationType": "RENEWAL",
+                               "documentList": docCodes_renew
+                              }
+                            ],
+                            "active": "true",
+                            "type": "TL",
+                            "validityPeriod": "null",
+                            "verificationDocument": []
+                            })
 
 
+  #print(tradeType_trade)
+  final_data = {
+        "tenantId": config.TENANT_ID,
+        "moduleName": "TradeLicense",
+        "TradeType":  tradeType_trade
+      }
+  print(final_data)
 
+  import sys
 
+  json.dump(final_data, sys.stdout, indent=2)
 
+  if config.ASSUME_YES:
+        response = os.getenv("ASSUME_YES", None) or input("\nDo you want to append the data in repo (y/[n])? ")
+  else:
+        response = "y"
 
+  if response.lower() == "y":
+        mCollect_path = config.MDMS_LOCATION / config.CITY_NAME.lower() / "TradeLicense"
+        os.makedirs(mCollect_path, exist_ok=True)       
 
-
+        with open(os.path.join(mCollect_path , "TradeType.json"), "w") as f:
+            json.dump(final_data, f, indent=2)
+  
 
 
 
