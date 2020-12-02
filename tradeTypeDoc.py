@@ -36,7 +36,7 @@ def main():
   #print(docCodes.columns)
   print(docCodes.iloc[0, 1])
 
-  dfs = open_excel_file(config.TRADE_TYPE_NEW_WORKBOOK)
+  dfs = open_excel_file(config.TRADE_RATE_WORKBOOK)
   tradeTypeCodes = get_sheet(dfs, config.SHEET_TRADERATE)
   tradeTypeCodes = tradeTypeCodes.astype(str)
   #print(tradeTypeCodes)
@@ -85,10 +85,10 @@ def main():
 
   uomDict = {
     "Flat/Fixed":"null",
-    "Area- per -Sq Ft":"SFT",
-    "Motor Power - HP":"HP",
-    "No of Beds - Number":"NOS",
-    "Star":"STAR"
+    "Area- per -Sq Ft":"SqFt",
+    "Motor Power - HP":"MoHP",
+    "No of Beds - Number":"NoBed",
+    "Star":"Star"
   }
 
   for j in range(0,len(tradeTypeCodes)) :
