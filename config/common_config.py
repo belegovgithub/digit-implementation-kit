@@ -74,7 +74,7 @@ def load_config():
     config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
     config.DOCUMENT_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeDocument.xlsx"
     config.TRADE_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeCategoryFee.xlsx"
-    config.TRADE_TYPE_NEW_WORKBOOK = config.TL_FOLDER / "04-Trade License/Trade Licence Rate Template.xlsx"
+    config.TRADE_RATE_WORKBOOK = config.TL_FOLDER / "04-Trade License/Trade License Rate Template.xlsx"
     config.TRADE_DOC_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/Trade License DocumentsTemplate.xlsx"
     config.BANK_WORKBOOK=config.BOUNDARIES_FOLDER / "02-Common/Bank_Details_Template.xlsx"
     config.HRMS_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/User_Role Mapping.xlsx"
