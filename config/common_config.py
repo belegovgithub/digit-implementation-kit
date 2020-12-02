@@ -74,6 +74,8 @@ def load_config():
     config.MCOLLECT_WORKBOOK =config.BOUNDARIES_FOLDER / "03-mCollect/mCollect.xlsx"
     config.DOCUMENT_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeDocument.xlsx"
     config.TRADE_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/TradeCategoryFee.xlsx"
+    config.TRADE_TYPE_NEW_WORKBOOK = config.TL_FOLDER / "04-Trade License/Trade Licence Rate Template.xlsx"
+    config.TRADE_DOC_TYPE_WORKBOOK = config.TL_FOLDER / "04-Trade License/Trade License DocumentsTemplate.xlsx"
     config.BANK_WORKBOOK=config.BOUNDARIES_FOLDER / "02-Common/Bank_Details_Template.xlsx"
     config.HRMS_WORKBOOK =config.BOUNDARIES_FOLDER / "02-Common/User_Role Mapping.xlsx"
 
@@ -95,6 +97,8 @@ def load_config():
     config.SHEET_CHART_ACCOUNT = "Chart of Account"
     config.SHEET_FUND = "Fund"
     config.SHEET_APPLFEE = "TL - ApplnFee"
+    config.SHEET_TRADERATE = "TradeRates"
+    config.SHEET_TRADEDOC="TradeDocuments"
 
     config.COLUMN_DESIGNATION = "Designation"
     config.COLUMN_DEPARTMENT = "Department"
@@ -105,6 +109,8 @@ def load_config():
     config.TRADETYPE_DANGEROUS = "DANGEROUS"
     config.TRADETYPE_GENERAL = "GENERAL"
     config.TRADETYPE_PRIVATE = "PRIVATE"
+    config.TRADETYPE_MSME = "MSME"
+    config.TRADETYPE_OTHERS = "OTHERS"
     config.PERSQFEET = "PER SQ FEET"
     config.UNIT = "PER UNIT"
     
