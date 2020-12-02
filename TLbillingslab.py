@@ -10,9 +10,10 @@ from common import superuser_login, open_excel_file, get_sheet, fix_value
 from config import config, load_config
 import requests
 import json
+import pandas as pd
+
 
 #from tlPreprocessor import create_trade_n_accessory_data
- 
 def main():
     tenants = [
         "pb.amritsar"
@@ -21,7 +22,7 @@ def main():
     INDEX_CATEGORY = 1
     INDEX_SLNO = 2
     INDEX_SUB_CATEGORY = 3
-    INDEX_TRADE_AVAILABLE = 4
+    INDEX_TRADE_APPLICABLE = 4
     INDEX_UOM = 5
     INDEX_RATE_TYPE = 6
     INDEX_RANGE1_FROM = 7
@@ -41,7 +42,7 @@ def main():
     INDEX_RANGE5_TO = 21
     INDEX_APPLICATION_FEE = 22
 
-    thisdict = {
+    CategoryDict = {
         "Eating Establishments": "EATING",
         "Veterinary Trades & trades dealing with animal products": "VETERINARY",
         "Medical Establishments": "MEDICAL",
@@ -49,113 +50,134 @@ def main():
         "Small Scale Industries/Small & Medium factories": "MEDIUM",
         "Other Establishment/Offices (Non eating/non medical)": "OTHER"        
     }
+    uomDict = {
+        "Flat/Fixed":"null",
+        "Area- per -Sq Ft":"SFT",
+        "Motor Power - HP":"HP",
+        "No of Beds - Number":"NOS",
+        "Star":"STAR"
+    }
 
-    for tenant in tenants:
-        print(tenant)
-        # response = os.getenv("ASSUME_YES", None) or input(
-        #     "Your ENV is \"{}\" , You want to proceed (y/[n])?".format(config.CONFIG_ENV))
-        # if response.lower() == "n":
-        #     os._exit(0)
 
-        config.CITY_NAME = tenant.replace(" ", "").replace("pb.", "")
-        load_config()
+    #config.CITY_NAME = tenant.replace(" ", "").replace("pb.", "")
+    load_config()
 
-        tenant_id = config.TENANT_ID
+    tenant_id = config.TENANT_ID
 
-        auth_token = superuser_login()["access_token"]
+    auth_token = superuser_login()["access_token"]
 
-        slabs = requests.post(config.HOST + "/tl-calculator/billingslab/_search?tenantId=" + tenant_id, json={
+    slabs = requests.post(config.HOST + "/tl-calculator/billingslab/_search?tenantId=" + tenant_id, json={
+        "RequestInfo": {
+            "authToken": auth_token
+        }
+    })
+
+    existing_slab_data = {get_slab_id(slab): slab for slab in slabs.json()["billingSlab"]}
+
+    # print(json.dumps(existing_slab_data, indent=2))
+    source_file = config.BASE_PPATH / "source" / "{}.xlsx".format(tenant_id)
+    # create_trade_n_accessory_data(tenant_id, source_file, destination_path=config.BASE_PPATH / "source",
+    #                             template_file_path="source/template.xlsx")
+
+    #dfs = open_excel_file(config.BASE_PPATH / "source" / "{}.processed.xls".format(tenant_id))
+    dfs = open_excel_file(config.TRADE_RATE_WORKBOOK)
+    tradeRates = get_sheet(dfs, config.SHEET_TRADERATE)
+    # tradeRates = tradeRates.astype(str)
+    # tradeRates = tradeRates.infer_objects() 
+    # tradeRates = tradeRates.replace(numpy.nan, '', regex=True)
+    # tradeRates = tradeRates.fillna('')
+    # tradeRates = tradeRates.replace('nan','')
+    #category = fix_value(data.iloc[INDEX_TENANT_ULB_NAME][INDEX_CATEGORY])
+
+    # data.fillna(value=0)
+    columns = ["tenantid", "id", "licensetype", "structuretype", "tradetype", "accessorycategory", "type", "uom",
+            "fromuom", "touom", "rate", "createdtime", "createdby", "lastmodifiedtime", "lastmodifiedby"]
+    fields = {field: index for index, field in enumerate([])}
+    count=0
+    new_slabs = {}
+    update_slabs = {}
+    slabs_processed = set()
+    slab_data = []
+    for i in range(len(tradeRates)) :
+        if tradeRates.iloc[i, INDEX_TRADE_APPLICABLE] == "Applicable":
+            row = tradeRates.iloc[i]
+            tradeType = getTradeCategory(row[INDEX_CATEGORY], row[INDEX_SLNO])
+            print(pd.isna(row[INDEX_RATE_TYPE] ))
+            applicationFee = row[INDEX_APPLICATION_FEE]
+            if pd.isna(row[INDEX_RATE_TYPE] ):
+                for j in range(0,5): 
+                    rateIndex = "Rate" +  str(j + 1) 
+                    rate = str(row[rateIndex])
+                    fromIndex = "RangeFrom" + str(j + 1)     
+                    toIndex = "RangeTo" + str(j + 1)                                  
+                    fromUom = row[fromIndex]
+                    toUom = row[toIndex]                        
+                    slab_data.append(get_slab_object(row,tradeType,"FLAT",None,0,0,rate,applicationFee,"NEW"))
+                    slab_data.append(get_slab_object(row,tradeType,"FLAT",None,0,0,rate,applicationFee,"RENEWAL"))
+                    break
+            elif row[INDEX_RATE_TYPE] == "Flat by Range":
+                uom = uomDict[row[INDEX_UOM]]
+                for j in range(0,5): 
+                    rateIndex = "Rate" +  str(j + 1) 
+                    rate = row[rateIndex]
+                    if not pd.isna(rate):                         
+                        fromIndex = "RangeFrom" + str(j + 1)   
+                        toIndex = "RangeTo" +  str(j + 1)                                     
+                        fromUom = row[fromIndex]
+                        toUom = row[toIndex]                                 
+                        slab_data.append(get_slab_object(row,tradeType,"FLAT",uom,fromUom,toUom,rate,applicationFee,"NEW"))
+                        slab_data.append(get_slab_object(row,tradeType,"FLAT",uom,fromUom,toUom,rate,applicationFee,"RENEWAL"))
+            elif row[INDEX_RATE_TYPE] == "Unit by Range":
+                uom = uomDict[row[INDEX_UOM]]
+                for j in range(0,5):
+                    rateIndex = "Rate" +  str(j + 1) 
+                    rate = row[rateIndex]
+                    if not pd.isna(rate):
+                        fromIndex = "RangeFrom" +  str(j + 1)    
+                        toIndex = "RangeTo" +  str(j + 1)          
+                        fromUom = row[fromIndex]
+                        toUom = row[toIndex]
+                        slab_data.append(get_slab_object(row,tradeType,"RATE",uom,fromUom,toUom,rate,applicationFee,"NEW"))
+                        slab_data.append(get_slab_object(row,tradeType,"RATE",uom,fromUom,toUom,rate,applicationFee,"RENEWAL"))
+                
+    #print(slab_data)
+    print(json.dumps(slab_data, indent=2))
+            
+
+    new_slabs_data = []
+    update_slabs_data = []
+
+    for slab_id, row_data in new_slabs.items():
+        new_slabs_data.append(get_slab_object(row_data))
+
+    for slab_id, row_data in update_slabs.items():
+        update_slabs_data.append(get_slab_object(row_data))
+
+    # print(new_slabs_data, json.dumps(update_slabs_data, indent=2))
+
+    if slab_data:
+        # print(json.dumps(new_slabs_data, indent=2))
+        print("Post call")
+        res = requests.post(config.HOST + "/tl-calculator/billingslab/_create?tenantId={}".format(tenant_id), json={
             "RequestInfo": {
                 "authToken": auth_token
-            }
+            },
+            "billingSlab": slab_data
         })
 
-        existing_slab_data = {get_slab_id(slab): slab for slab in slabs.json()["billingSlab"]}
+        print(json.dumps(res.json(), indent=2))
 
-        # print(json.dumps(existing_slab_data, indent=2))
-        source_file = config.BASE_PPATH / "source" / "{}.xlsx".format(tenant_id)
-        # create_trade_n_accessory_data(tenant_id, source_file, destination_path=config.BASE_PPATH / "source",
-        #                             template_file_path="source/template.xlsx")
+    if update_slabs_data:
+        print("Updating changed billing slabs")
+        print(json.dumps(update_slabs_data, indent=2))
+        res = requests.post(config.HOST + "/tl-calculator/billingslab/_update?tenantId={}".format(tenant_id), json={
+            "RequestInfo": {
+                "authToken": auth_token
+            },
+            "billingSlab": update_slabs_data
+        })
 
-        #dfs = open_excel_file(config.BASE_PPATH / "source" / "{}.processed.xls".format(tenant_id))
-        dfs = open_excel_file(config.TRADE_RATE_WORKBOOK)
-        data = get_sheet(dfs, config.SHEET_TRADERATE)
-        
-        #category = fix_value(data.iloc[INDEX_TENANT_ULB_NAME][INDEX_CATEGORY])
-
-        # data.fillna(value=0)
-        columns = ["tenantid", "id", "licensetype", "structuretype", "tradetype", "accessorycategory", "type", "uom",
-                "fromuom", "touom", "rate", "createdtime", "createdby", "lastmodifiedtime", "lastmodifiedby"]
-        fields = {field: index for index, field in enumerate([])}
-        count=0
-        new_slabs = {}
-        update_slabs = {}
-        slabs_processed = set()
-        for id, row in data.iterrows():
-            row_data = row.to_dict()
-            print(row_data)
-            slab_id = get_slab_id(row_data)
-
-            if slab_id in slabs_processed:
-                print("Problem detected, duplicate slab id " + slab_id)
-
-            slabs_processed.add(slab_id)
-            count = count + 1
-            print(count)
-            if slab_id not in existing_slab_data:
-                if type(row_data["rate"]) is str:
-                    row_data["rate"] = row_data["rate"].strip()
-
-                    if row_data["rate"]:
-                        row_data["rate"] = float(row_data["rate"])
-                    else:
-                        row_data["rate"] = math.nan
-
-                if not math.isnan(row_data["rate"]):
-                    new_slabs[slab_id] = row_data
-            else:
-                if numpy.isnan(row_data["rate"]):
-                    row_data["rate"] = 0.0
-
-                if row_data["rate"] != existing_slab_data[slab_id]["rate"]:
-                    update_slabs[slab_id] = row_data
-                    update_slabs[slab_id]["id"] = existing_slab_data[slab_id]["id"]
-
-        # print(new_slabs, update_slabs)
-
-        new_slabs_data = []
-        update_slabs_data = []
-
-        for slab_id, row_data in new_slabs.items():
-            new_slabs_data.append(get_slab_object(row_data))
-
-        for slab_id, row_data in update_slabs.items():
-            update_slabs_data.append(get_slab_object(row_data))
-
-        # print(new_slabs_data, json.dumps(update_slabs_data, indent=2))
-
-        if new_slabs_data:
-            # print(json.dumps(new_slabs_data, indent=2))
-            res = requests.post(config.HOST + "/tl-calculator/billingslab/_create?tenantId={}".format(tenant_id), json={
-                "RequestInfo": {
-                    "authToken": auth_token
-                },
-                "billingSlab": new_slabs_data
-            })
-
-            print(json.dumps(res.json(), indent=2))
-
-        if update_slabs_data:
-            print("Updating changed billing slabs")
-            print(json.dumps(update_slabs_data, indent=2))
-            res = requests.post(config.HOST + "/tl-calculator/billingslab/_update?tenantId={}".format(tenant_id), json={
-                "RequestInfo": {
-                    "authToken": auth_token
-                },
-                "billingSlab": update_slabs_data
-            })
-
-            print(json.dumps(res.json(), indent=2))
+        print(json.dumps(res.json(), indent=2))
 
 
 def remove_nan(data, default=None):
@@ -168,21 +190,22 @@ def remove_nan(data, default=None):
     return data
 
 
-def get_slab_object(row_data):
+def get_slab_object(row_data,tradeType,type1,uom,fromUom,toUom,rate,applicationFee,newOrRenewal):
     data = {
-        "tenantId": tenant_id,
-        "licenseType": remove_nan(row_data["licenseType"]),
-        "structureType": remove_nan(row_data["structureType"]),
-        "tradeType": remove_nan(row_data["tradeType"]),
-        "accessoryCategory": remove_nan(row_data["accessoryCategory"]),
-        "type": remove_nan(row_data["type"]),
-        "uom": remove_nan(row_data["uom"]),
-        "fromUom": remove_nan(row_data["fromUom"]),
-        "toUom": remove_nan(row_data["toUom"]),
-        "rate": remove_nan(row_data["rate"], default=0.0),
-        "applicationFee": remove_nan(row_data["applicationFee"], default=0.0)
+        "tenantId": config.TENANT_ID,
+        "licenseType": "PERMANENT",
+        "structureType": "IMMOVABLE.PUCCA",
+        "tradeType": remove_nan(tradeType),
+        "accessoryCategory": None,
+        "type": remove_nan(type1),
+        "uom": remove_nan(uom),
+        "fromUom": remove_nan(fromUom),
+        "toUom": remove_nan(toUom),
+        "rate": remove_nan(rate, default=0.0),
+        "applicationType": newOrRenewal,
+        "applicationFee": remove_nan(applicationFee, default=0.0)
     }
-
+    
     if "id" in row_data and type(row_data['id']) is str and len(row_data["id"]) > 6:
         data["id"] = row_data["id"]
 
@@ -210,6 +233,26 @@ def get_slab_id(slab):
         data.append(str(value or "-"))
 
     return "|".join(data)
+
+def getTradeCategory(keyword,subType):
+  #print("keyword--",keyword,int(float(subType)))
+  global letter
+  subType = str(subType)
+  keyword = str(keyword)
+  tradeType_category = "TRADE"
+  if keyword.find("Eating") != -1:
+    letter = tradeType_category+"."+"EATING"+"."+"A"+subType
+  elif keyword.find("Medical") != -1:
+    letter = tradeType_category+"."+ "MEDICAL"+"."+"B"+subType
+  elif keyword.find("Veterinary") != -1:
+    letter =tradeType_category+"."+"VETERINARY"+"."+"C"+subType
+  elif keyword.find("Flammables") != -1:
+    letter =tradeType_category+"."+"DANGEROUS"+"."+"D"+subType
+  elif keyword.find("Medium") != -1:
+    letter =tradeType_category+"."+"MEDIUM"+"."+"F"+subType
+  elif keyword.find("Offices ") != -1:
+    letter =tradeType_category+"."+"OTHERS"+"."+"E"+subType
+  return letter
 
 if __name__ == "__main__":
     main()
