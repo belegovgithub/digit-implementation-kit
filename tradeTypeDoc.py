@@ -84,7 +84,7 @@ def main():
   }
 
   uomDict = {
-    "Flat/Fixed":"null",
+    "Flat/Fixed":None,
     "Area- per -Sq Ft":"SqFt",
     "Motor Power - HP":"MoHP",
     "No of Beds - Number":"NoBed",
@@ -122,7 +122,7 @@ def main():
                             ],
                             "active": "true",
                             "type": "TL",
-                            "validityPeriod": "null",
+                            "validityPeriod": None,
                             "verificationDocument": []
                             })
 
