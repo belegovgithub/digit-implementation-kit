@@ -154,6 +154,7 @@ def loadDocDict():
     "Self Decleration":"SELFDECLERATION",
     "Medical Certificate":"MEDCERT",
     "Medical Fitness Certificate":"MEDCERT",    
+    "Medical Fitness":"MEDCERT",    
     "NOC from fire Department":"FIRENOC",
     "Food Safety Certificate":"FOODCERT",
     "Duly filled application form":"APPLETTER",
@@ -171,8 +172,8 @@ def loadDocDict():
     "Registration from Food & Supplies Department of State Govt.": "FOODCERT",
     "Licence from Medical Department (i.e. CMO)  of State Govt.":"CMOREGCERT",
     "Registration of DIOS/BSA/Education Department of State Govt.":"REG_EDUCATION",
-    "Licence from Entertainment Tax Department of State Govt.":"LIC_ENTERTAINMENT_TAX",#localization executed
-    "Licence from Petroleum Department":"LIC_PETROL"
+    "Licence from Entertainment Tax Department of State Govt.":"LIC_ENTERTAINMENT_TAX",
+    "Licence from Petroleum Department":"LIC_PETROL"#localization executed
 
 
   }
