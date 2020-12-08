@@ -11,9 +11,9 @@ from config import config, load_config
 import requests
 import json
 import pandas as pd
-
-
+#from numpyencoder import NumpyEncoder
 #from tlPreprocessor import create_trade_n_accessory_data
+
 def main():
     tenants = [
         "pb.amritsar"
@@ -48,14 +48,15 @@ def main():
         "Medical Establishments": "MEDICAL",
         "Flammables": "DANGEROUS",
         "Small Scale Industries/Small & Medium factories": "MEDIUM",
-        "Other Establishment/Offices (Non eating/non medical)": "OTHER"        
+        "Other Establishment/Offices (Non eating/non medical)": "OTHERS"        
     }
     uomDict = {
-        "Flat/Fixed":"null",
-        "Area- per -Sq Ft":"SFT",
-        "Motor Power - HP":"HP",
-        "No of Beds - Number":"NOS",
-        "Star":"STAR"
+        "Flat/Fixed":None,
+        "Area- per -Sq Ft":"SqFt",
+        "Motor Power - HP":"MoHP",
+        "No of Beds - Number":"NoBed",
+        "Star":"Star",
+        "no. of workers":"NoWorker"
     }
 
 
@@ -74,8 +75,8 @@ def main():
 
     existing_slab_data = {get_slab_id(slab): slab for slab in slabs.json()["billingSlab"]}
 
-    # print(json.dumps(existing_slab_data, indent=2))
-    source_file = config.BASE_PPATH / "source" / "{}.xlsx".format(tenant_id)
+    #print(json.dumps(existing_slab_data, indent=2))
+    #source_file = config.BASE_PPATH / "source" / "{}.xlsx".format(tenant_id)
     # create_trade_n_accessory_data(tenant_id, source_file, destination_path=config.BASE_PPATH / "source",
     #                             template_file_path="source/template.xlsx")
 
@@ -102,8 +103,8 @@ def main():
         if tradeRates.iloc[i, INDEX_TRADE_APPLICABLE] == "Applicable":
             row = tradeRates.iloc[i]
             tradeType = getTradeCategory(row[INDEX_CATEGORY], row[INDEX_SLNO])
-            print(pd.isna(row[INDEX_RATE_TYPE] ))
-            applicationFee = row[INDEX_APPLICATION_FEE]
+            #print(pd.isna(row[INDEX_RATE_TYPE] ))
+            applicationFee = row[INDEX_APPLICATION_FEE]            
             if pd.isna(row[INDEX_RATE_TYPE] ):
                 for j in range(0,5): 
                     rateIndex = "Rate" +  str(j + 1) 
@@ -111,7 +112,8 @@ def main():
                     fromIndex = "RangeFrom" + str(j + 1)     
                     toIndex = "RangeTo" + str(j + 1)                                  
                     fromUom = row[fromIndex]
-                    toUom = row[toIndex]                        
+                    toUom = row[toIndex]   
+                    checkforValidData(tradeType,rate,applicationFee)                     
                     slab_data.append(get_slab_object(row,tradeType,"FLAT",None,0,0,rate,applicationFee,"NEW"))
                     slab_data.append(get_slab_object(row,tradeType,"FLAT",None,0,0,rate,applicationFee,"RENEWAL"))
                     break
@@ -124,7 +126,8 @@ def main():
                         fromIndex = "RangeFrom" + str(j + 1)   
                         toIndex = "RangeTo" +  str(j + 1)                                     
                         fromUom = row[fromIndex]
-                        toUom = row[toIndex]                                 
+                        toUom = row[toIndex]   
+                        checkforValidData(tradeType,rate,applicationFee,uom,fromUom,toUom)                              
                         slab_data.append(get_slab_object(row,tradeType,"FLAT",uom,fromUom,toUom,rate,applicationFee,"NEW"))
                         slab_data.append(get_slab_object(row,tradeType,"FLAT",uom,fromUom,toUom,rate,applicationFee,"RENEWAL"))
             elif row[INDEX_RATE_TYPE] == "Unit by Range":
@@ -135,13 +138,13 @@ def main():
                     if not pd.isna(rate):
                         fromIndex = "RangeFrom" +  str(j + 1)    
                         toIndex = "RangeTo" +  str(j + 1)          
-                        fromUom = row[fromIndex]
-                        toUom = row[toIndex]
+                        fromUom = int(row[fromIndex])
+                        toUom = int(row[toIndex])
+                        checkforValidData(tradeType,rate,applicationFee,uom,fromUom,toUom) 
                         slab_data.append(get_slab_object(row,tradeType,"RATE",uom,fromUom,toUom,rate,applicationFee,"NEW"))
                         slab_data.append(get_slab_object(row,tradeType,"RATE",uom,fromUom,toUom,rate,applicationFee,"RENEWAL"))
                 
-    #print(slab_data)
-    print(json.dumps(slab_data, indent=2))
+    #print(json.dumps(slab_data, indent=2, default=np_encoder))
             
 
     new_slabs_data = []
@@ -153,10 +156,9 @@ def main():
     for slab_id, row_data in update_slabs.items():
         update_slabs_data.append(get_slab_object(row_data))
 
-    # print(new_slabs_data, json.dumps(update_slabs_data, indent=2))
+    #print(new_slabs_data, json.dumps(update_slabs_data, indent=2))
 
     if slab_data:
-        # print(json.dumps(new_slabs_data, indent=2))
         print("Post call")
         res = requests.post(config.HOST + "/tl-calculator/billingslab/_create?tenantId={}".format(tenant_id), json={
             "RequestInfo": {
@@ -165,7 +167,7 @@ def main():
             "billingSlab": slab_data
         })
 
-        print(json.dumps(res.json(), indent=2))
+        print(json.dumps(res.json(), indent=2, default=np_encoder))
 
     if update_slabs_data:
         print("Updating changed billing slabs")
@@ -177,7 +179,7 @@ def main():
             "billingSlab": update_slabs_data
         })
 
-        print(json.dumps(res.json(), indent=2))
+        print(json.dumps(res.json(), indent=2, default=np_encoder))
 
 
 def remove_nan(data, default=None):
@@ -199,11 +201,11 @@ def get_slab_object(row_data,tradeType,type1,uom,fromUom,toUom,rate,applicationF
         "accessoryCategory": None,
         "type": remove_nan(type1),
         "uom": remove_nan(uom),
-        "fromUom": remove_nan(fromUom),
-        "toUom": remove_nan(toUom),
-        "rate": remove_nan(rate, default=0.0),
+        "fromUom": int(remove_nan(fromUom)),
+        "toUom": int(remove_nan(toUom)),
+        "rate": float(remove_nan(rate, default=0.0)),
         "applicationType": newOrRenewal,
-        "applicationFee": remove_nan(applicationFee, default=0.0)
+        "applicationFee": float(remove_nan(applicationFee, default=0.0))
     }
     
     if "id" in row_data and type(row_data['id']) is str and len(row_data["id"]) > 6:
@@ -234,6 +236,16 @@ def get_slab_id(slab):
 
     return "|".join(data)
 
+def checkforValidData(tradeType,rate,applicationFee,uom=None,fromUom=0,toUom=0): 
+    if(pd.isna(rate)):
+        raise SystemExit("rate is not entered for trade type ",  str(tradeType))
+    if(pd.isna(applicationFee)):
+        raise SystemExit("Application Fee is not entered ",  str(tradeType))
+    if(pd.isna(fromUom)):
+        raise SystemExit("fromUom is not entered ",  str(tradeType))
+    if(pd.isna(toUom)):
+        raise SystemExit("toUom is not entered ",  str(tradeType))
+
 def getTradeCategory(keyword,subType):
   #print("keyword--",keyword,int(float(subType)))
   global letter
@@ -252,7 +264,14 @@ def getTradeCategory(keyword,subType):
     letter =tradeType_category+"."+"MEDIUM"+"."+"F"+subType
   elif keyword.find("Offices ") != -1:
     letter =tradeType_category+"."+"OTHERS"+"."+"E"+subType
+  #print(letter)
   return letter
+
+def np_encoder(object):
+    if isinstance(object, numpy.generic):
+        return numpy.asscalar(object)
+
+
 
 if __name__ == "__main__":
     main()
