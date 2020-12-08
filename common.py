@@ -1055,3 +1055,15 @@ class DateTimeEncoder(JSONEncoder):
         def default(self, obj):
             if isinstance(obj, (date, datetime)):
                 return int((obj - epoch).total_seconds() * 1000.0)
+
+
+def search_Workflow(auth_token, tenant_id=config.TENANT_ID,workflowId ="NewTL"):
+    url = urljoin(config.HOST, 'egov-workflow-v2/egov-wf/businessservice/_search')
+    request_body = {}
+    request_body["RequestInfo"] = {"authToken": auth_token}
+    params = {"tenantId": tenant_id,"businessServices" :workflowId}
+    return requests.post(url, params=params, json=request_body).json()
+
+
+
+ 
