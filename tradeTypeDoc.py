@@ -184,7 +184,9 @@ def loadDocDict():
     "NOC of the HOR if Applicant is not HOR": "NOC_HOR",
     "Food License Issued by FSSAI":"FOOD_FSSAI",
     "Valid License Issued by Concerned Authority":"LIC_AUTH",
-    "Property Tax Bill":"PROPERTY_TAX"
+    "Property Tax Bill":"PROPERTY_TAX",
+    "Bar/Liquor Licence":"LIC_LIQUOR",
+    "Licence Halls":"LIC_HALLS"
 
 
   }
