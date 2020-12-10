@@ -173,7 +173,18 @@ def loadDocDict():
     "Licence from Medical Department (i.e. CMO)  of State Govt.":"CMOREGCERT",
     "Registration of DIOS/BSA/Education Department of State Govt.":"REG_EDUCATION",
     "Licence from Entertainment Tax Department of State Govt.":"LIC_ENTERTAINMENT_TAX",
-    "Licence from Petroleum Department":"LIC_PETROL"#localization executed
+    "Licence from Petroleum Department":"LIC_PETROL",
+    "Allotment Letter of Competent Authority":"APPOINT_LETTER",#localization executed
+    "Food Safety Certificate and Tab Vaccination Certificate":"FOOD_TAB_CERT",
+    "NOC from Owner for Rented Private Buildings":"NOC_OWNER",
+    "NOC from Cantt. Board":"NOC_CANTT",
+    "Liquore Licence from State":"LIC_LIQUOR",
+    "Photo Copy Of Old Licence/Reciept No.":"PHOTO_OLD_LIC",
+    "NOC From The House Owner/Lessee Of The Holding":"NOC_OWNER",
+    "NOC of the HOR if Applicant is not HOR": "NOC_HOR",
+    "Food License Issued by FSSAI":"FOOD_FSSAI",
+    "Valid License Issued by Concerned Authority":"LIC_AUTH",
+    "Property Tax Bill":"PROPERTY_TAX"
 
 
   }
