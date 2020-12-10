@@ -78,7 +78,8 @@ def main():
     "Motor Power - HP":"MoHP",
     "No of Beds - Number":"NoBed",
     "Star":"Star",
-    "no. of workers":"NoWorker"
+    "no. of workers":"NoWorker",
+    "No. of category":"NoCategory"
   }
 
   for j in range(0,len(tradeTypeCodes)) :
@@ -186,7 +187,21 @@ def loadDocDict():
     "Valid License Issued by Concerned Authority":"LIC_AUTH",
     "Property Tax Bill":"PROPERTY_TAX",
     "Bar/Liquor Licence":"LIC_LIQUOR",
-    "Licence Halls":"LIC_HALLS"
+    "Licence Halls":"LIC_HALLS",
+    "Labour Licence" : "LIC_LABOUR",
+    "Pollution Control Board" : "POLLUTION_BOARD_NOC",
+    "Animal Husbandary Deptt" : "LIC_ANIMAL_HUSBANDARY",
+    "Health Deptt" : "REG_HEALTH",
+    "Disaster Management Deptt":"DISASTER_MGMT_NOC",
+    "Supply Deptt":"SUPPLY_DEPT_NOC",
+    "Agri Deptt" : "LIC_AGRI_DEPT",
+    "RBI Authorization" : "RBI_CERT",
+    "Transport Deptt" : "TRANSPORT_DEPT_NOC",
+    "Labor Department certificate" : "LABOUR_DEPT_NOC",
+    "Education Deptt" : "REG_EDU_DEPT",
+    "Local authority permission from Local Police/S.D.O/D.M":"LOCAL_CERT",
+    "FSSAI Certificate Of State Govt":"FOOD_FSSAI",
+    "Copy Of GST / State Govt Registration/Certificate":"GST_REGT_CERT"
 
 
   }
