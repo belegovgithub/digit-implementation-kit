@@ -249,7 +249,7 @@ def checkforValidData(tradeType,rate,applicationFee,uom=None,fromUom=0,toUom=0):
 def getTradeCategory(keyword,subType):
   #print("keyword--",keyword,int(float(subType)))
   global letter
-  subType = str(subType)
+  subType = str(int(subType))
   keyword = str(keyword)
   tradeType_category = "TRADE"
   if keyword.find("Eating") != -1:
