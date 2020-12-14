@@ -88,7 +88,7 @@ def main():
       tradeType_category = getTradeCategory(tradeTypeCodes.iloc[j, 1],tradeTypeCodes.iloc[j, 2])
       tradeType_uom = uomDict[tradeTypeCodes.iloc[j,5]]
       #print(tradeType_category)
-      if tradeTypeCodes.iloc[j, 2] == docCodes.iloc[j,2]:
+      if int(float(tradeTypeCodes.iloc[j, 2])) == int(float(docCodes.iloc[j,2])):
         k=0
         docCodes_new=[]
         docCodes_renew=[]
