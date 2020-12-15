@@ -46,7 +46,7 @@ def getTime(df, row,colName,defValue=None) :
 def createSTADMIN():
     return {
         "Role Name*": "STADMIN",
-        "Employee ID*": "STADMIN_" + config.CITY_NAME.upper(),
+        "Login Id UAT": "STADMIN_" + config.CITY_NAME.upper(),
         "Employee Mobile Number*": config.HRMS_STADMIN_PHONE_NUMBER,
         "Employee Date of Birth*": config.HRMS_STADMIN_DOB,
         "Appointed From Date*": config.HRMS_STADMIN_JOINING,
@@ -58,7 +58,7 @@ def createSTADMIN():
 def createDEV():
     return {
         "Role Name*": config.HRMS_DEV_ROLES,
-        "Employee ID*": "DEV_" + config.CITY_NAME.upper(),
+        "Login Id UAT": "DEV_" + config.CITY_NAME.upper(),
         "Employee Mobile Number*": config.HRMS_DEV_PHONE_NUMBER,
         "Employee Date of Birth*": config.HRMS_STADMIN_DOB,
         "Appointed From Date*": config.HRMS_STADMIN_JOINING,
@@ -77,13 +77,15 @@ def main():
     post_data_list=[]
     post_data_resp_list=[]
     filePath = config.HRMS_WORKBOOK  #os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
+    print(filePath)
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
 
-    auth_token = superuser_login()["access_token"]
+    #auth_token = superuser_login()["access_token"]
+    auth_token = 'ef9d6e42-526c-4c29-8e70-6d27a9694aef'
     DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
     DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
-
+    #print("DESIG_LIST--",DESIG_LIST)
     print("auth token ", auth_token)
     start_row = 0
     dfs = open_excel_file(filePath)
@@ -91,18 +93,20 @@ def main():
     
     #df = df.replace('nan','')
     #print(df.columns)
-
+    #print(config.CITY_NAME.upper())
  
     if config.HRMS_CREATE_STADMIN  : 
         df =df.append(createSTADMIN(), ignore_index=True)
+        #print("stadmin--",df)
     if config.HRMS_CREATE_DEV_USER : 
         df =df.append(createDEV(), ignore_index=True)
 
 
-    print(df) 
+    #print(df) 
     for ind in df.index:
  
         row = df.iloc[ind] 
+        print(row)
         headers = {'Content-Type': 'application/json'}
         details = []
         roles = []
@@ -111,9 +115,10 @@ def main():
         departments = getValue(df,row,"Department*" ,"" ) 
         role_codes = getValue(df,row,"Role Name*" ,"" ) 
         role_names = role_codes
-        designation = getCodeForName(DESIG_LIST, getValue(df,row,"Designation*" ,"" ))  
+        designation = getCodeForName(DESIG_LIST, getValue(df,row,"Designation*" ,"" ))
+        #print("designation--",designation)  
         password = "Bel@1234"
-        username = getValue(df,row,"Employee ID*" ,"" )   
+        username = getValue(df,row,"Login Id UAT" ,"" )   
         mobile_number = getValue(df,row,"Employee Mobile Number*",None )    
         name = getValue(df,row,"Employee Full Name*" ,None  )     
         gender = getValue(df,row,"Gender*" ,"M" )    
@@ -122,6 +127,7 @@ def main():
         dob =getTime(df,row,"Employee Date of Birth*" )  
         emailId =getValue(df,row,"Employee Email Address*" ,"" )  
         joiningDate =getTime(df,row,"Appointed From Date*" )  
+        print("joiningDate--",joiningDate)
         address =getValue(df,row,"Correspondance Address*" ,"" )  
 
  
@@ -216,6 +222,7 @@ def main():
             continue
         
         # IF Employee does not exist in system
+        
         if designation is not None : 
             for department in departments.split("|"):
                 code =getCodeForName(DEPT_LIST, department)
@@ -229,7 +236,7 @@ def main():
                         "reportingTo": "",
                         "isHod": True
                     })
-
+        print("assignments--",assignments)
 
         post_data = {
             "RequestInfo": {
