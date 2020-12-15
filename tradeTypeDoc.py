@@ -175,11 +175,11 @@ def loadDocDict():
     "Registration of DIOS/BSA/Education Department of State Govt.":"REG_EDUCATION",
     "Licence from Entertainment Tax Department of State Govt.":"LIC_ENTERTAINMENT_TAX",
     "Licence from Petroleum Department":"LIC_PETROL",
-    "Allotment Letter of Competent Authority":"APPOINT_LETTER",#localization executed
+    "Allotment Letter of Competent Authority":"APPOINT_LETTER",
     "Food Safety Certificate and Tab Vaccination Certificate":"FOOD_TAB_CERT",
     "NOC from Owner for Rented Private Buildings":"NOC_OWNER",
     "NOC from Cantt. Board":"NOC_CANTT",
-    "Liquore Licence from State":"LIC_LIQUOR",
+    "Liquor Licence from State":"LIC_LIQUOR",
     "Photo Copy Of Old Licence/Reciept No.":"PHOTO_OLD_LIC",
     "NOC From The House Owner/Lessee Of The Holding":"NOC_OWNER",
     "NOC of the HOR if Applicant is not HOR": "NOC_HOR",
@@ -201,7 +201,9 @@ def loadDocDict():
     "Education Deptt" : "REG_EDU_DEPT",
     "Local authority permission from Local Police/S.D.O/D.M":"LOCAL_CERT",
     "FSSAI Certificate Of State Govt":"FOOD_FSSAI",
-    "Copy Of GST / State Govt Registration/Certificate":"GST_REGT_CERT"
+    "Copy Of GST / State Govt Registration/Certificate":"GST_REGT_CERT",
+    "Shop Act License":"LIC_SHOP_ACT",
+    "No due certificate from Revenue  Section":"NOC_REVENUE"
 
 
   }
