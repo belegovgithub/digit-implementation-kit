@@ -67,7 +67,172 @@ def createDEV():
         "Department*": config.HRMS_DEF_DEPT
     }
 
+def loadDesig():
+ designationData={ 
+  "Hindi Typist": "DEPT_43",
+  "Octroi Moharir": "DESIG_65",
+  "Assistant Engneer": "DESIG_45",
+  "Sainitary Inspector": "DESIG_28",
+  "Deputy Chief Executive Officer": "DESIG_25",
+  "Revenue Inspector": "DESIG_28",
+  "Account Clerk": "DESIG_34",
+  "Environment Superintendent": "DESIG_39",
+  "Pharmacy officer": "DESIG_74",
+  "Chief Executive Officer": "DESIG_26",
+  "Electric & Water Supply Foreman": "DESIG_75",
+  "Asst. Enggineer": "DESIG_45",
+  "Surgeon": "DESIG_76",
+  "Principal": "DESIG_69",
+  "Assistant Medical Officer": "DESIG_3",
+  "Sectional Enggineer": "DESIG_1",
+  "Resident Medical Officer": "DESIG_3",
+  "Clerk": "DESIG_34",
+  "Horticulturist": "DESIG_49",
+  "Computer Programmer": "DESIG_48",
+  "Asst. Accountant": "DESIG_41",
+  "Chief Cantt. Engineering": "DESIG_51",
+  "Bill Collector": "DESIG_58",
+  "Electrician": "DESIG_59",
+  "Administrating Officer": "DESIG_35",
+  "Junior Assistant": "DESIG_27",
+  "Assistant": "DESIG_70",
+  "Officer In Charge": "DESIG_50",
+  "Junior Engineer": "DESIG_44",
+  "Health & Sanitation Superintendent": "DESIG_39",
+  "Head Master": "DESIG_69",
+  "Superintendent": "DESIG_39",
+  "Junior clerk": "DESIG_36",
+  "Typist": "DESIG_43",
+  "Sub Asst. Engineer": "DESIG_45",
+  "Tax Suprintendent": "DESIG_39",
+  "Tax Collector": "DESIG_58",
+  "Revenue Clerk": "DESIG_34",
+  "Store Keeper": "DESIG_77",
+  "Dak Opr": "DESIG_42",
+  "Chief Revenue Suprintendent": "DESIG_32",
+  "Office Superintendant": "DESIG_39",
+  "Jr Enggineer (Electrical)": "DESIG_44",
+  "Assistant Engineer": "DESIG_45",
+  "Juniuor Clerk": "DESIG_36",
+  "Cantonment Executive Engineer": "DESIG_51",
+  "Forest Ranger": "DESIG_46",
+  "Junior Clerk": "DESIG_36",
+  "Residential Medical Officer": "DESIG_3",
+  "Revenue Supdt": "DESIG_39",
+  "Office Superintendent": "DESIG_39",
+  "Office Suprintendent": "DESIG_39",
+  "Chief Accountant": "DESIG_41",
+  "Municipal Engineer": "DESIG_51",
+  "Sanitary Supdt.": "DESIG_39",
+  "Office.Supdt.": "DESIG_39",
+  "Revenue Supdt.": "DESIG_39",
+  "Office Supdt.": "DESIG_39",
+  "Junior Engineer (Civil)": "DESIG_44",
+  "Daftary": "DESIG_61",
+  "Overseer (JE Civil)": "DESIG_44",
+  "Revenue and Tax Suprintendent": "DESIG_39",
+  "Head Clerk": "DESIG_30",
+  "Steno": "DESIG_60",
+  "Tax Inspector": "DESIG_28",
+  "Ward Boy": "DESIG_69",
+  "Revenue Suprintendent": "DESIG_39",
+  "Second Division Clerk": "DESIG_72",
+  "Cantonment Engineer": "DESIG_51",
+  "Revenue Collector": "DESIG_58",
+  "Tax Superintendent": "DESIG_39",
+  "Executive Officer": "DESIG_35",
+  "Peon": "DESIG_34",
+  "Plumber": "DESIG_62",
+  "Health Superintendent": "DESIG_39",
+  "Junior Grade Clerk": "DESIG_36",
+  "Sanitary Suprintendent": "DESIG_39",
+  "Data Entry Operator": "DESIG_47",
+  "Accountant": "DESIG_41",
+  "Stenographer": "DESIG_60",
+  "Pound Keeper": "DESIG_73",
+  "Lower Division Clerk": "DESIG_57",
+  "Office Supdt.-cum-Acctt.": "DESIG_39",
+  "Upper Division Clerk": "DESIG_30",
+  "Health Supervisor": "DESIG_70",
+  "Selection Grade Clerk": "DESIG_30",
+  "Sanitary Inspector": "DESIG_28",
+  "Medical Officer": "DESIG_35",
+  "Tax & Revenue Superintendent": "DESIG_39",
+  "Junior Engineer (E&M)": "DESIG_44",
+  "Drafstman": "DESIG_61",
+  "Moharrar": "DESIG_35",
+  "Superintendent (SWM)": "DESIG_39",
+  "Cashier": "DESIG_33",
+  "Office Supt": "DESIG_39",
+  "Dispatcher (U/r 7)": "DESIG_35",
+  "Assistant Programmer": "DESIG_67",
+  "Programmer": "DESIG_48",
+  "Sub Engineer": "DESIG_45",
+  "Asst Engineer": "DESIG_45",
+  "Jr. Electrical": "DESIG_44",
+  "Pump Operator": "DESIG_31",
+  "Electric Lineman": "DESIG_59",
+  "Senior Grade Clerk": "DESIG_30",
+  "Revenue Supt": "DESIG_39",
+  "Senior clerk": "DESIG_30",
+  "Draftsman": "DESIG_61",
+  "Senior Sanitary Inspector": "DESIG_69",
+  "L&RS Suprintendent": "DESIG_39",
+  "Record Keeper": "DESIG_78",
+  "Personal Assistant": "DESIG_66"
+}
+ return designationData 
 
+
+def loadDept():
+ departmentData={
+  "": "DEPT_",
+  "Office": "DEPT_1",
+  "Executive Officer": "DEPT_1",
+  "Health & Sanitation": "DEPT_3",
+  "Sanitation": "DEPT_3",
+  "Electricity & Water Supply": "DEPT_11",
+  "Electric & Water Supply Department": "DEPT_11",
+  "Water/Electricity/Engineering": "DEPT_11",
+  "Water Supply Department": "DEPT_11",
+  "Water Department": "DEPT_11",
+  "Engineering Department": "DEPT_12",
+  "Engineering Branch (Civil - B&R": "DEPT_12",
+  "Tax Branch": "DEPT_13",
+  "Tax Department": "DEPT_13",
+  "Electrical and Water Supply": "DEPT_14",
+  "Electricity Department": "DEPT_14",
+  "Accounts": "DEPT_25",
+  "Account": "DEPT_25",
+  "Accounts Branch": "DEPT_25",
+  "Revenue Section": "DEPT_37",
+  "Revenue Department": "DEPT_37",
+  "Revenue": "DEPT_37",
+  "Main Branch": "DEPT_38",
+  "Hotriculture": "DEPT_41",
+  "Horticulture": "DEPT_41",
+  "Admin": "DEPT_43",
+  "Administration": "DEPT_43",
+  "Administration/Accounts": "DEPT_43",
+  "Cantt General Hospital": "DEPT_45",
+  "Hospital": "DEPT_45",
+  "Tax & Revenue Branch": "DEPT_46",
+  "Revenue & Tax": "DEPT_46",
+  "Information Technology": "DEPT_47",
+  "IT": "DEPT_47",
+  "Land": "DEPT_48",
+  "School": "DEPT_49",
+  "Receipt and Dispatch Branch": "DEPT_50",
+  "Yojna": "DEPT_51",
+  "Civil": "DEPT_52",
+  "Health Branch": "DEPT_53",
+  "Birth & Death": "DEPT_54",
+  "Store": "DEPT_55",
+  "Legal Branch": "DEPT_56",
+  "E&M": "DEPT_57",
+  "Secretary/General Administration Branch": "DEPT_43"
+}
+ return departmentData
 
 def main():
     ## load default config
@@ -101,7 +266,8 @@ def main():
     if config.HRMS_CREATE_DEV_USER : 
         df =df.append(createDEV(), ignore_index=True)
 
-
+    departmentData = loadDept()
+    designationData= loadDesig()
     #print(df) 
     for ind in df.index:
  
@@ -115,8 +281,8 @@ def main():
         departments = getValue(df,row,"Department*" ,"" ) 
         role_codes = getValue(df,row,"Role Name*" ,"" ) 
         role_names = role_codes
-        designation = getCodeForName(DESIG_LIST, getValue(df,row,"Designation*" ,"" ))
-        #print("designation--",designation)  
+        designation = designationData(getValue(df,row,"Designation*" ,"" ))
+        print("designation--",designation)  
         password = "Bel@1234"
         username = getValue(df,row,"Login Id UAT" ,"" )   
         mobile_number = getValue(df,row,"Employee Mobile Number*",None )    
@@ -225,7 +391,8 @@ def main():
         
         if designation is not None : 
             for department in departments.split("|"):
-                code =getCodeForName(DEPT_LIST, department)
+                code =departmentData(department)
+                print("department Code",code)
                 if code is not None : 
                     assignments.append({
                         "fromDate": joiningDate,
