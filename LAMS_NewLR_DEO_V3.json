@@ -1,0 +1,257 @@
+{
+    "tenantId": "pb.secunderabad",
+    "businessService": "LAMS_NewLR_DEO_V3",
+    "business": "LAMS",
+    "businessServiceSla": 2592000000,
+    "states": [
+      {
+        "sla": null,
+        "state": null,
+        "applicationStatus": null,
+        "docUploadRequired": false,
+        "isStartState": true,
+        "isTerminateState": false,
+        "isStateUpdatable": true,
+        "actions": [
+          {
+            "action": "APPLY",
+            "nextState": "APPLIED",
+            "roles": [
+              "CITIZEN",
+              "LR_CEMP"
+            ]
+          }
+        ]
+      },
+      {
+        "sla": null,
+        "state": "APPLIED",
+        "applicationStatus": "APPLIED",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": false,
+        "isStateUpdatable": true,
+        "actions": [
+          {
+            "action": "SENDBACK",
+            "nextState": "CITIZEN-REVIEW",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "APPROVE",
+            "nextState": "APPROVED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "REJECT",
+            "nextState": "REJECTED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "PDDE-EXAMINATION",
+            "nextState": "PDDE-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "DGDE-EXAMINATION",
+            "nextState": "DGDE-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "MOD-EXAMINATION",
+            "nextState": "MOD-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          }
+        ]
+      },
+      {
+        "sla": null,
+        "state": "CITIZEN-REVIEW",
+        "applicationStatus": "CITIZEN-REVIEW",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": false,
+        "isStateUpdatable": true,
+        "actions": [
+          {
+            "action": "APPLY",
+            "nextState": "APPLIED",
+            "roles": [
+              "CITIZEN",
+              "LR_CEMP"
+            ]
+          }
+        ]
+      },
+      {
+        "sla": null,
+        "state": "APPROVED",
+        "applicationStatus": "APPROVED",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": true,
+        "isStateUpdatable": false,
+        "actions": null
+      },
+      {
+        "sla": null,
+        "state": "REJECTED",
+        "applicationStatus": "REJECTED",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": true,
+        "isStateUpdatable": false,
+        "actions": null
+      },
+      {
+        "sla": null,
+        "state": "PDDE-EXAMINATION",
+        "applicationStatus": "PDDE-EXAMINATION",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": false,
+        "isStateUpdatable": true,
+        "actions": [
+          {
+            "action": "SENDBACK",
+            "nextState": "CITIZEN-REVIEW",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "APPROVE",
+            "nextState": "APPROVED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "REJECT",
+            "nextState": "REJECTED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "DGDE-EXAMINATION",
+            "nextState": "DGDE-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "MOD-EXAMINATION",
+            "nextState": "MOD-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          }
+        ]
+      },
+      {
+        "sla": null,
+        "state": "DGDE-EXAMINATION",
+        "applicationStatus": "DGDE-EXAMINATION",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": false,
+        "isStateUpdatable": true,
+        "actions": [
+          {
+            "action": "SENDBACK",
+            "nextState": "CITIZEN-REVIEW",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "APPROVE",
+            "nextState": "APPROVED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "REJECT",
+            "nextState": "REJECTED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "PDDE-EXAMINATION",
+            "nextState": "PDDE-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "MOD-EXAMINATION",
+            "nextState": "MOD-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          }
+        ]
+      },
+      {
+        "sla": null,
+        "state": "MOD-EXAMINATION",
+        "applicationStatus": "MOD-EXAMINATION",
+        "docUploadRequired": false,
+        "isStartState": false,
+        "isTerminateState": false,
+        "isStateUpdatable": true,
+        "actions": [
+          {
+            "action": "SENDBACK",
+            "nextState": "CITIZEN-REVIEW",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "APPROVE",
+            "nextState": "APPROVED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "REJECT",
+            "nextState": "REJECTED",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "PDDE-EXAMINATION",
+            "nextState": "PDDE-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          },
+          {
+            "action": "DGDE-EXAMINATION",
+            "nextState": "DGDE-EXAMINATION",
+            "roles": [
+              "LR_APPROVER_DEO"
+            ]
+          }
+        ]
+      }
+    ]
+  }
