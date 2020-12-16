@@ -69,7 +69,7 @@ def createDEV():
 
 def loadDesig():
  designationData={ 
-  "Hindi Typist": "DEPT_43",
+  "Hindi Typist": "DESIG_43",
   "Octroi Moharir": "DESIG_65",
   "Assistant Engneer": "DESIG_45",
   "Sainitary Inspector": "DESIG_28",
@@ -82,7 +82,7 @@ def loadDesig():
   "Electric & Water Supply Foreman": "DESIG_75",
   "Asst. Enggineer": "DESIG_45",
   "Surgeon": "DESIG_76",
-  "Principal": "DESIG_69",
+  "Principal": "DESIG_68",
   "Assistant Medical Officer": "DESIG_3",
   "Sectional Enggineer": "DESIG_1",
   "Resident Medical Officer": "DESIG_3",
@@ -95,11 +95,11 @@ def loadDesig():
   "Electrician": "DESIG_59",
   "Administrating Officer": "DESIG_35",
   "Junior Assistant": "DESIG_27",
-  "Assistant": "DESIG_70",
+  "Assistant": "DESIG_71",
   "Officer In Charge": "DESIG_50",
   "Junior Engineer": "DESIG_44",
   "Health & Sanitation Superintendent": "DESIG_39",
-  "Head Master": "DESIG_69",
+  "Head Master": "DESIG_68",
   "Superintendent": "DESIG_39",
   "Junior clerk": "DESIG_36",
   "Typist": "DESIG_43",
@@ -134,7 +134,7 @@ def loadDesig():
   "Head Clerk": "DESIG_30",
   "Steno": "DESIG_60",
   "Tax Inspector": "DESIG_28",
-  "Ward Boy": "DESIG_69",
+  "Ward Boy": "DESIG_79",
   "Revenue Suprintendent": "DESIG_39",
   "Second Division Clerk": "DESIG_72",
   "Cantonment Engineer": "DESIG_51",
@@ -170,6 +170,7 @@ def loadDesig():
   "Sub Engineer": "DESIG_45",
   "Asst Engineer": "DESIG_45",
   "Jr. Electrical": "DESIG_44",
+  "Junior Electrician": "DESIG_44",
   "Pump Operator": "DESIG_31",
   "Electric Lineman": "DESIG_59",
   "Senior Grade Clerk": "DESIG_30",
@@ -180,7 +181,7 @@ def loadDesig():
   "L&RS Suprintendent": "DESIG_39",
   "Record Keeper": "DESIG_78",
   "Personal Assistant": "DESIG_66"
-}
+ }
  return designationData 
 
 
@@ -230,15 +231,45 @@ def loadDept():
   "Store": "DEPT_55",
   "Legal Branch": "DEPT_56",
   "E&M": "DEPT_57",
-  "Secretary/General Administration Branch": "DEPT_43"
+  "Secretary/General Administration Branch": "DEPT_43",
+  "Public Works Department":"DEPT_44"
 }
  return departmentData
+def caller() : 
+    tenantMapping={}
+    print(config.TENANT_JSON,"config.TENANT_JSON")
+    with io.open(config.TENANT_JSON, encoding="utf-8") as f:
+        cb_module_data = json.load(f)
+    for found_index, module in enumerate(cb_module_data["tenants"]):
+        print(module["description"])
+        tenantMapping[module["description"].lower()]=module["code"]
+        
 
+    for root, dirs, files in os.walk(r"D:\CB\Verified-CB-Data\SC", topdown=True):
+        for name in dirs:
+            
+            #print (os.path.join(root, name))
+            subfolder = os.path.join(root, name)
+            user_info_file =os.path.join(root, name,"User_Role Mapping.xlsx")
+            if os.path.exists(user_info_file) :
+                
+                tenantId =tenantMapping[root.replace(r"D:\CB\Verified-CB-Data\SC\CB ","").lower()]
+                #print(user_info_file)
+                #print("tenantid : ", tenantId)
+                config.CITY_NAME=tenantId.replace("pb.","").upper()
+                config.HRMS_WORKBOOK=user_info_file
+                print(config.CITY_NAME)
+                print(config.HRMS_WORKBOOK)
+                main()
+
+                
 def main():
     ## load default config
     load_employee_creation_config()
     city = config.CITY_NAME
     tenant_id = config.TENANT + "." + city.lower()
+    # if tenant_id!='pb.kirkee' :
+    #     return
     post_data_list=[]
     post_data_resp_list=[]
     filePath = config.HRMS_WORKBOOK  #os.path.join(config.BOUNDARIES_FOLDER, config.HRMS_EXCEL_NAME)
@@ -260,11 +291,11 @@ def main():
     #print(df.columns)
     #print(config.CITY_NAME.upper())
  
-    if config.HRMS_CREATE_STADMIN  : 
-        df =df.append(createSTADMIN(), ignore_index=True)
-        #print("stadmin--",df)
-    if config.HRMS_CREATE_DEV_USER : 
-        df =df.append(createDEV(), ignore_index=True)
+    # if config.HRMS_CREATE_STADMIN  : 
+    #     df =df.append(createSTADMIN(), ignore_index=True)
+    #     #print("stadmin--",df)
+    # if config.HRMS_CREATE_DEV_USER : 
+    #     df =df.append(createDEV(), ignore_index=True)
 
     departmentData = loadDept()
     designationData= loadDesig()
@@ -281,7 +312,7 @@ def main():
         departments = getValue(df,row,"Department*" ,"" ) 
         role_codes = getValue(df,row,"Role Name*" ,"" ) 
         role_names = role_codes
-        designation = designationData(getValue(df,row,"Designation*" ,"" ))
+        designation = designationData[getValue(df,row,"Designation*" ,"" )]
         print("designation--",designation)  
         password = "Bel@1234"
         username = getValue(df,row,"Login Id UAT" ,"" )   
@@ -391,7 +422,7 @@ def main():
         
         if designation is not None : 
             for department in departments.split("|"):
-                code =departmentData(department)
+                code =departmentData[department]
                 print("department Code",code)
                 if code is not None : 
                     assignments.append({
@@ -464,12 +495,12 @@ def main():
             update_user_password(auth_token, tenant_id, username, "Bel@1234")
         print("==================================================")
         print("\n\n")
-
+    dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
     # Save the request /response of newly created user in same  folder for reference
-    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-request.json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(config.LOG_PATH,"hrms-request_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"hrms-response.json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(config.LOG_PATH,"hrms-response_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
 
 if __name__ == "__main__":
-    main()
+    caller()
