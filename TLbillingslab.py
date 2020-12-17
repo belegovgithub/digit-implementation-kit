@@ -54,9 +54,10 @@ def main():
         "Flat/Fixed":None,
         "Area- per -Sq Ft":"SqFt",
         "Motor Power - HP":"MoHP",
-        "No of Beds - Number":"NoBed",
+        "No of Beds - Number":"Bed",
         "Star":"Star",
-        "no. of workers":"NoWorker"
+        "no. of workers":"Worker",
+        "No. of category":"Category"
     }
 
 
