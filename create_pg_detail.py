@@ -12,8 +12,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 
-PG_HOST =r"http://localhost:8098/"
-SUPERUSER_USER_INFO_OBJ ={}
+PG_HOST =r"https://13.71.65.215.nip.io/"
+
 
 def getValue(df, row,colName,defValue="") :
     if not pd.isna(row[df.columns.get_loc(colName)] ) : 
@@ -51,11 +51,12 @@ def main():
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
 
-    auth_token = superuser_login()["access_token"]
+    auth_token =superuser_login()["access_token"]
+    print("auth token ", auth_token)
+     
     DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
     DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
 
-    print("auth token ", auth_token)
     start_row = 0
     dfs = open_excel_file(filePath)
     df = get_sheet(dfs, "Sheet1")
@@ -76,13 +77,23 @@ def main():
         serviceId = getValue(df,row,"ServiceId" ,"" ) 
         secretKey = getValue(df,row,"SecretKey" ,"" ) 
         password = getValue(df,row,"Password" ,"" )  
-
+        # Check for empty rows
+        if tenant == "" :
+            continue
         
         requestObj ={
-                                 "RequestInfo": {
-                                     "authToken": auth_token,
-                                     "userInfo":SUPERUSER_USER_INFO_OBJ ## Need to enter superUser Detail 
-                                 },
+
+            "RequestInfo": {
+                "apiId": "Rainmaker",
+                "ver": ".01",
+                "ts": "",
+                "action": "_search",
+                "did": "1",
+                "key": "",
+                "msgId": "20170310130900|en_IN",
+                "authToken": auth_token
+            },
+                                 
                                  "pgDetail": [
                                                 {
                                                 
