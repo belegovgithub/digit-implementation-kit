@@ -10,6 +10,8 @@ import os
 import numpy
 import pandas as pd
 from datetime import datetime, timedelta
+import math
+
 
 ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
               "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP" ,"STADMIN" :"STADMIN" }
@@ -19,6 +21,16 @@ def getValue(df, row,colName,defValue="") :
         return str(row[df.columns.get_loc(colName)]).strip() 
     else : 
         return defValue if defValue is not None else row[df.columns.get_loc(colName)] 
+def getMobileNumber(df, row,colName,defValue="") :
+    if not pd.isna(row[df.columns.get_loc(colName)] ) : 
+        number =row[df.columns.get_loc(colName)]
+        if isinstance(number, numpy.float64) : 
+            return math.trunc(number )
+        else :
+            return str(number).strip() 
+    else : 
+        return defValue if defValue is not None else row[df.columns.get_loc(colName)] 
+
 
 def getCodeForName(dictArr, name) :
     obj = next((item for item in dictArr if item.get("name") and item["name"] == name), None)
@@ -245,7 +257,7 @@ def caller() :
         tenantMapping[module["description"].lower()]=module["code"]
         
 
-    for root, dirs, files in os.walk(r"D:\CB\Verified-CB-Data\SC", topdown=True):
+    for root, dirs, files in os.walk(r"D:\CB\Verified-CB-Data-20201217T035036Z-001\Verified-CB-Data\CC", topdown=True):
         for name in dirs:
             
             #print (os.path.join(root, name))
@@ -253,7 +265,7 @@ def caller() :
             user_info_file =os.path.join(root, name,"User_Role Mapping.xlsx")
             if os.path.exists(user_info_file) :
                 
-                tenantId =tenantMapping[root.replace(r"D:\CB\Verified-CB-Data\SC\CB ","").lower()]
+                tenantId =tenantMapping[root.replace(r"D:\CB\Verified-CB-Data-20201217T035036Z-001\Verified-CB-Data\CC\CB ","").lower()]
                 #print(user_info_file)
                 #print("tenantid : ", tenantId)
                 config.CITY_NAME=tenantId.replace("pb.","").upper()
@@ -268,7 +280,7 @@ def main():
     load_employee_creation_config()
     city = config.CITY_NAME
     tenant_id = config.TENANT + "." + city.lower()
-    # if tenant_id!='pb.kirkee' :
+    # if tenant_id!='pb.subathu' :
     #     return
     post_data_list=[]
     post_data_resp_list=[]
@@ -309,6 +321,11 @@ def main():
         roles = []
         assignments=[]
         is_primary = True
+        mobile_number = getMobileNumber(df,row,"Employee Mobile Number*",None )    
+        name = getValue(df,row,"Employee Full Name*" ,None  ) 
+        if pd.isna(name) or  pd.isna(mobile_number) : 
+            continue
+        #mobile_number=int(mobile_number)
         departments = getValue(df,row,"Department*" ,"" ) 
         role_codes = getValue(df,row,"Role Name*" ,"" ) 
         role_names = role_codes
@@ -316,8 +333,7 @@ def main():
         print("designation--",designation)  
         password = "Bel@1234"
         username = getValue(df,row,"Login Id UAT" ,"" )   
-        mobile_number = getValue(df,row,"Employee Mobile Number*",None )    
-        name = getValue(df,row,"Employee Full Name*" ,None  )     
+            
         gender = getValue(df,row,"Gender*" ,"M" )    
         fName = getValue(df,row,"Father/ Husband Name*" ,"FATHER_NAME" )  
         empType =getValue(df,row,"Nature of Employment *" ,"PERMANENT" )    
@@ -330,8 +346,7 @@ def main():
  
         ## Check for empty rows 
         
-        if pd.isna(name) or  pd.isna(mobile_number) : 
-            continue
+        
         print("========================",name,mobile_number,"==========================")
         print("UserNAME",username)
         existing_employees = get_employees_by_id(
