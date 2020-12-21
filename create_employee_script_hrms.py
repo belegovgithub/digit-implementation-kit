@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 import math
 
 
-ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
-              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP" ,"STADMIN" :"STADMIN" }
+ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": None,
+              "TL Doc Verifier": None, "TL Field Inspector": None, "TL Approver": None, "mCollect Employee": None ,"STADMIN" :"STADMIN" }
 
 def getValue(df, row,colName,defValue="") :
     if not pd.isna(row[df.columns.get_loc(colName)] ) : 
@@ -253,25 +253,30 @@ def caller() :
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
     for found_index, module in enumerate(cb_module_data["tenants"]):
-        print(module["description"])
+        #print(module["description"])
         tenantMapping[module["description"].lower()]=module["code"]
         
 
-    for root, dirs, files in os.walk(r"D:\CB\Verified-CB-Data-20201217T035036Z-001\Verified-CB-Data\CC", topdown=True):
+    for root, dirs, files in os.walk(r"D:\egov-repo\Users\Data\SC", topdown=True):
         for name in dirs:
             
             #print (os.path.join(root, name))
             subfolder = os.path.join(root, name)
             user_info_file =os.path.join(root, name,"User_Role Mapping.xlsx")
-            if os.path.exists(user_info_file) :
+            if os.path.exists(user_info_file)   :
+                c = root.replace(r"D:\egov-repo\Users\Data\SC\CB ","").lower()
+                if c not in tenantMapping : 
+                    print("CITY NOT FOUND",c)
+                    continue
+                    
                 
-                tenantId =tenantMapping[root.replace(r"D:\CB\Verified-CB-Data-20201217T035036Z-001\Verified-CB-Data\CC\CB ","").lower()]
+                tenantId =tenantMapping[root.replace(r"D:\egov-repo\Users\Data\SC\CB ","").lower()]
                 #print(user_info_file)
                 #print("tenantid : ", tenantId)
                 config.CITY_NAME=tenantId.replace("pb.","").upper()
                 config.HRMS_WORKBOOK=user_info_file
                 print(config.CITY_NAME)
-                print(config.HRMS_WORKBOOK)
+                #print(config.HRMS_WORKBOOK)
                 main()
 
                 
@@ -280,7 +285,7 @@ def main():
     load_employee_creation_config()
     city = config.CITY_NAME
     tenant_id = config.TENANT + "." + city.lower()
-    # if tenant_id!='pb.subathu' :
+    # if tenant_id!='pb.mhow' :
     #     return
     post_data_list=[]
     post_data_resp_list=[]
@@ -290,7 +295,7 @@ def main():
         raise Exception("File Not Found ",filePath)
 
     #auth_token = superuser_login()["access_token"]
-    auth_token = 'ef9d6e42-526c-4c29-8e70-6d27a9694aef'
+    auth_token = '82eca2b0-f262-4fa6-b797-59a05df83b8c'
     DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
     DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
     #print("DESIG_LIST--",DESIG_LIST)
@@ -303,9 +308,9 @@ def main():
     #print(df.columns)
     #print(config.CITY_NAME.upper())
  
-    # if config.HRMS_CREATE_STADMIN  : 
-    #     df =df.append(createSTADMIN(), ignore_index=True)
-    #     #print("stadmin--",df)
+    if config.HRMS_CREATE_STADMIN  : 
+        df =df.append(createSTADMIN(), ignore_index=True)
+        #print("stadmin--",df)
     # if config.HRMS_CREATE_DEV_USER : 
     #     df =df.append(createDEV(), ignore_index=True)
 
@@ -315,7 +320,7 @@ def main():
     for ind in df.index:
  
         row = df.iloc[ind] 
-        print(row)
+        #print(row)
         headers = {'Content-Type': 'application/json'}
         details = []
         roles = []
@@ -330,33 +335,34 @@ def main():
         role_codes = getValue(df,row,"Role Name*" ,"" ) 
         role_names = role_codes
         designation = designationData[getValue(df,row,"Designation*" ,"" )]
-        print("designation--",designation)  
+        #print("designation--",designation)  
         password = "Bel@1234"
         username = getValue(df,row,"Login Id UAT" ,"" )   
             
         gender = getValue(df,row,"Gender*" ,"M" )    
-        fName = getValue(df,row,"Father/ Husband Name*" ,"FATHER_NAME" )  
+        fName = getValue(df,row,"Father/ Husband Name*" ,"FATHER NAME" )  
         empType =getValue(df,row,"Nature of Employment *" ,"PERMANENT" )    
         dob =getTime(df,row,"Employee Date of Birth*" )  
         emailId =getValue(df,row,"Employee Email Address*" ,"" )  
         joiningDate =getTime(df,row,"Appointed From Date*" )  
-        print("joiningDate--",joiningDate)
+        #print("joiningDate--",joiningDate)
         address =getValue(df,row,"Correspondance Address*" ,"" )  
 
  
         ## Check for empty rows 
         
         
-        print("========================",name,mobile_number,"==========================")
-        print("UserNAME",username)
+        print("========================",username,name,mobile_number,"==========================")
+        # if username !="MHOW_MukeshPrajapati" :
+        #   continue
         existing_employees = get_employees_by_id(
             auth_token, username, tenant_id)
-        print(existing_employees)
+        #print(existing_employees)
 
-        existing_employees = get_employees_by_id(
-            auth_token, username, tenant_id)
-        print("existing_employees",existing_employees)
         roles_needed =  set(map(lambda role : ROLE_CODES[role.strip()], role_codes.split("|")))
+        roles_needed.discard(None)
+        if len(roles_needed)==0 : 
+          continue
         roles_needed.add("EMPLOYEE")
         #print("roles_needed",roles_needed)
         for role  in roles_needed:
@@ -438,7 +444,7 @@ def main():
         if designation is not None : 
             for department in departments.split("|"):
                 code =departmentData[department]
-                print("department Code",code)
+                #print("department Code",code)
                 if code is not None : 
                     assignments.append({
                         "fromDate": joiningDate,
@@ -449,7 +455,7 @@ def main():
                         "reportingTo": "",
                         "isHod": True
                     })
-        print("assignments--",assignments)
+        #print("assignments--",assignments)
 
         post_data = {
             "RequestInfo": {
@@ -499,10 +505,10 @@ def main():
         post_response = requests.post(url=config.HOST + '/egov-hrms/employees/_create', headers=headers,
                                       json=post_data)
         print("==================================================")
-        print(post_data)
+        #print(post_data)
         post_data_list.append(post_data)
         print("--------")
-        print(post_response.json())
+        #print(post_response.json())
         post_data_resp_list.append(post_response.json())
         
         if post_response.status_code == 202 : 
