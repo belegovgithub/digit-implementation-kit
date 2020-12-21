@@ -10,8 +10,7 @@ import os
 import numpy
 import pandas as pd
 from datetime import datetime, timedelta
-import math
-
+import math 
 
 ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": None,
               "TL Doc Verifier": None, "TL Field Inspector": None, "TL Approver": None, "mCollect Employee": None ,"STADMIN" :"STADMIN" }
@@ -256,32 +255,35 @@ def caller() :
         #print(module["description"])
         tenantMapping[module["description"].lower()]=module["code"]
         
+    if not os.path.exists(os.path.join(config.HRMS_CMD_FOLDER,"LOGS")) : 
+        os.mkdir(os.path.join(config.HRMS_CMD_FOLDER,"LOGS"))
 
-    for root, dirs, files in os.walk(r"D:\egov-repo\Users\Data\SC", topdown=True):
+    for root, dirs, files in os.walk(config.HRMS_CMD_FOLDER, topdown=True):
         for name in dirs:
             
             #print (os.path.join(root, name))
             subfolder = os.path.join(root, name)
             user_info_file =os.path.join(root, name,"User_Role Mapping.xlsx")
             if os.path.exists(user_info_file)   :
-                c = root.replace(r"D:\egov-repo\Users\Data\SC\CB ","").lower()
+                c = root.replace(os.path.join( config.HRMS_CMD_FOLDER,  "CB "),"").lower()
                 if c not in tenantMapping : 
                     print("CITY NOT FOUND",c)
                     continue
                     
                 
-                tenantId =tenantMapping[root.replace(r"D:\egov-repo\Users\Data\SC\CB ","").lower()]
+                tenantId =tenantMapping[c]
                 #print(user_info_file)
                 #print("tenantid : ", tenantId)
-                config.CITY_NAME=tenantId.replace("pb.","").upper()
+                config.CITY_NAME=tenantId.replace("pb.","").strip().upper()
                 config.HRMS_WORKBOOK=user_info_file
                 print(config.CITY_NAME)
-                #print(config.HRMS_WORKBOOK)
+                #print(config.HRMS_WORKBOOK) 
                 main()
 
                 
 def main():
     ## load default config
+    userList =[]
     load_employee_creation_config()
     city = config.CITY_NAME
     tenant_id = config.TENANT + "." + city.lower()
@@ -294,8 +296,7 @@ def main():
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
 
-    #auth_token = superuser_login()["access_token"]
-    auth_token = '82eca2b0-f262-4fa6-b797-59a05df83b8c'
+    auth_token = superuser_login()["access_token"]
     DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
     DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
     #print("DESIG_LIST--",DESIG_LIST)
@@ -308,8 +309,8 @@ def main():
     #print(df.columns)
     #print(config.CITY_NAME.upper())
  
-    if config.HRMS_CREATE_STADMIN  : 
-        df =df.append(createSTADMIN(), ignore_index=True)
+    # if config.HRMS_CREATE_STADMIN  : 
+    #     df =df.append(createSTADMIN(), ignore_index=True)
         #print("stadmin--",df)
     # if config.HRMS_CREATE_DEV_USER : 
     #     df =df.append(createDEV(), ignore_index=True)
@@ -513,15 +514,22 @@ def main():
         
         if post_response.status_code == 202 : 
             print ("User Created : ",username)
-            update_user_password(auth_token, tenant_id, username, "Bel@1234")
+            userList.append([username])
+            # update_user_password(auth_token, tenant_id, username, "Bel@1234")
         print("==================================================")
+        
         print("\n\n")
     dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
     # Save the request /response of newly created user in same  folder for reference
-    with io.open(os.path.join(config.LOG_PATH,"hrms-request_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(config.HRMS_CMD_FOLDER,"LOGS","hrms-request_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(config.LOG_PATH,"hrms-response_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(config.HRMS_CMD_FOLDER,"LOGS","hrms-response_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+    with io.open(os.path.join(r"D:\egov-repo\Production\57CanttBoard\Verified-CB-Data","user.csv") , mode="a+", newline="") as f:
+        write = csv.writer(f) 
+        print("User LIst ",userList)
+        write.writerow([config.CITY_NAME]) 
+        write.writerows(userList) 
 
 if __name__ == "__main__":
     caller()
