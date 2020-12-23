@@ -6,19 +6,17 @@ import os
 import numpy
 import xlrd as xlrd
 import xlwt
-from common import superuser_login, open_excel_file, get_sheet, fix_value
+from common import superuser_login, open_excel_file, get_sheet, fix_value,DateTimeEncoder
 from config import config, load_config
 import requests
 import json
 import pandas as pd
+from datetime import datetime, timedelta
 #from numpyencoder import NumpyEncoder
 #from tlPreprocessor import create_trade_n_accessory_data
 
 def main():
-    tenants = [
-        "pb.amritsar"
-    ]
-
+    dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
     INDEX_CATEGORY = 1
     INDEX_SLNO = 2
     INDEX_SUB_CATEGORY = 3
@@ -73,10 +71,14 @@ def main():
             "authToken": auth_token
         }
     })
-
+    #print(json.dumps(slabs.json()["billingSlab"], indent=2))
+    with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_search_resp.json"), mode="w", encoding="utf-8") as f:
+        json.dump(slabs.json()["billingSlab"], f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+      
     existing_slab_data = {get_slab_id(slab): slab for slab in slabs.json()["billingSlab"]}
 
     #print(json.dumps(existing_slab_data, indent=2))
+    
     #source_file = config.BASE_PPATH / "source" / "{}.xlsx".format(tenant_id)
     # create_trade_n_accessory_data(tenant_id, source_file, destination_path=config.BASE_PPATH / "source",
     #                             template_file_path="source/template.xlsx")
@@ -96,8 +98,6 @@ def main():
             "fromuom", "touom", "rate", "createdtime", "createdby", "lastmodifiedtime", "lastmodifiedby"]
     fields = {field: index for index, field in enumerate([])}
     count=0
-    new_slabs = {}
-    update_slabs = {}
     slabs_processed = set()
     slab_data = []
     for i in range(len(tradeRates)) :
@@ -150,37 +150,58 @@ def main():
 
     new_slabs_data = []
     update_slabs_data = []
+    old_slab=[]
+    slab_data_dict = {get_slab_id(slab): slab for slab in slab_data}
+    for item in slab_data_dict.keys() : 
+        if item in existing_slab_data.keys() : 
+            
+            oldData =existing_slab_data[item]
+            newData=slab_data_dict[item]
+            if oldData["rate"]!= newData["rate"] or oldData["applicationFee"]!=newData["applicationFee"] :
+                old_slab.append(existing_slab_data[item].copy())
+                oldData["rate"]=newData["rate"]
+                oldData["applicationFee"]=newData["applicationFee"]
+                update_slabs_data.append(oldData)
+        else : 
+            new_slabs_data.append(slab_data_dict[item])
+ 
+    
+    #print(json.dumps(update_slabs_data, indent=2, default=np_encoder))
+    with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_before_update.json"), mode="w", encoding="utf-8") as f:
+        json.dump(old_slab, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+    with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_update_req.json"), mode="w", encoding="utf-8") as f:
+        json.dump(update_slabs_data, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+    with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_new_req.json"), mode="w", encoding="utf-8") as f:
+        json.dump(new_slabs_data, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
 
-    for slab_id, row_data in new_slabs.items():
-        new_slabs_data.append(get_slab_object(row_data))
 
-    for slab_id, row_data in update_slabs.items():
-        update_slabs_data.append(get_slab_object(row_data))
 
-    #print(new_slabs_data, json.dumps(update_slabs_data, indent=2))
-
-    if slab_data:
+    if len(new_slabs_data)>0:
         print("Post call")
         res = requests.post(config.HOST + "/tl-calculator/billingslab/_create?tenantId={}".format(tenant_id), json={
             "RequestInfo": {
                 "authToken": auth_token
             },
-            "billingSlab": slab_data
+            "billingSlab": new_slabs_data
         })
+        with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_new_res.json"), mode="w", encoding="utf-8") as f:
+            json.dump(res.json(), f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
 
-        print(json.dumps(res.json(), indent=2, default=np_encoder))
 
-    if update_slabs_data:
+        #print(json.dumps(res.json(), indent=2, default=np_encoder))
+
+    if len(update_slabs_data)>0:
         print("Updating changed billing slabs")
-        print(json.dumps(update_slabs_data, indent=2))
         res = requests.post(config.HOST + "/tl-calculator/billingslab/_update?tenantId={}".format(tenant_id), json={
             "RequestInfo": {
                 "authToken": auth_token
             },
             "billingSlab": update_slabs_data
         })
-
-        print(json.dumps(res.json(), indent=2, default=np_encoder))
+        with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_update_res.json"), mode="w", encoding="utf-8") as f:
+            json.dump(res.json(), f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        #print(json.dumps(res.json(), indent=2, default=np_encoder))
+    print(auth_token)
 
 
 def remove_nan(data, default=None):
@@ -192,6 +213,7 @@ def remove_nan(data, default=None):
 
     return data
 
+ 
 
 def get_slab_object(row_data,tradeType,type1,uom,fromUom,toUom,rate,applicationFee,newOrRenewal):
     data = {
@@ -213,13 +235,19 @@ def get_slab_object(row_data,tradeType,type1,uom,fromUom,toUom,rate,applicationF
         data["id"] = row_data["id"]
 
     return data
+    
+def updateBillingSlab(oldData, newData) :
+    oldData["rate"]=newData["rate"]
+    oldData["applicationFee"]=newData["applicationFee"]
+    return oldData
 
 
 def get_slab_id(slab):
-    fields = ["licenseType", "structureType", "tradeType", "accessoryCategory", "type", "uom", "fromUom", "toUom"]
+    fields = ["applicationType", "structureType", "tradeType", "accessoryCategory", "type", "uom", "fromUom", "toUom"]
     data = []
 
     for field in fields:
+        
         value = slab[field]
         if type(value) is not str and value is not None and isnan(value):
             value = None
@@ -232,9 +260,8 @@ def get_slab_id(slab):
 
         if type(value) is float:
             value = int(value)
-
+        
         data.append(str(value or "-"))
-
     return "|".join(data)
 
 def checkforValidData(tradeType,rate,applicationFee,uom=None,fromUom=0,toUom=0): 

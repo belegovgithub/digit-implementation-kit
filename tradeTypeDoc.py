@@ -76,10 +76,10 @@ def main():
     "Flat/Fixed":None,
     "Area- per -Sq Ft":"SqFt",
     "Motor Power - HP":"MoHP",
-    "No of Beds - Number":"NoBed",
+    "No of Beds - Number":"Bed",
     "Star":"Star",
-    "no. of workers":"NoWorker",
-    "No. of category":"NoCategory"
+    "no. of workers":"Worker",
+    "No. of category":"Category"
   }
 
   for j in range(0,len(tradeTypeCodes)) :
@@ -180,7 +180,7 @@ def loadDocDict():
     "NOC from Owner for Rented Private Buildings":"NOC_OWNER",
     "NOC from Cantt. Board":"NOC_CANTT",
     "Liquor Licence from State":"LIC_LIQUOR",
-    "Photo Copy Of Old Licence/Reciept No.":"PHOTO_OLD_LIC",
+    "Photo Copy Of Old Licence/Reciept No.":"OLDLICENCENO",
     "NOC From The House Owner/Lessee Of The Holding":"NOC_OWNER",
     "NOC of the HOR if Applicant is not HOR": "NOC_HOR",
     "Food License Issued by FSSAI":"FOOD_FSSAI",
