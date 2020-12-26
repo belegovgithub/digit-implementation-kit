@@ -5,11 +5,11 @@ from pathlib import Path
 from config import config
 from common import *
 
-dfs = open_excel_file(config.BANK_WORKBOOK)
+
 COL_INDEX = 2
 
 
-def bank():
+def bank(dfs):
     bank = search_bank()
     if(len(bank['banks']) == 1):
         return bank['banks'][0]
@@ -29,18 +29,20 @@ def bank():
                             "type": "I",
                             "tenantId": config.TENANT_ID
                         })
-        auth_token = superuser_login()["access_token"]
+        # auth_token = superuser_login()["access_token"]
+        auth_token="8a3286ad-611a-486c-91d5-cdd448931547"
         data = {
             "RequestInfo": {
                 "authToken": auth_token
             },        
             "banks": bank_data
         }
+        print("Bank Data",data)
         response = create_bank(data)
         print("bank created in DB.")
         return response['banks'][0]
 
-def bankbranch(bank): 
+def bankbranch(bank,dfs):
     bankbranch  = search_bankbranch()  
     if(len(bankbranch['bankBranches']) == 1):
         return bankbranch['bankBranches'][0]
@@ -92,7 +94,8 @@ def bankbranch(bank):
                             "tenantId": config.TENANT_ID,
                         })
         
-        auth_token = superuser_login()["access_token"]
+        # auth_token = superuser_login()["access_token"]
+        auth_token="8a3286ad-611a-486c-91d5-cdd448931547"
         data = {
             "RequestInfo": {
                 "authToken": auth_token
@@ -104,7 +107,7 @@ def bankbranch(bank):
         return response['bankBranches'][0]
 
 
-def accountcodepurpose():   
+def accountcodepurpose(dfs):
     accountcodepurpose = search_accountcodepurpose()
     if(len(accountcodepurpose['accountCodePurposes']) >= 1):
         return accountcodepurpose['accountCodePurposes'][0]
@@ -119,7 +122,8 @@ def accountcodepurpose():
                             "name": purpose,
                             "tenantId": config.TENANT_ID
                         })
-        auth_token = superuser_login()["access_token"]
+        # auth_token = superuser_login()["access_token"]
+        auth_token="8a3286ad-611a-486c-91d5-cdd448931547"
         data = {
             "RequestInfo": {
                 "authToken": auth_token
@@ -130,7 +134,7 @@ def accountcodepurpose():
         print("account code purpose created in DB.")
         return response['accountCodePurposes'][0]
 
-def chartaccount(accountcodepurpose): 
+def chartaccount(accountcodepurpose,dfs):
     chartaccount = search_chartaccount()
     if(len(chartaccount['chartOfAccounts']) >= 1):
         return chartaccount['chartOfAccounts'][0]
@@ -153,7 +157,8 @@ def chartaccount(accountcodepurpose):
                                 "isActiveForPosting": True,
                                 "accountCodePurpose": accountcodepurpose
                             })
-        auth_token = superuser_login()["access_token"]
+        # auth_token = superuser_login()["access_token"]
+        auth_token="8a3286ad-611a-486c-91d5-cdd448931547"
         data = {
             "RequestInfo": {
                 "authToken": auth_token
@@ -166,7 +171,7 @@ def chartaccount(accountcodepurpose):
         return response['chartOfAccounts'][0]
 
 
-def fund():       
+def fund(dfs):      
     fund = search_fund()
     if(len(fund['funds']) >= 1):
         return fund['funds'][0]
@@ -191,7 +196,8 @@ def fund():
                             "active" : True,
                             "tenantId": config.TENANT_ID
                         })
-        auth_token = superuser_login()["access_token"]
+        # auth_token = superuser_login()["access_token"]
+        auth_token="8a3286ad-611a-486c-91d5-cdd448931547"
         data = {
             "RequestInfo": {
                 "authToken": auth_token
@@ -203,7 +209,7 @@ def fund():
         print("fund created in DB.")
         return response['funds'][0]
 
-def bankaccount(bankbranch, chartaccount, fund):  
+def bankaccount(bankbranch, chartaccount, fund,dfs):
     bankaccount = search_bankaccount()
     if(len(bankaccount['bankAccounts']) >= 1):
         return bankaccount['bankAccounts'][0]
@@ -230,7 +236,8 @@ def bankaccount(bankbranch, chartaccount, fund):
                                     "fund": fund
 
                                 })
-        auth_token = superuser_login()["access_token"]
+        # auth_token = superuser_login()["access_token"]
+        auth_token="8a3286ad-611a-486c-91d5-cdd448931547"
         data = {
             "RequestInfo": {
                 "authToken": auth_token

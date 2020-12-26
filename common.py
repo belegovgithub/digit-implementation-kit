@@ -831,12 +831,14 @@ def create_bank(body):
         print(data)
         raise SystemExit("Bank creation Failed")
 
-def search_bank(tenant_id=config.TENANT_ID):
+def search_bank():
+    tenant_id=config.TENANT_ID
     url = urljoin(config.HOST, '/egf-master/banks/_search')
     auth_token = superuser_login()["access_token"]
     request_body = {}
     request_body["RequestInfo"] = {"authToken": auth_token}
     params = {"tenantId": tenant_id}
+    print("Search bank",params)
 
     obj = requests.post(url, params=params, json=request_body)
     if(obj.status_code == 200):
@@ -845,7 +847,8 @@ def search_bank(tenant_id=config.TENANT_ID):
         raise SystemExit("Bank Search Failed")
 
 
-def search_bankbranch(tenant_id=config.TENANT_ID):
+def search_bankbranch():
+    tenant_id=config.TENANT_ID
     url = urljoin(config.HOST, '/egf-master/bankbranches/_search')
     auth_token = superuser_login()["access_token"]
     request_body = {}
@@ -878,7 +881,8 @@ def create_accountcodepurpose(body):
         print(data.json())
         raise SystemExit("account code purpose creation Failed")
 
-def search_accountcodepurpose(tenant_id=config.TENANT_ID):
+def search_accountcodepurpose():
+    tenant_id=config.TENANT_ID
     url = urljoin(config.HOST, '/egf-master/accountcodepurposes/_search')
     auth_token = superuser_login()["access_token"]
     request_body = {}
@@ -901,7 +905,8 @@ def create_fund(body):
         print(data)
         raise SystemExit("fund creation Failed")
 
-def search_fund(tenant_id=config.TENANT_ID):
+def search_fund():
+    tenant_id=config.TENANT_ID
     url = urljoin(config.HOST, '/egf-master/funds/_search')
     auth_token = superuser_login()["access_token"]
     request_body = {}
@@ -926,7 +931,8 @@ def create_chartaccount(body):
         print(data.json())
         raise SystemExit("chart of account creation Failed")
 
-def search_chartaccount(tenant_id=config.TENANT_ID):
+def search_chartaccount():
+    tenant_id=config.TENANT_ID
     url = urljoin(config.HOST, '/egf-master/chartofaccounts/_search')
     auth_token = superuser_login()["access_token"]
     request_body = {}
@@ -949,7 +955,8 @@ def create_bankaccount(body):
         print(data)
         raise SystemExit("bank account purpose creation Failed")
 
-def search_bankaccount(tenant_id=config.TENANT_ID):
+def search_bankaccount():
+    tenant_id=config.TENANT_ID
     url = urljoin(config.HOST, '/egf-master/bankaccounts/_search')
     auth_token = superuser_login()["access_token"]
     request_body = {}
