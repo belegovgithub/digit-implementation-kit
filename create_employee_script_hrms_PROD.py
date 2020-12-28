@@ -193,7 +193,8 @@ def loadDesig():
   "Senior Sanitary Inspector": "DESIG_69",
   "L&RS Suprintendent": "DESIG_39",
   "Record Keeper": "DESIG_78",
-  "Personal Assistant": "DESIG_66"
+  "Personal Assistant": "DESIG_66",
+  "Executive Engineer": "DESIG_51",
  }
  return designationData 
 
