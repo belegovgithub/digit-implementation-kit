@@ -179,6 +179,7 @@ def loadDesig():
   "Dispatcher (U/r 7)": "DESIG_35",
   "Assistant Programmer": "DESIG_67",
   "Programmer": "DESIG_48",
+  "Sr. Programmer": "DESIG_48",
   "Sub Engineer": "DESIG_45",
   "Asst Engineer": "DESIG_45",
   "Jr. Electrical": "DESIG_44",
