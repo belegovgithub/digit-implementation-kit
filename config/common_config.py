@@ -31,7 +31,9 @@ config.ROLE_CODE_MAP = {
   "PT_CEMP": "PT Counter Employee",
   "PT_DOC_VERIFIER": "PT Document Verifier",
   "PT_FIELD_INSPECTOR": "PT Field Inspector",
-  "PT_APPROVER": "PT Approver"
+  "PT_APPROVER": "PT Approver",
+  "LR_CEMP":"LR Counter Employee",
+  "LR_APPROVER_CEO":"LR Approver CEO"
 }
 
 
