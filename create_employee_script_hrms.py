@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 import math 
 
 ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": None,
-              "TL Doc Verifier": None, "TL Field Inspector": None, "TL Approver": None, "mCollect Employee": None ,"STADMIN" :"STADMIN" }
-
+              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP","STADMIN" :"STADMIN","ADMIN": "STADMIN" }
+dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
 def getValue(df, row,colName,defValue="") :
     if not pd.isna(row[df.columns.get_loc(colName)] ) : 
         return str(row[df.columns.get_loc(colName)]).strip() 
@@ -178,6 +178,7 @@ def loadDesig():
   "Dispatcher (U/r 7)": "DESIG_35",
   "Assistant Programmer": "DESIG_67",
   "Programmer": "DESIG_48",
+  "Sr. Programmer": "DESIG_48",
   "Sub Engineer": "DESIG_45",
   "Asst Engineer": "DESIG_45",
   "Jr. Electrical": "DESIG_44",
@@ -191,7 +192,8 @@ def loadDesig():
   "Senior Sanitary Inspector": "DESIG_69",
   "L&RS Suprintendent": "DESIG_39",
   "Record Keeper": "DESIG_78",
-  "Personal Assistant": "DESIG_66"
+  "Personal Assistant": "DESIG_66",
+  "Executive Engineer": "DESIG_51"
  }
  return designationData 
 
@@ -267,7 +269,7 @@ def caller() :
             if os.path.exists(user_info_file)   :
                 c = root.replace(os.path.join( config.HRMS_CMD_FOLDER,  "CB "),"").lower()
                 if c not in tenantMapping : 
-                    print("CITY NOT FOUND",c)
+                    print("CITY NOT FOUND ",c)
                     continue
                     
                 
@@ -519,17 +521,17 @@ def main():
         print("==================================================")
         
         print("\n\n")
-    dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
+    
     # Save the request /response of newly created user in same  folder for reference
     with io.open(os.path.join(config.HRMS_CMD_FOLDER,"LOGS","hrms-request_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
     with io.open(os.path.join(config.HRMS_CMD_FOLDER,"LOGS","hrms-response_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(r"D:\egov-repo\Production\57CanttBoard\Verified-CB-Data","user.csv") , mode="a+", newline="") as f:
+    with io.open(os.path.join(config.HRMS_CMD_FOLDER,"user.csv") , mode="w+", newline="") as f:
         write = csv.writer(f) 
         print("User LIst ",userList)
         write.writerow([config.CITY_NAME]) 
         write.writerows(userList) 
-
+ 
 if __name__ == "__main__":
     caller()
