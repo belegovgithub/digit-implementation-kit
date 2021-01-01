@@ -368,10 +368,10 @@ def main():
         if len(roles_needed)==0 : 
           continue
         roles_needed.add("EMPLOYEE")
-        if 'UC_EMP' in roles_needed:
-          roles_needed.add("LR_CEMP")
-        if 'TL_APPROVER' in roles_needed:
-          roles_needed.add("LR_APPROVER_CEO")
+        # if 'UC_EMP' in roles_needed:
+        #   roles_needed.add("LR_CEMP")
+        # if 'TL_APPROVER' in roles_needed:
+        #   roles_needed.add("LR_APPROVER_CEO")
         print("roles_needed---",roles_needed)
         for role  in roles_needed:
             roles.append({"code": role, "name": config.ROLE_CODE_MAP[role], "tenantId": tenant_id})
@@ -522,7 +522,7 @@ def main():
         if post_response.status_code == 202 : 
             print ("User Created : ",username)
             userList.append([username])
-            update_user_password(auth_token, tenant_id, username, "Bel@1234")
+            #update_user_password(auth_token, tenant_id, username, "Bel@1234")
         print("==================================================")
         
         print("\n\n")
@@ -532,7 +532,7 @@ def main():
         json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
     with io.open(os.path.join(config.HRMS_CMD_FOLDER,"LOGS","hrms-response_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(r"/content/drive/MyDrive/Workspace/Verified CB Data","user.csv") , mode="a+", newline="") as f:
+    with io.open(os.path.join(r"C:\Users\Administrator\Desktop","userProd_Pilot.csv") , mode="a+", newline="") as f:
         write = csv.writer(f) 
         print("User LIst ",userList)
         write.writerow([config.CITY_NAME]) 
