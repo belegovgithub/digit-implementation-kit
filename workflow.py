@@ -52,12 +52,10 @@ def createWorkflow(authToken,fileName,tenantId):
 def main():
     # load default config
     print("TENANT_JSON", config.CITY_MODULES_JSON)
-    auth_token = superuser_login()["access_token"] 
- 
+    auth_token =superuser_login()["access_token"] 
 
     with io.open(config.CITY_MODULES_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
-        print(cb_module_data["citymodule"] )
     for found_index, module in enumerate(cb_module_data["citymodule"]):
         if module["module"]=="TL":
             #print("index ",found_index,"  tenant ",module['tenants'])
@@ -74,7 +72,6 @@ def main():
                     print("tenantid ",tenantId)
                     
                     billingSlabResp = search_tl_billing_slab(auth_token,tenantId)
-                    #print(billingSlabResp)
                     if(len(billingSlabResp['billingSlab'])> 0) :
                         print("Check which flow to execute ",billingSlabResp['billingSlab'][0])
                         appFee = int(billingSlabResp['billingSlab'][0]["applicationFee"]) 
@@ -94,11 +91,11 @@ def main():
    
                         #break
     dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
-    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"workflow-request_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(config.LOG_PATH,"workflow-request_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(config.BOUNDARIES_FOLDER,"workflow-response_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(config.LOG_PATH,"workflow-response_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    print("OUTPUT FOLDER PATH ",config.BOUNDARIES_FOLDER)
+    print("OUTPUT FOLDER PATH ",config.LOG_PATH)
             
 
 
