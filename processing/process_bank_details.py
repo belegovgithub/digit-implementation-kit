@@ -12,6 +12,7 @@ COL_INDEX = 2
 def bank(dfs):
     bank = search_bank()
     if(len(bank['banks']) == 1):
+        print("Bank exist.")
         return bank['banks'][0]
     else:
         bank = get_sheet(dfs, config.SHEET_BANK_BRANCH)
@@ -37,7 +38,7 @@ def bank(dfs):
             },        
             "banks": bank_data
         }
-        print("Bank Data",data)
+        #print("Bank Data",data)
         response = create_bank(data)
         print("bank created in DB.")
         return response['banks'][0]
@@ -45,6 +46,7 @@ def bank(dfs):
 def bankbranch(bank,dfs):
     bankbranch  = search_bankbranch()  
     if(len(bankbranch['bankBranches']) == 1):
+        print("Bank Branch exist.")
         return bankbranch['bankBranches'][0]
     else:
         bankbranch = get_sheet(dfs, config.SHEET_BANK_BRANCH)
@@ -110,6 +112,7 @@ def bankbranch(bank,dfs):
 def accountcodepurpose(dfs):
     accountcodepurpose = search_accountcodepurpose()
     if(len(accountcodepurpose['accountCodePurposes']) >= 1):
+        print("account code Purpose exist")
         return accountcodepurpose['accountCodePurposes'][0]
     else:        
         accountcodepurpose = get_sheet(dfs, config.SHEET_ACCOUNT_CODE_PURPOSE)
@@ -137,6 +140,7 @@ def accountcodepurpose(dfs):
 def chartaccount(accountcodepurpose,dfs):
     chartaccount = search_chartaccount()
     if(len(chartaccount['chartOfAccounts']) >= 1):
+        print("Chart of Account exist")
         return chartaccount['chartOfAccounts'][0]
     else:
         chartaccount = get_sheet(dfs, config.SHEET_CHART_ACCOUNT)
@@ -174,6 +178,7 @@ def chartaccount(accountcodepurpose,dfs):
 def fund(dfs):      
     fund = search_fund()
     if(len(fund['funds']) >= 1):
+        print("Fund exist")
         return fund['funds'][0]
     else:        
         fund = get_sheet(dfs, config.SHEET_FUND)
@@ -204,7 +209,7 @@ def fund(dfs):
             },        
             "funds": fund_data
         }
-        print(data)
+        #print(data)
         response = create_fund(data)
         print("fund created in DB.")
         return response['funds'][0]
@@ -212,6 +217,7 @@ def fund(dfs):
 def bankaccount(bankbranch, chartaccount, fund,dfs):
     bankaccount = search_bankaccount()
     if(len(bankaccount['bankAccounts']) >= 1):
+        print("Bank Account exist")
         return bankaccount['bankAccounts'][0]
     else:    
         bankaccount = get_sheet(dfs, config.SHEET_BANK_ACCOUNT)

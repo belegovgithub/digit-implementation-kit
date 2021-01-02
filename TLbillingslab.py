@@ -201,7 +201,6 @@ def main():
         with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_billingslab_update_res.json"), mode="w", encoding="utf-8") as f:
             json.dump(res.json(), f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
         #print(json.dumps(res.json(), indent=2, default=np_encoder))
-    print(auth_token)
 
 
 def remove_nan(data, default=None):
