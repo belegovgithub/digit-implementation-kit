@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import math 
 
-ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": None,
+ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
               "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP","STADMIN" :"STADMIN","ADMIN": "STADMIN" }
 dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
 def getValue(df, row,colName,defValue="") :

@@ -203,8 +203,8 @@ def loadDocDict():
     "FSSAI Certificate Of State Govt":"FOOD_FSSAI",
     "Copy Of GST / State Govt Registration/Certificate":"GST_REGT_CERT",
     "Shop Act License":"LIC_SHOP_ACT",
-    "No due certificate from Revenue  Section":"NOC_REVENUE"
-
+    "No due certificate from Revenue  Section":"NOC_REVENUE",
+    "Aadhar Card" : "AADHAARCARD"
 
   }
   return docDict
