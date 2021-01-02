@@ -148,8 +148,7 @@ def process_boundary_file(auth_token, boundary_path, generate_file=True, write_l
                                 "locale": "en_IN"
                             })
 
-            outputpath = Path(".") / "localization" / config.CONFIG_ENV / (
-                    "boundary_" + boundary_type + "_" + tenant_id + ".json")
+            outputpath = os.path.join(config.LOG_PATH + "boundary_" + boundary_type + "_" + tenant_id + "_EN.json")
 
             data = {
                 "RequestInfo": {
@@ -159,11 +158,10 @@ def process_boundary_file(auth_token, boundary_path, generate_file=True, write_l
                 "messages": locale_data
             }
 
-            if generate_file:
-                with io.open(outputpath, mode="w") as f:
-                    # print(json.dumps(locale_data, indent=2))
-                    json.dump(data
-                              , indent=2, fp=f)
+            #if generate_file:
+            with io.open(outputpath, mode="w" , encoding="utf-8") as f:
+                #print(json.dumps(locale_data, indent=2))
+                json.dump(data, indent=2, fp=f)
             #print(data)
             if write_localization:
                 localize_response = upsert_localization(auth_token, data)
