@@ -70,7 +70,7 @@ def main():
   tradeType_trade = []
   #print(getTradeCategory(tradeTypeCodes.iloc[2, 1]))
   docDict = loadDocDict()
-  print(docDict)
+  #print(docDict)
 
   uomDict = {
     "Flat/Fixed":None,
@@ -84,10 +84,10 @@ def main():
 
   for j in range(0,len(tradeTypeCodes)) :
     if tradeTypeCodes.iloc[j, INDEX_TRADE_APPLICABLE] == "Applicable":
-      #print(tradeTypeCodes.iloc[j, 2], docCodes.iloc[j,2])
+      print(tradeTypeCodes.iloc[j, 2], docCodes.iloc[j,2])
       tradeType_category = getTradeCategory(tradeTypeCodes.iloc[j, 1],tradeTypeCodes.iloc[j, 2])
       tradeType_uom = uomDict[tradeTypeCodes.iloc[j,5]]
-      #print(tradeType_category)
+      print(tradeType_category)
       if int(float(tradeTypeCodes.iloc[j, 2])) == int(float(docCodes.iloc[j,2])):
         k=0
         docCodes_new=[]
@@ -97,6 +97,8 @@ def main():
         #for k in range(4,9):
           #if not pd.isna(docCodes.iloc[j, k]):
           if str(docCodes.iloc[j, k]).strip() != 'nan':
+            print(docCodes.iloc[j, k])
+            print(docDict[docCodes.iloc[j, k]])
             docCodes_new.append(docDict[docCodes.iloc[j, k]])
             docCodes_renew.append(docDict[docCodes.iloc[j, k]])
 
@@ -154,10 +156,12 @@ def loadDocDict():
     "Proof Of Address":"ADDPROOF",
     "Self Decleration":"SELFDECLERATION",
     "Medical Certificate":"MEDCERT",
-    "Medical Fitness Certificate":"MEDCERT",    
+    "Medical Fitness Certificate":"MEDCERT",  
+    'Medical Fitness Certificate issued by Cantonment General Hospital':"MEDCERT", 
     "Medical Fitness":"MEDCERT",    
     "NOC from fire Department":"FIRENOC",
     "Food Safety Certificate":"FOODCERT",
+    "FOOD SAFTY CERTIFICATE":"FOODCERT",
     "Duly filled application form":"APPLETTER",
     "Tax Receipt" : "TAXRECEIPT",
     "Fire NOC" : "FIRENOC",
@@ -179,7 +183,9 @@ def loadDocDict():
     "Food Safety Certificate and Tab Vaccination Certificate":"FOOD_TAB_CERT",
     "NOC from Owner for Rented Private Buildings":"NOC_OWNER",
     "NOC from Cantt. Board":"NOC_CANTT",
+    "No Dues Certificate from CB Tax Section":"NOC_TAX_CANTT",
     "Liquor Licence from State":"LIC_LIQUOR",
+    "Liquore Licence from State":"LIC_LIQUOR",
     "Photo Copy Of Old Licence/Reciept No.":"OLDLICENCENO",
     "NOC From The House Owner/Lessee Of The Holding":"NOC_OWNER",
     "NOC of the HOR if Applicant is not HOR": "NOC_HOR",

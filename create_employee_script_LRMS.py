@@ -12,10 +12,9 @@ import pandas as pd
 from datetime import datetime, timedelta
 import math 
 
-#ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
+#ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": None,
 #              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP","STADMIN" :"STADMIN","ADMIN": "STADMIN" }
-ROLE_CODES = {"RO": None, "GRO":None, "PGR-CE": None, "TL Counter Employee": None,
-              "TL Doc Verifier": None, "TL Field Inspector": None, "TL Approver": "LR_APPROVER_CEO", "mCollect Employee": "LR_CEMP","STADMIN" :None,"ADMIN": None }
+ROLE_CODES = {"DEO": "LR_APPROVER_DEO"}
 dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
 def getValue(df, row,colName,defValue="") :
     if not pd.isna(row[df.columns.get_loc(colName)] ) : 
@@ -196,9 +195,7 @@ def loadDesig():
   "Record Keeper": "DESIG_78",
   "Personal Assistant": "DESIG_66",
   "Executive Engineer": "DESIG_51",
-  "Defence Estates Officer":"DESIG_80",
-  "Upper Division Clerk":"DESIG_81",
-  "Head Clerk":"DESIG_82"
+  "Defence Estates Officer": "DESIG_80"
  }
  return designationData 
 
@@ -253,6 +250,37 @@ def loadDept():
   "Public Works Department":"DEPT_44"
 }
  return departmentData
+
+def loadLrmsRole():
+ lrmsRoleData={
+  "Delhi":		"DEO_DELHI",
+  "KOLKATA":		"DEO_KOLKATA",
+  "SILIGURI":	"DEO_SILIGURI",
+  "Agra":		"DEO_AGRA",
+  "Allahabad":	"DEO_ALLAHABAD",
+  "Bareilly":	"DEO_BAREILLY",
+  "Danapur":		"DEO_DANAPUR",
+  "Lucknow":		"DEO_LUCKNOW",
+  "Meerut":		"DEO_MEERUT",
+  "Mhow":		"DEO_MHOW",
+  "Jabalpur":	"DEO_JABALPUR",
+  "Ahmedabad":	"DEO_AHMEDABAD",
+  "Bangalore":	"DEO_BANGALORE",
+  "Bhopal":		"DEO_BHOPAL",
+  "Chennai":		"DEO_CHENNAI",
+  "Cochin":		"DEO_COCHIN",
+  "Jodhpur":		"DEO_JODHPUR",
+  "Mumbai":		"DEO_MUMBAI",
+  "Pune":		"DEO_PUNE",
+  "Secunderabad":	"DEO_SECUNDERABAD",
+  "Ambala":		"DEO_AMBALA",
+  "Jalandhar":	"DEO_JALANDHAR",
+  "Jammu":		"DEO_JAMMU",
+  "Pathankot": 	"DEO_PATHANKOT",
+  "Testing":    "DEO_TESTING"
+  }
+ return lrmsRoleData
+
 def caller() : 
     tenantMapping={}
     print(config.TENANT_JSON,"config.TENANT_JSON")
@@ -291,9 +319,10 @@ def caller() :
 def main():
     ## load default config
     userList =[]
+    config.HRMS_WORKBOOK = Path(r"D:\LRMS\User Details_Lease Renewal Module.xlsx")
+    tenantId = "pb"
     load_employee_creation_config()
-    city = config.CITY_NAME
-    tenant_id = config.TENANT + "." + city.lower()
+    tenant_id = "pb"
     # if tenant_id!='pb.mhow' :
     #     return
     post_data_list=[]
@@ -303,7 +332,8 @@ def main():
     if not os.path.isfile(filePath) :
         raise Exception("File Not Found ",filePath)
 
-    auth_token = "503a2f93-3fbc-4996-b7d8-38d006d5702c"
+    auth_token =   "503a2f93-3fbc-4996-b7d8-38d006d5702c"
+    #auth_token =  superuser_login()["access_token"]
     DEPT_LIST =(mdms_call(auth_token, "common-masters", 'Department')["MdmsRes"]["common-masters"]["Department"])
     DESIG_LIST =(mdms_call(auth_token, "common-masters", 'Designation')["MdmsRes"]["common-masters"]["Designation"])
     #print("DESIG_LIST--",DESIG_LIST)
@@ -324,6 +354,7 @@ def main():
 
     departmentData = loadDept()
     designationData= loadDesig()
+    lrmsRoleData = loadLrmsRole()
     #print(df) 
     for ind in df.index:
  
@@ -346,7 +377,7 @@ def main():
         #print("designation--",designation)  
         password = "Bel@1234"
         username = getValue(df,row,"Login Id UAT" ,"" )   
-            
+        lrmsRole = lrmsRoleData[getValue(df,row,"Office Name" ,"" )]     
         gender = getValue(df,row,"Gender*" ,"M" )    
         fName = getValue(df,row,"Father/ Husband Name*" ,"FATHER NAME" )  
         empType =getValue(df,row,"Nature of Employment *" ,"PERMANENT" )    
@@ -355,8 +386,8 @@ def main():
         joiningDate =getTime(df,row,"Appointed From Date*" )  
         #print("joiningDate--",joiningDate)
         address =getValue(df,row,"Correspondance Address*" ,"" )  
-
- 
+        city = address
+        print("city--",city)
         ## Check for empty rows 
         
         
@@ -372,7 +403,9 @@ def main():
         if len(roles_needed)==0 : 
           continue
         roles_needed.add("EMPLOYEE")
-        #print("roles_needed",roles_needed)
+        roles_needed.add(lrmsRole)
+        print("lrmsRole--",lrmsRole)
+        print("roles_needed",roles_needed)
         for role  in roles_needed:
             roles.append({"code": role, "name": config.ROLE_CODE_MAP[role], "tenantId": tenant_id})
 
@@ -532,11 +565,12 @@ def main():
         json.dump(post_data_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
     with io.open(os.path.join(config.HRMS_CMD_FOLDER,"LOGS","hrms-response_"+str(city)+"_"+str(dateStr)+".json"), mode="w", encoding="utf-8") as f:
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
-    with io.open(os.path.join(config.HRMS_CMD_FOLDER,"user.csv") , mode="w+", newline="") as f:
+    with io.open(os.path.join(config.HRMS_CMD_FOLDER,"userProd.csv") , mode="w+", newline="") as f:
         write = csv.writer(f) 
         print("User LIst ",userList)
         write.writerow([config.CITY_NAME]) 
         write.writerows(userList) 
  
 if __name__ == "__main__":
-    caller()
+    #caller()
+    main()
