@@ -60,7 +60,7 @@ def main():
             tenant_id=module["code"]
             cityname = tenant_id.lower()[3:]
             boundary_path = config.MDMS_LOCATION /  cityname / "egov-location"
-            print(boundary_path)
+            print(cityname)
             
             if os.path.isfile(boundary_path / "boundary-data.json"):
                 with open(boundary_path / "boundary-data.json") as f:
@@ -85,7 +85,7 @@ def main():
                 json.dump(existing_boundary_data, f, indent=2,  ensure_ascii=False)
                 process_boundary_localization_English(tenant_id,cityname)
                 process_boundary_localization_hindi(tenant_id,cityname)
-                #return
+                #print("Boundary localization pushed.")
 def process_boundary_localization_English(tenant_id,cityname):
     load_revenue_boundary_config()    
     locale_module = "rainmaker-" + tenant_id
@@ -117,8 +117,7 @@ def process_boundary_localization_English(tenant_id,cityname):
         "messages": locale_data
     }
     auth_token = superuser_login()["access_token"]
-    localize_response = upsert_localization(auth_token, data)
-    print("Boundary localization for English is pushed.")
+    localize_response = upsert_localization(auth_token, data)    
     #print(localize_response)
 
 def process_boundary_localization_hindi(tenant_id,cityname):
@@ -152,7 +151,6 @@ def process_boundary_localization_hindi(tenant_id,cityname):
     }
     auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)
-    print("Boundary localization for Hindi is pushed.")
     #print(localize_response)
 
 if __name__ == "__main__":
