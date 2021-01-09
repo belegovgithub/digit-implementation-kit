@@ -116,7 +116,7 @@ def process_boundary_localization_English(tenant_id,cityname):
         "tenantId": tenant_id,
         "messages": locale_data
     }
-    auth_token = "503a2f93-3fbc-4996-b7d8-38d006d5702c"
+    auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)
     print("Boundary localization for English is pushed.")
     #print(localize_response)
