@@ -67,7 +67,7 @@ def load_config():
     config.isUpdateallowed = False
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
-
+    config.LOG_PATH = "D:/Temp/"
     config.URL_LOGIN = config.HOST + "/user/oauth/token"
     config.URL_BILLING_SLAB_CREATE = config.HOST + "/pt-calculator-v2/billingslab/_create"
 
@@ -91,6 +91,7 @@ def load_config():
     config.HELP_JSON = config.MDMS_LOCATION / "common-masters" / "Help.json"
     config.BUSINESS_SERVICE_JSON = config.MDMS_LOCATION / "BillingService" / "BusinessService.json"
     config.DOCUMENT_TYPE_MASTER_JSON = config.MDMS_LOCATION / "common-masters" / "DocumentType.json"
+    config.TAXHEADMASTER_JSON = config.MDMS_LOCATION / "BillingService" / "TaxHeadMaster.json"
 
 
     config.TENANT_ID = config.TENANT + "." + config.CITY_NAME.lower()
