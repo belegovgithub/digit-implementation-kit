@@ -17,13 +17,14 @@ def main():
 
     with io.open(config.BUSINESS_SERVICE_JSON, encoding="utf-8") as f:
         business_service_data = json.load(f)
-    updated_services  =[]
+    localization_arr  =[]
     #print(json.dumps(tax_head_data["TaxHeadMaster"], indent=2))
     
     for found_index, service_code in enumerate(business_service_data["BusinessService"]):          
         found = -1 
         if service_code["type"] == "Adhoc":
             code_business_service = service_code["code"] + "_ROUNDOFF" 
+            localization_arr.append(code_business_service)
             code_business_service= code_business_service.upper()
             data_object = {
                 "category": "CHARGES",
@@ -50,20 +51,20 @@ def main():
                 tax_head_data["TaxHeadMaster"].append(data_object)
     with open(config.TAXHEADMASTER_JSON, mode="w", encoding="utf-8") as f:
         json.dump(tax_head_data, f, indent=2,  ensure_ascii=False)
-    return
-    process_localization_English(code_business_service)
-    process_localization_hindi(code_business_service)
+    process_localization_English(localization_arr)
+    process_localization_hindi(localization_arr)
     #print("Boundary localization pushed.")
-def process_localization_English(code):
+def process_localization_English(localization_arr):    
     load_revenue_boundary_config()    
-    locale_data = []     
-    code = code.replace(".","_")
-    locale_data.append({
-                    "code": code,
-                    "message": "Round Off",
-                    "module": "rainmaker-uc",
-                    "locale": "en_IN"
-                })
+    locale_data = []  
+    for code in localization_arr:
+        code = code.replace(".","_")
+        locale_data.append({
+                        "code": code,
+                        "message": "Round Off",
+                        "module": "rainmaker-uc",
+                        "locale": "en_IN"
+                    })
     data = {
         "RequestInfo": {
             "authToken": "{{access_token}}"
@@ -75,16 +76,17 @@ def process_localization_English(code):
     localize_response = upsert_localization(auth_token, data)    
     #print(localize_response)
 
-def process_localization_hindi(code):
-    load_revenue_boundary_config()    
-    locale_data = [] 
-    code = code.replace(".","_")      
-    locale_data.append({
-                    "code": code,
-                    "message": "पूर्णांक",
-                    "module": "rainmaker-uc",
-                    "locale": "hi_IN"
-                }) 
+def process_localization_hindi(localization_arr):
+    load_revenue_boundary_config()   
+    locale_data = []  
+    for code in localization_arr :        
+        code = code.replace(".","_")      
+        locale_data.append({
+                        "code": code,
+                        "message": "पूर्णांक",
+                        "module": "rainmaker-uc",
+                        "locale": "hi_IN"
+                    }) 
     data = {
         "RequestInfo": {
             "authToken": "{{access_token}}"
