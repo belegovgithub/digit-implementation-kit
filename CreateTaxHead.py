@@ -57,7 +57,13 @@ def main():
 def process_localization_English(localization_arr):    
     load_revenue_boundary_config()    
     locale_data = []  
-    for code in localization_arr:
+    for code in localization_arr:        
+        locale_data.append({
+                        "code": code,
+                        "message": "Round Off",
+                        "module": "rainmaker-commonpay",
+                        "locale": "en_IN"
+                    })
         code = code.replace(".","_")
         locale_data.append({
                         "code": code,
@@ -74,19 +80,26 @@ def process_localization_English(localization_arr):
     }
     auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)    
-    #print(localize_response)
+    print("Pushed for English")
+    #print(json.dumps(localize_response, indent=2))
 
 def process_localization_hindi(localization_arr):
     load_revenue_boundary_config()   
     locale_data = []  
-    for code in localization_arr :        
-        code = code.replace(".","_")      
+    for code in localization_arr :              
+        locale_data.append({
+                        "code": code,
+                        "message": "पूर्णांक",
+                        "module": "rainmaker-commonpay",
+                        "locale": "hi_IN"
+                    }) 
+        code = code.replace(".","_")
         locale_data.append({
                         "code": code,
                         "message": "पूर्णांक",
                         "module": "rainmaker-uc",
                         "locale": "hi_IN"
-                    }) 
+                    })
     data = {
         "RequestInfo": {
             "authToken": "{{access_token}}"
@@ -96,7 +109,7 @@ def process_localization_hindi(localization_arr):
     }
     auth_token = superuser_login()["access_token"]
     localize_response = upsert_localization(auth_token, data)
-    #print(localize_response)
+    print("Pushed for Hindi")
 
 if __name__ == "__main__":
     main()
