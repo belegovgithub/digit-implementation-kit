@@ -328,7 +328,11 @@ def createEmployee(auth_token, name,username, tenant_id, mobile_number,role_code
 
  
 ROLE_CODES = {"RO": "RO", "GRO": "GRO", "PGR-CE": "CSR", "TL Counter Employee": "TL_CEMP",
-              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP", "STADMIN": "STADMIN"}
+              "TL Doc Verifier": "TL_DOC_VERIFIER", "TL Field Inspector": "TL_FIELD_INSPECTOR", "TL Approver": "TL_APPROVER", "mCollect Employee": "UC_EMP", "STADMIN": "STADMIN",
+              "SW_CEMP":"SW_CEMP","SW_DOC_VERIFIER":"SW_DOC_VERIFIER","SW_FIELD_INSPECTOR":"SW_FIELD_INSPECTOR","SW_APPROVER":"SW_APPROVER","SW_CLERK":"SW_CLERK",
+               "WS_CEMP":"WS_CEMP","WS_DOC_VERIFIER":"WS_DOC_VERIFIER","WS_FIELD_INSPECTOR":"WS_FIELD_INSPECTOR","WS_APPROVER":"WS_APPROVER","WS_CLERK":"WS_CLERK", 
+              
+              }
 
 def main():
     # load default config
@@ -344,27 +348,65 @@ def main():
         print("=========================")
         if(len(tenant['code'].split('.')) > 1):
             tenant_id = tenant['code']
-            cityCode ="_"+tenant_id.split('.')[1][0:4].upper()
+            if tenant_id != 'pb.testing':
+                continue
+            cityCode ="5_"+tenant_id.split('.')[1][0:4].upper()
             #State Admin
-            username = "STADMIN" + cityCode
-            roles ="STADMIN"
-            createEmployee(auth_token, "CB Admin",username , tenant_id, "8197292570",roles, DEPT_LIST, DESIG_LIST)
+            # username = "STADMIN" + cityCode
+            # roles ="STADMIN"
+            # createEmployee(auth_token, "CB Admin",username , tenant_id, "8197292570",roles, DEPT_LIST, DESIG_LIST)
             # Challan Counter Employee
-            username = "UC" + cityCode
-            roles ="mCollect Employee"
-            createEmployee(auth_token, "Challan Counter Employee",username , tenant_id, "8197292571",roles, DEPT_LIST, DESIG_LIST)
-            # PGR Counter Employee
-            username = "PGR_CE" + cityCode
-            roles ="PGR-CE"
-            createEmployee(auth_token, "PGR Counter Employee",username , tenant_id, "8197292572",roles, DEPT_LIST, DESIG_LIST)
-            # PGR RO Employee
-            username = "PGR_RO" + cityCode
-            roles ="RO"
-            createEmployee(auth_token, "PGR RO",username , tenant_id, "8197292573",roles, DEPT_LIST, DESIG_LIST)
-            # PGR RO Employee
-            username = "PGR_GRO" + cityCode
-            roles ="GRO"
-            createEmployee(auth_token, "PGR GRO",username , tenant_id, "8197292574",roles, DEPT_LIST, DESIG_LIST)
+            username = "WS_CLERK" + cityCode
+            roles ="WS_CLERK"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600601",roles, DEPT_LIST, DESIG_LIST)
+            username = "WS_APPROVER" + cityCode
+            roles ="WS_APPROVER"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600602",roles, DEPT_LIST, DESIG_LIST)
+            username = "WS_FIELD_INSPECTOR" + cityCode
+            roles ="WS_FIELD_INSPECTOR"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600603",roles, DEPT_LIST, DESIG_LIST)
+            
+            username = "WS_DOC_VERIFIER" + cityCode
+            roles ="WS_DOC_VERIFIER"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600604",roles, DEPT_LIST, DESIG_LIST)
+            
+            username = "WS_CEMP" + cityCode
+            roles ="WS_CEMP"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600605",roles, DEPT_LIST, DESIG_LIST)
+  
+            
+            username = "SW_CLERK" + cityCode
+            roles ="SW_CLERK"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600611",roles, DEPT_LIST, DESIG_LIST)
+            username = "SW_APPROVER" + cityCode
+            roles ="SW_APPROVER"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600612",roles, DEPT_LIST, DESIG_LIST)
+            username = "SW_FIELD_INSPECTOR" + cityCode
+            roles ="SW_FIELD_INSPECTOR"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600613",roles, DEPT_LIST, DESIG_LIST)
+            
+            username = "SW_DOC_VERIFIER" + cityCode
+            roles ="SW_DOC_VERIFIER"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600614",roles, DEPT_LIST, DESIG_LIST)
+            
+            username = "SW_CEMP" + cityCode
+            roles ="SW_CEMP"
+            createEmployee(auth_token, "BEL Water Employee",username , tenant_id, "6666600615",roles, DEPT_LIST, DESIG_LIST)
+ 
+ 
+            
+            # # PGR Counter Employee
+            # username = "PGR_CE" + cityCode
+            # roles ="PGR-CE"
+            # createEmployee(auth_token, "PGR Counter Employee",username , tenant_id, "8197292572",roles, DEPT_LIST, DESIG_LIST)
+            # # PGR RO Employee
+            # username = "PGR_RO" + cityCode
+            # roles ="RO"
+            # createEmployee(auth_token, "PGR RO",username , tenant_id, "8197292573",roles, DEPT_LIST, DESIG_LIST)
+            # # PGR RO Employee
+            # username = "PGR_GRO" + cityCode
+            # roles ="GRO"
+            # createEmployee(auth_token, "PGR GRO",username , tenant_id, "8197292574",roles, DEPT_LIST, DESIG_LIST)
             #break
     dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
     print(dateStr )
