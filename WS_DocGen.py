@@ -3,7 +3,6 @@ from config import config
 import io
 import os 
 import sys
-from  processing import process_bank_details
 import pandas as pd
 def main():
     Flag =False
@@ -12,7 +11,6 @@ def main():
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
     for found_index, module in enumerate(cb_module_data["tenants"]):
-        #print(module["description"])
         tenantMapping[module["description"].lower()]=module["code"]
     print(tenantMapping)
     #for root, dirs, files in os.walk(r"D:\CBData\Verified CB Data\CC", topdown=True):
