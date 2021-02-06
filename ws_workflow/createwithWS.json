@@ -1,0 +1,64 @@
+{
+            "tenantId": "pb.testing",
+            "businessService": "PT.CREATEWITHWNS",
+            "business": "PT",
+            "businessServiceSla": null,
+            "states": [
+                {
+                    "sla": null,
+                    "state": null,
+                    "applicationStatus": "INWORKFLOW",
+                    "docUploadRequired": false,
+                    "isStartState": true,
+                    "isTerminateState": false,
+                    "actions": [
+                        {
+                            "action": "OPEN",
+                            "nextState": "INITIATED",
+                            "roles": [
+                                "CITIZEN",
+                                "EMPLOYEE"
+                            ]
+                        }
+                    ]
+                },
+				{
+                    "sla": null,
+                    "state": "INITIATED",
+                    "applicationStatus": "INWORKFLOW",
+                    "docUploadRequired": false,
+                    "isStartState": true,
+                    "isTerminateState": false,
+					"isStateUpdatable":true,
+                    "actions": [
+                        {
+                            "action": "SUBMIT",
+                            "nextState": "APPROVED",
+                            "roles": [
+                                "CITIZEN",
+                                "EMPLOYEE"
+                            ]
+                        },
+						{
+                            "action": "OPEN",
+                            "nextState": "INITIATED",
+                            "roles": [
+                                "EMPLOYEE"
+                            ]
+                        }
+                    ]
+                },
+				{
+                    "sla": null,
+                    "state": "APPROVED",
+                    "applicationStatus": "ACTIVE",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": true,
+					"isStateUpdatable":false,
+                    "actions": null
+                }
+				
+			]
+}
+				
