@@ -103,23 +103,51 @@ def getTemplate() :
   ]
     return docList
 
-
+localizationData =[]
+localizationDataHi =[]
 def getValue(df, row,colName,defValue="") :
     if not pd.isna(row[df.columns.get_loc(colName)] ) : 
         return str(row[df.columns.get_loc(colName)]).strip() 
     else : 
         return defValue if defValue is not None else row[df.columns.get_loc(colName)] 
+
+def enLoc (  code, message ):
+  code =code.strip()
+  message =message.strip()
+  if len(code )==0 : 
+    return
+  if len(list(filter(lambda doc: doc["code"]==code, localizationData))) ==0 : 
+    localData ={
+                "locale": "en_IN",
+                "code": code,
+                "message": message,
+                "module": "rainmaker-ws"
+            }
+    localizationData.append(localData)
+def hiLoc (  code, message ):
+  if len(code )==0 : 
+    return
+  if len(list(filter(lambda doc: doc["code"]==code, localizationDataHi))) ==0 : 
+    localData ={
+                "locale": "hi_IN",
+                "code": code,
+                "message": message,
+                "module": "rainmaker-ws"
+            }
+    localizationDataHi.append(localData)
+
+
 def main():
     tenantMapping={}
     cbDocData ={}
-    localizationData =[]
+    
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
     for found_index, module in enumerate(cb_module_data["tenants"]):
         tenantMapping[module["description"].lower()]=module["code"]
         cbDocData[module["description"].lower()]=getTemplate()
     
-    dfs = open_excel_file('D:\HRMS_Data\DocsMapping&Clarifications_1.xlsx')
+    dfs = open_excel_file('D:\wsDoc\DocsMapping&Clarifications_1.xlsx')
     df = get_sheet(dfs, "Sheet2")
     for ind in df.index: 
         row =df.iloc[ind]
@@ -130,10 +158,12 @@ def main():
         cbDocs =cbDocData[cbName]
         
         docCategory = getValue(df,row,"Doc Category" ,None ) 
-        docDesc = getValue(df,row,"Doc Description " ,"" ) 
-        mandatoryFld = getValue(df,row,"M_OR_N" ,True ) 
+        docDesc = getValue(df,row,"Doc Description" ,"" ) 
+        docDescHindi = getValue(df,row,"Doc Description Hindi" ,"" ) 
+        mandatoryFld = bool (row[df.columns.get_loc("M_OR_N")].astype(int))
         dropDownCode = getValue(df,row,"DOC_MAPPING" ,None ) 
-        dropDownText = getValue(df,row,"Additional Docs" ,"" ) 
+        dropDownText = getValue(df,row,"Additional Docs" ,"" )
+        dropDownTextHindi = getValue(df,row,"Additional Docs Hindi" ,"" ) 
         docList  = list(filter(lambda doc: doc["code"]==docCategory, cbDocs))
         if docCategory is None or dropDownCode is None : 
             print("Code is none for cb ",cbName)
@@ -142,7 +172,7 @@ def main():
                     "code": docCategory,
                     "documentType": docCategory,
                     "active":True,
-                    "required": False,
+                    "required": mandatoryFld,
                     "hasDropdown": True,
                     "dropdownData": [
                         {
@@ -160,36 +190,37 @@ def main():
                   }
             docList[0]["dropdownData"].append(ele)
         if len(list(filter(lambda doc: doc["code"]==docCategory, localizationData))) ==0 : 
-            localData ={
-                "locale": "en_IN",
-                "code": docCategory,
-                "message": docDesc,
-                "module": "rainmaker-ws"
-            }
-            localizationData.append(localData)
-            localData ={
-                "locale": "en_IN",
-                "code": docCategory+"_DESCRIPTION",
-                "message": docDesc,
-                "module": "rainmaker-ws"
-            }
-            localizationData.append(localData)
+          enLoc(docCategory, docDesc)
+          enLoc(docCategory+"_DESCRIPTION", docDesc)
+          enLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDesc)
+          enLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
+          enLoc(docCategory, docDesc)
+
+          hiLoc(docCategory, docDescHindi)
+          hiLoc(docCategory+"_DESCRIPTION", docDescHindi)
+          hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDescHindi)
+          hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
+          hiLoc(docCategory, docDescHindi)
+          enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+          hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+           
         if len(list(filter(lambda doc: doc["code"]==dropDownCode, localizationData))) ==0 : 
-            localData ={
-                "locale": "en_IN",
-                "code": dropDownCode,
-                "message": dropDownText,
-                "module": "rainmaker-ws"
-            }
-            localizationData.append(localData)
+          enLoc(dropDownCode, dropDownText)
+          hiLoc(dropDownCode, dropDownTextHindi)
+          enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+          hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+
+             
 
          
         
 
     print(json.dumps(cbDocData))
-    with io.open(os.path.join(r"D:\HRMS_Data","localization.json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(r"D:\wsDoc","localization.json"), mode="w", encoding="utf-8") as f:
         json.dump(localizationData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
-    with io.open(os.path.join(r"D:\HRMS_Data","cbData.json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(r"D:\wsDoc","localization_hi.json"), mode="w", encoding="utf-8") as f:
+      json.dump(localizationDataHi, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+    with io.open(os.path.join(r"D:\wsDoc","cbData.json"), mode="w", encoding="utf-8") as f:
         json.dump(cbDocData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)       
     for ele in cbDocData : 
         docList=cbDocData[ele]
