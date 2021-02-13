@@ -16,8 +16,8 @@
                             "action": "OPEN",
                             "nextState": "INITIATED",
                             "roles": [
-                                "CITIZEN",
-                                "EMPLOYEE"
+                                "WS_CEMP",
+                                "SW_CEMP"
                             ]
                         }
                     ]
@@ -35,15 +35,16 @@
                             "action": "SUBMIT",
                             "nextState": "APPROVED",
                             "roles": [
-                                "CITIZEN",
-                                "EMPLOYEE"
+                                "WS_CEMP",
+                                "SW_CEMP"
                             ]
                         },
 						{
                             "action": "OPEN",
                             "nextState": "INITIATED",
                             "roles": [
-                                "EMPLOYEE"
+                                "WS_CEMP",
+                                "SW_CEMP"
                             ]
                         }
                     ]
