@@ -2,7 +2,7 @@
   "tenantId": "pb.testing",
   "businessService": "NewSW1",
   "business": "sw-services",
-  "businessServiceSla": 259200000,
+  "businessServiceSla": 1036800000,
   "states": [
     {
       "sla": null,
@@ -62,7 +62,7 @@
       ]
     },
     {
-      "sla": null,
+      "sla": 172800000,
       "state": "PENDING_FOR_DOCUMENT_VERIFICATION",
       "applicationStatus": "PENDING_FOR_DOCUMENT_VERIFICATION",
       "docUploadRequired": false,
@@ -103,7 +103,7 @@
       "isTerminateState": true
     },
     {
-      "sla": 86400000,
+      "sla": 345600000,
       "state": "PENDING_FOR_FIELD_INSPECTION",
       "applicationStatus": "PENDING_FOR_FIELD_INSPECTION",
       "docUploadRequired": false,
@@ -135,7 +135,7 @@
       ]
     },
     {
-      "sla": 43200000,
+      "sla": 86400000,
       "state": "PENDING_APPROVAL_FOR_CONNECTION",
       "applicationStatus": "PENDING_APPROVAL_FOR_CONNECTION",
       "docUploadRequired": false,
@@ -167,7 +167,7 @@
       ]
     },
     {
-      "sla": 43200000,
+      "sla": null,
       "state": "PENDING_FOR_PAYMENT",
       "applicationStatus": "PENDING_FOR_PAYMENT",
       "docUploadRequired": false,
@@ -186,7 +186,7 @@
       ]
     },
     {
-      "sla": null,
+      "sla": 432000000,
       "state": "PENDING_FOR_CONNECTION_ACTIVATION",
       "applicationStatus": "PENDING_FOR_CONNECTION_ACTIVATION",
       "isStateUpdatable": true,
