@@ -49,6 +49,53 @@ def createWorkflow(authToken,fileName,tenantId):
         else : 
             print("Error in workflow creation for ",tenantId )
         post_data_resp_list.append(data.json()) 
+
+def updateWorkflowSLA(authToken,fileName,tenantId, existingData,fileN):
+    print("File Name ",fileName)
+    with io.open(fileName, encoding="utf-8") as file : 
+        workflow = json.load(file)
+        workflow['tenantId']=tenantId 
+
+        ######### modification #########
+
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+".json" ), mode="w", encoding="utf-8") as f:
+            json.dump(existingData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        existingData['businessServiceSla']=workflow['businessServiceSla']
+
+        for index, state in enumerate(existingData["states"]) :
+            for masterState in workflow["states"] :
+                if masterState["applicationStatus"]==state["applicationStatus"] :
+                    state["sla"]=masterState["sla"]
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+"_m.json"), mode="w", encoding="utf-8") as f:
+            json.dump(existingData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        jsonObj ={
+        "RequestInfo": {
+            "apiId": "Rainmaker",
+            "action": "",
+            "did": 1,
+            "key": "",
+            "msgId": "20170310130900|en_IN",
+            "requesterId": "",
+            "ts": 1513579888683,
+            "ver": ".01",
+            "authToken": authToken 
+             
+        },
+        "BusinessServices": [existingData]}
+        url = urljoin(config.HOST, '/egov-workflow-v2/egov-wf/businessservice/_update')
+        params = {"tenantId":tenantId}
+        data = requests.post(url, params=params, json=jsonObj)
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+"_m_res.json"), mode="w", encoding="utf-8") as f:
+            json.dump(existingData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        if(data.status_code == 200):
+           print("Workflow updated for ",tenantId ," successfully")
+        else : 
+            print("Error in workflow creation for ",tenantId)
+
+
+ 
+         
+         
 def main():
     # load default config
     print("TENANT_JSON", config.CITY_MODULES_JSON)
@@ -56,7 +103,7 @@ def main():
     config.LOG_PATH=r"D:\workflow"
     with io.open(config.CITY_MODULES_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
-    businessService ={"WS" : ["NewWS1","ModifyWSConnection"] , "SW" :["NewSW1","ModifySWConnection"] }
+    businessService ={"WS" : ["NewWS1" ] , "SW" :["NewSW1" ] }
  
     for found_index, module in enumerate(cb_module_data["citymodule"]):
         if module["module"] in businessService:
@@ -68,6 +115,8 @@ def main():
 
                     if(len(resp['BusinessServices'])== 0) :
                         createWorkflow(auth_token, os.path.join("ws_workflow",bs +str(".json")),tenantId)
+                    else : 
+                        updateWorkflowSLA(auth_token, os.path.join("ws_workflow",bs +str(".json")),tenantId,resp["BusinessServices"][0],bs  )
                 propRes =search_Workflow(auth_token,tenantId,"PT.CREATEWITHWNS")
                 if(len(propRes['BusinessServices'])== 0) :
                     createWorkflow(auth_token, os.path.join("ws_workflow","createwithWS" +str(".json")),tenantId)
