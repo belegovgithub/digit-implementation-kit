@@ -10,9 +10,8 @@ import openpyxl
 
 def main():
     filePath=r"D:\eGov\Data\Localization"
-    fileName="Localization_Data - Kannada- Belgaum cantt"
-    moduleName="rainmaker-ws"
-    sheetName = "commonpay"
+    fileName="Localization_Data - Malayalam"
+    sheetName = "ws"
     # dfs = open_excel_file(os.path.join(filePath,fileName+".xlsx"))
     # df = get_sheet(dfs, sheetName)
     workBook = openpyxl.load_workbook(os.path.join(filePath,fileName+".xlsx"))
@@ -27,7 +26,7 @@ def main():
     #                     "code":df['code'][ind]  ,
     #                     "message": df['message'][ind],
     #                     "module": "rainmaker-" + sheetName,
-    #                     "locale": "kn_IN" 
+    #                     "locale": "ml_IN" 
     #                 })
 
     # data = {
@@ -61,7 +60,7 @@ def main():
                             "code":df['code'][ind]  ,
                             "message": df['message'][ind],
                             "module": "rainmaker-" + sheetName,
-                            "locale": "kn_IN" 
+                            "locale": "ml_IN" 
                         })
         
         data = {
@@ -71,7 +70,6 @@ def main():
             "tenantId": config.TENANT,
             "messages": localization_data
         }
-        count = count + 1
         # with io.open(os.path.join(filePath, fileName+ ".json"), mode="w", encoding="utf-8") as f:
         #     json.dump(data, f, indent=2,  ensure_ascii=False)
     
