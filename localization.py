@@ -3,7 +3,88 @@ from config import config
 import io
 import os
 import numpy
- 
+import pandas as pd
+import openpyxl
+
+
+
+def main():
+    filePath=r"D:\eGov\Data\Localization"
+    fileName="Localization_Data - Kannada- Belgaum cantt"
+    moduleName="rainmaker-ws"
+    sheetName = "commonpay"
+    # dfs = open_excel_file(os.path.join(filePath,fileName+".xlsx"))
+    # df = get_sheet(dfs, sheetName)
+    workBook = openpyxl.load_workbook(os.path.join(filePath,fileName+".xlsx"))
+    sheets = workBook.sheetnames
+    count = 0
+    ######For a particular sheet #################
+    # df = pd.read_excel(os.path.join(filePath,fileName+".xlsx"), sheet_name=sheetName, usecols=['code', 'message'])
+    # print(sheetName)
+    # localization_data=[]
+    # for ind in df.index: 
+    #     localization_data.append({
+    #                     "code":df['code'][ind]  ,
+    #                     "message": df['message'][ind],
+    #                     "module": "rainmaker-" + sheetName,
+    #                     "locale": "kn_IN" 
+    #                 })
+
+    # data = {
+    #     "RequestInfo": {
+    #         "authToken": "{{access_token}}"
+    #     },
+    #     "tenantId": config.TENANT,
+    #     "messages": localization_data
+    # }
+    
+    # with io.open(os.path.join(filePath, fileName+ ".json"), mode="w", encoding="utf-8") as f:
+    #     json.dump(data, f, indent=2,  ensure_ascii=False)
+
+    # auth_token = superuser_login()["access_token"]        
+    # localize_response = upsert_localization(auth_token, data)
+    # if(not (localize_response.status_code == 200 or localize_response.status_code == 201)):
+    #     print(localize_response.json())
+    #     print("Upsert Failed")  
+    # else:
+    #     count = count + 1
+    # print(count)  
+    # return
+    ##########End of Paricular sheet localization#############
+    ######For full excel file #################
+    for sheetName in sheets:
+        df = pd.read_excel(os.path.join(filePath,fileName+".xlsx"), sheet_name=sheetName, usecols=['code', 'message'])
+        print(sheetName)
+        localization_data=[]
+        for ind in df.index: 
+            localization_data.append({
+                            "code":df['code'][ind]  ,
+                            "message": df['message'][ind],
+                            "module": "rainmaker-" + sheetName,
+                            "locale": "kn_IN" 
+                        })
+        
+        data = {
+            "RequestInfo": {
+                "authToken": "{{access_token}}"
+            },
+            "tenantId": config.TENANT,
+            "messages": localization_data
+        }
+        count = count + 1
+        # with io.open(os.path.join(filePath, fileName+ ".json"), mode="w", encoding="utf-8") as f:
+        #     json.dump(data, f, indent=2,  ensure_ascii=False)
+    
+        auth_token = superuser_login()["access_token"]        
+        localize_response = upsert_localization(auth_token, data)
+        if(not (localize_response.status_code == 200 or localize_response.status_code == 201)):
+            print(localize_response.json())
+            print("Upsert Failed")  
+        else:
+            count = count + 1
+    print(count) 
+    ###############End of full excel file Localization#################################
+
 def process_CB_localization(CBNAME, district, district_code, state):
     locale_data = []
     locale_module = "rainmaker-common"
@@ -36,62 +117,6 @@ def process_CB_localization(CBNAME, district, district_code, state):
     localize_response = upsert_localization(auth_token, data)
     print(localize_response)
     print("Tenant localization for english is pushed.")
-def main():
-    filePath=r"D:\egovSrc\DGDE_Water And Sewarage Data\DataTemplates"
-    fileName="rainmaker-ws"
-    sheetName="ws-source"
-    moduleName="rainmaker-ws"
-    dfs = open_excel_file(os.path.join(filePath,fileName+".xlsx"))
-
-    df = get_sheet(dfs, sheetName)
-    #print(df)
-    #df = df.replace('nan','NA')
-    #df["message"] = df["message"].replace(numpy.nan, 'NA', regex=True)
-    #df['hindi message'] =df['hindi message'].replace(numpy.nan, 'NA', regex=True)
-    #df = df.fillna('NA')
-    localization_data_en=[]
-    localization_data_hi=[]
-    for ind in df.index: 
-        localization_data_en.append({
-                        "code":df['code'][ind]  ,
-                        "message": df['message'][ind],
-                        "module": moduleName,
-                        "locale": "en_IN"
-                    })
-        localization_data_hi.append({
-                        "code":df['code'][ind]  ,
-                        "message": df['hindi message'][ind],
-                        "module": moduleName,
-                        "locale": "hi_IN"
-                    })
-    #print(localization_data_hi)
-
-
-    data_en = {
-        "RequestInfo": {
-            "authToken": "{{access_token}}"
-        },
-        "tenantId": config.TENANT,
-        "messages": localization_data_en
-    }
-    data_hi = {
-        "RequestInfo": {
-            "authToken": "{{access_token}}"
-        },
-        "tenantId": config.TENANT,
-        "messages": localization_data_hi
-    }
-    with io.open(os.path.join(filePath,fileName+"-en.json"), mode="w", encoding="utf-8") as f:
-        json.dump(data_en, f, indent=2,  ensure_ascii=False)
-    with io.open(os.path.join(filePath,fileName+"-hi.json"), mode="w", encoding="utf-8") as f:
-        json.dump(data_hi, f, indent=2,  ensure_ascii=False)
-  
-    auth_token = superuser_login()["access_token"]
-    print("auth_token   ", auth_token)
-    localize_response = upsert_localization(auth_token, data_en)
-    print("English data resp : " ,localize_response)
-    localize_response = upsert_localization(auth_token, data_hi)
-    print("Hindi data resp : " ,localize_response)
 
 if __name__ == "__main__":
     main()

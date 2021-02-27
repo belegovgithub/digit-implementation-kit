@@ -35,7 +35,7 @@ def main():
             cityname = tenant_id.lower()[3:]
             #cityname = "ahmednagar"
             boundary_path = os.path.join(config.MDMS_LOCATION ,  cityname , "egov-location")
-            template_path = os.path.join(config.LOG_PATH ,  cityname )
+            template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
             print(cityname)
             
             if os.path.isfile(os.path.join(boundary_path , "boundary-data.json")):
@@ -49,18 +49,24 @@ def main():
                             data.append([t2["name"],t2["code"]])
                             #print(json.dumps(t1, indent = 2))
             df = pd.DataFrame(data,columns=['Locality Name','Code'])
-            os.makedirs(template_path, exist_ok=True)              
-
-            # #df.to_excel(os.path.join(template_path,'Template for Existing Property Detail.xlsx'),index=False)
-            #Open existing excel file
-            templateFile = os.path.join(template_path,'Template for Existing Property Detail.xlsx')
-            workbook1 = openpyxl.load_workbook(r'D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx')         
-            writer = pd.ExcelWriter(templateFile, engine='openpyxl')   
-            writer.book = workbook1          
-            #Add dataframe to excel file 
-            df.to_excel(writer,sheet_name="Master_Locality/Mohalla",index=False,engine='openpyxl')                
+            # df.to_excel(template_file,sheet_name=cityname,index=False)
+            workbook1 = openpyxl.load_workbook(template_file)
+            writer = pd.ExcelWriter(template_file, engine='openpyxl')   
+            writer.book = workbook1        
+            df.to_excel(writer,sheet_name=cityname,index=False,engine='openpyxl') 
             writer.save()
             writer.close()
+            # os.makedirs(template_path, exist_ok=True)  
+            # df.to_excel(os.path.join(template_path,'Template for Existing Property Detail.xlsx'),index=False)
+            # #Open existing excel file
+            # templateFile = os.path.join(template_path,'Template for Existing Property Detail.xlsx')
+            # workbook1 = openpyxl.load_workbook(r'D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx')         
+            # writer = pd.ExcelWriter(templateFile, engine='openpyxl')   
+            # writer.book = workbook1          
+            # #Add dataframe to excel file 
+            # df.to_excel(writer,sheet_name="Master_Locality/Mohalla",index=False,engine='openpyxl')                
+            # writer.save()
+            # writer.close()
             #return
             # shutil.copy(r'D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx',os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
             # filePath =os.path.join(template_path,'Template for Existing Property Detail.xlsx')
