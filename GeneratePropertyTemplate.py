@@ -42,21 +42,15 @@ def main():
                 #print (os.path.join(root, name))
                 subfolder = os.path.join(root, name)
                 cbFile =os.path.join(root, name,"BEL_Template for Existing Property Detail.xlsx")
-                if os.path.exists(cbFile) :
-                    # print(cbFile)
-                    # print(root)                       
-
+                if os.path.exists(cbFile) :  
                     city = "pb."+ subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CC\CB ","" ).strip().lower()
 
                     if city not in tenantMapping:
                         print("Not In city",city)
                         continue
-                    # tenant_id=module["code"]
                     cityname = tenantMapping[city]
                     print(cityname)
-                    # cityname = "agra"
                     template_path = os.path.join(r"D:/eGov/Data/WS/Template/CC/CB "+cityname) 
-                    print(template_path)
                     # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                     dfLocality = getLocalityData(cityname)
                     # cbFile = os.path.join(r"D:\eGov\Data\WS\ABASPY\CC\CB Agra",'BEL_Template for Existing Property Detail_CBAgra.xlsx')
@@ -74,7 +68,7 @@ def main():
                     sheet.insert_cols(3)                
                     workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS.xlsx'))
                     workbook1.close()
-                    print("Done1")
+                    print("Done")
 
                     Flag=False
                 else:
@@ -175,14 +169,12 @@ def main():
             # target=wb.copy_worksheet(source)
             # # save workbook
             # wb.save(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
-        print("Done")    
+        # print("Done")    
 
 def getLocalityData(cityname):
     data = []
     cityname = "agra"
     boundary_path = os.path.join(config.MDMS_LOCATION ,  cityname , "egov-location")
-    
-    print(cityname)
     
     if os.path.isfile(os.path.join(boundary_path , "boundary-data.json")):
         with open(os.path.join(boundary_path , "boundary-data.json")) as f:
