@@ -173,7 +173,6 @@ def main():
 
 def getLocalityData(cityname):
     data = []
-    cityname = "agra"
     boundary_path = os.path.join(config.MDMS_LOCATION ,  cityname , "egov-location")
     
     if os.path.isfile(os.path.join(boundary_path , "boundary-data.json")):
