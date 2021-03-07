@@ -8,24 +8,28 @@ import numpy
 recv_host = "https://13.71.65.215.nip.io"
 #send_host = "https://demo.echhawani.gov.in"
 send_host = "https://echhawani.gov.in"
-recv_auth = "f5e4ba53-3d15-46f4-8bd5-09d74b34406a"
-#send_auth = "8b5bcc37-bdc5-47bd-a47f-0a879b4333b8"
-send_auth = "247a0a8c-d58e-4610-b4cb-3a8b9a28cc0d"
+recv_auth = "ba459cd4-0666-4c28-8b8e-212ecbaa2dbe"
+#send_auth = "af247018-87d2-4d61-808f-2ba31d951f2f"
+send_auth = "97dfc6ee-11dd-4969-b06c-da348311d693"
 tenantId = "pb"
 
 def main():
     auth_token = superuser_login()["access_token"]
-    modules = ["rainmaker-common","rainmaker-ws","rainmaker-pt"]
+    modules = ["rainmaker-pt","rainmaker-common","rainmaker-ws","rainmaker-pdf"]
     # modules = ["rainmaker-common"]
     locales = ["en_IN","hi_IN"]
-    # locales = ["en_IN"]
+    #locales = ["en_IN"]
     for module in modules:
         for locale in locales:
             data = search_localization(recv_auth,module,locale)["messages"]   
-            # with io.open(os.path.join(r"D:\Temp","localization.json"), mode="w", encoding="utf-8") as f:
+            # with io.open(os.path.join(r"D:\Temp",locale+"localization.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(data, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)         
-            upsert_localization(send_auth, data)
+            localize_response = upsert_localization(send_auth, data)
             print(module, " ", locale)
+            if(not (localize_response.status_code == 200 or localize_response.status_code == 201)):
+                print(localize_response.json())
+                print("Upsert Failed") 
+                return
 
 
 
@@ -47,8 +51,9 @@ def upsert_localization(auth_token, data):
         "messages": data
     }
 
+    # print(body)
     body["RequestInfo"]["authToken"] = auth_token    
-    requests.post(url=send_host + '/localization/messages/v1/_upsert', json=body)
+    return requests.post(url=send_host + '/localization/messages/v1/_upsert', json=body)
 
 
 

@@ -37,20 +37,20 @@ def main():
                 continue
             tenantMapping[module["code"].lower()]=module["code"].lower()[3:]
 
-    for root, dirs, files in os.walk(r"D:\eGov\Data\WS\ABASPY\CC", topdown=True):
+    for root, dirs, files in os.walk(r"D:\eGov\Data\WS\ABASPY", topdown=True):
         for name in dirs:
             #print (os.path.join(root, name))
             subfolder = os.path.join(root, name)
             cbFile =os.path.join(root, name,"BEL_Template for Existing Property Detail.xlsx")
             if os.path.exists(cbFile) :  
-                city = "pb."+ subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CC\CB ","" ).strip().lower()
+                city = "pb."+ subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CB ","" ).strip().lower()
 
                 if city not in tenantMapping:
                     print("Not In city",city)
                     continue
                 cityname = tenantMapping[city]
                 print(cityname)
-                template_path = os.path.join(r"D:/eGov/Data/WS/Template/CC/CB " + cityname) 
+                template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
                 # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                 dfLocality = getLocalityData(cityname)
                 # cbFile = os.path.join(r"D:\eGov\Data\WS\ABASPY\CC\CB Agra",'BEL_Template for Existing Property Detail_CBAgra.xlsx')
@@ -65,14 +65,17 @@ def main():
                 sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
                 sheet.insert_rows(1)
                 sheet.insert_cols(3)
-                sheet.move_range("R1:R50000", rows=0, cols=-15, translate=True)   
+                sheet.move_range("R1:R80000", rows=0, cols=-15, translate=True)   
                 sheet.insert_cols(6, 3)
-                # sheet.insert_cols(7) 
-                # sheet.insert_cols(8) 
-                sheet.move_range("R1:S50000", rows=0, cols=-11, translate=True)
-                # sheet.delete_cols(9)
-                # sheet.delete_cols(16)
-                # sheet.insert_cols(3)                
+                sheet.move_range("R1:S80000", rows=0, cols=-11, translate=True)
+                sheet.delete_cols(12)
+                sheet.delete_cols(18, 5)
+                sheet.insert_cols(4, 3) 
+                sheet.insert_cols(8, 5)    
+                sheet.insert_cols(18)   
+                sheet.insert_cols(21)
+                sheet.insert_cols(26, 3)
+                sheet.insert_cols(30, 15)             
                 workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS.xlsx'))
                 workbook1.close()
 
@@ -80,7 +83,7 @@ def main():
                 count = count + 1
                 # Flag=False
             else:
-                print("file doesnot exist")
+                print("file does not exist")
         # if Flag : 
         #     break
             

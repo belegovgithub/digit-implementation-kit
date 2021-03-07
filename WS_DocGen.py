@@ -76,7 +76,7 @@ def getTemplate() :
       "documentType": "PROPERTY_TAX_RECIEPT",
       "active": True,
       "required": True,
-      "hasDropdown": True,
+      "hasDropdown": False,
       "dropdownData": [
         {
           "code": "PROPERTY_TAX_RECIEPT",
@@ -90,7 +90,7 @@ def getTemplate() :
       "documentType": "SELFDECLERATION",
       "active": True,
       "required": True,
-      "hasDropdown": True,
+      "hasDropdown": False,
       "dropdownData": [
         {
           "code": "SELFDECLERATION",
@@ -138,27 +138,41 @@ def hiLoc (  code, message ):
 
 
 def main():
-    tenantMapping={}
+    tenantMapping=[]
     cbDocData ={}
     
-    with io.open(config.TENANT_JSON, encoding="utf-8") as f:
-        cb_module_data = json.load(f)
-    for found_index, module in enumerate(cb_module_data["tenants"]):
-        tenantMapping[module["description"].lower()]=module["code"]
-        cbDocData[module["description"].lower()]=getTemplate()
-    
-    dfs = open_excel_file('D:\wsDoc\DocsMapping&Clarifications_1.xlsx')
+    # with io.open(config.TENANT_JSON, encoding="utf-8") as f:
+    #     cb_module_data = json.load(f)
+    # for found_index, module in enumerate(cb_module_data["tenants"]):
+    #     tenantMapping[module["description"].lower()]=module["code"]
+    #     cbDocData[module["description"].lower()]=getTemplate()
+
+    with io.open(config.CITY_MODULES_JSON, encoding="utf-8") as f:
+      cb_module_data = json.load(f)
+    found = False
+    for found_index, cityModule in enumerate(cb_module_data["citymodule"]):      
+      if (cityModule["code"] == "WS" or cityModule["code"] == "SW"):
+        for tenant in cityModule["tenants"]:
+          tenantMapping.append(tenant["code"])
+    tenantMapping = list(set(tenantMapping))
+    # print(tenantMapping)
+    # cityMapping =list(map(lambda num: num.split(".")[1], tenantMapping))
+    for tenant in tenantMapping:      
+      cbDocData[tenant] = getTemplate()
+    # print(tenantMapping)
+    # return
+    dfs = open_excel_file('D:\eGov\Data\WS\DocsMapping&Clarifications_1.xlsx')
     df = get_sheet(dfs, "Sheet2")
     for ind in df.index: 
         row =df.iloc[ind]
         cbName = getValue(df,row,"CB" ,None ).lower()
+        cbName = "pb."+cbName
         if cbName not in cbDocData : 
             print("CB description not found ",cbName)
             continue
         cbDocs =cbDocData[cbName]
-        
         docCategory = getValue(df,row,"Doc Category" ,None ) 
-        docDesc = getValue(df,row,"Doc Description" ,"" ) 
+        # docDesc = getValue(df,row,"Doc Description" ,"" ) 
         docDescHindi = getValue(df,row,"Doc Description Hindi" ,"" ) 
         mandatoryFld = bool (row[df.columns.get_loc("M_OR_N")].astype(int))
         dropDownCode = getValue(df,row,"DOC_MAPPING" ,None ) 
@@ -172,8 +186,8 @@ def main():
                     "code": docCategory,
                     "documentType": docCategory,
                     "active":True,
-                    "required": mandatoryFld,
-                    "hasDropdown": True,
+                    "required": True,
+                    "hasDropdown": False,
                     "dropdownData": [
                         {
                         "code": dropDownCode,
@@ -189,52 +203,53 @@ def main():
                         "active": True
                   }
             docList[0]["dropdownData"].append(ele)
-        if len(list(filter(lambda doc: doc["code"]==docCategory, localizationData))) ==0 : 
-          enLoc(docCategory, docDesc)
-          enLoc(docCategory+"_DESCRIPTION", docDesc)
-          enLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDesc)
-          enLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
-          enLoc(docCategory, docDesc)
+            docList[0]["hasDropdown"] = True
+        # if len(list(filter(lambda doc: doc["code"]==docCategory, localizationData))) ==0 : 
+        #   enLoc(docCategory, docDesc)
+        #   enLoc(docCategory+"_DESCRIPTION", docDesc)
+        #   enLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDesc)
+        #   enLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
+        #   enLoc(docCategory, docDesc)
 
-          hiLoc(docCategory, docDescHindi)
-          hiLoc(docCategory+"_DESCRIPTION", docDescHindi)
-          hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDescHindi)
-          hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
-          hiLoc(docCategory, docDescHindi)
-          enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
-          hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+        #   hiLoc(docCategory, docDescHindi)
+        #   hiLoc(docCategory+"_DESCRIPTION", docDescHindi)
+        #   hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDescHindi)
+        #   hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
+        #   hiLoc(docCategory, docDescHindi)
+        #   enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+        #   hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
            
-        if len(list(filter(lambda doc: doc["code"]==dropDownCode, localizationData))) ==0 : 
-          enLoc(dropDownCode, dropDownText)
-          hiLoc(dropDownCode, dropDownTextHindi)
-          enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
-          hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+        # if len(list(filter(lambda doc: doc["code"]==dropDownCode, localizationData))) ==0 : 
+        #   enLoc(dropDownCode, dropDownText)
+        #   hiLoc(dropDownCode, dropDownTextHindi)
+        #   enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+        #   hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
 
              
 
          
         
 
-    print(json.dumps(cbDocData))
-    with io.open(os.path.join(r"D:\wsDoc","localization.json"), mode="w", encoding="utf-8") as f:
-        json.dump(localizationData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
-    with io.open(os.path.join(r"D:\wsDoc","localization_hi.json"), mode="w", encoding="utf-8") as f:
-      json.dump(localizationDataHi, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
-    with io.open(os.path.join(r"D:\wsDoc","cbData.json"), mode="w", encoding="utf-8") as f:
+    # print(json.dumps(cbDocData))
+    # with io.open(os.path.join(r"D:\eGov\Data\WS","cbDocData.json"), mode="w", encoding="utf-8") as f:
+    #   json.dump(cbDocData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
+    # with io.open(os.path.join(r"D:\wsDoc","localization_hi.json"), mode="w", encoding="utf-8") as f:
+    #   json.dump(localizationDataHi, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+    with io.open(os.path.join(r"D:\eGov\Data\WS","cbData.json"), mode="w", encoding="utf-8") as f:
         json.dump(cbDocData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)       
     for ele in cbDocData : 
         docList=cbDocData[ele]
         templateToPush ={
-            "tenantId": tenantMapping[ele],
+            "tenantId": ele,
             "moduleName": "ws-services-masters",
             "Documents": docList
         }
         modifyTemplateToPush ={
-            "tenantId": tenantMapping[ele],
+            "tenantId": ele,
             "moduleName": "ws-services-masters",
             "ModifyConnectionDocuments": docList
         }
-        mCollect_path = config.MDMS_LOCATION / ele / "ws-services-masters"
+        mCollect_path = config.MDMS_LOCATION / ele[3:] / "ws-services-masters"
         os.makedirs(mCollect_path, exist_ok=True)    
         with io.open(os.path.join(mCollect_path,"Documents.json"), mode="w", encoding="utf-8") as f:
             json.dump(templateToPush, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
