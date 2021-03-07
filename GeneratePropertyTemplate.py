@@ -29,7 +29,7 @@ def main():
     df1 = pd.read_excel(templateFile, 'Property Ownership Details')
     df2 = pd.read_excel(templateFile, 'Master Data')
     df3 = pd.read_excel(templateFile, 'Master_UsageType')
-
+    count = 0
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
@@ -37,47 +37,55 @@ def main():
                 continue
             tenantMapping[module["code"].lower()]=module["code"].lower()[3:]
 
-        for root, dirs, files in os.walk(r"D:\eGov\Data\WS\ABASPY\CC", topdown=True):
-            for name in dirs:
-                #print (os.path.join(root, name))
-                subfolder = os.path.join(root, name)
-                cbFile =os.path.join(root, name,"BEL_Template for Existing Property Detail.xlsx")
-                if os.path.exists(cbFile) :  
-                    city = "pb."+ subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CC\CB ","" ).strip().lower()
+    for root, dirs, files in os.walk(r"D:\eGov\Data\WS\ABASPY\CC", topdown=True):
+        for name in dirs:
+            #print (os.path.join(root, name))
+            subfolder = os.path.join(root, name)
+            cbFile =os.path.join(root, name,"BEL_Template for Existing Property Detail.xlsx")
+            if os.path.exists(cbFile) :  
+                city = "pb."+ subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CC\CB ","" ).strip().lower()
 
-                    if city not in tenantMapping:
-                        print("Not In city",city)
-                        continue
-                    cityname = tenantMapping[city]
-                    print(cityname)
-                    template_path = os.path.join(r"D:/eGov/Data/WS/Template/CC/CB "+cityname) 
-                    # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
-                    dfLocality = getLocalityData(cityname)
-                    # cbFile = os.path.join(r"D:\eGov\Data\WS\ABASPY\CC\CB Agra",'BEL_Template for Existing Property Detail_CBAgra.xlsx')
-                    workbook1 = openpyxl.load_workbook(cbFile)   
-                    writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
-                    writer.book = workbook1   
-                    df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
-                    df2.to_excel(writer,sheet_name="Master Data",index=False) 
-                    df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
-                    dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
-                    os.makedirs(template_path, exist_ok=True)
-                    sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
-                    sheet.delete_cols(8)
-                    sheet.delete_cols(15)
-                    sheet.insert_cols(3)                
-                    workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS.xlsx'))
-                    workbook1.close()
-                    print("Done")
+                if city not in tenantMapping:
+                    print("Not In city",city)
+                    continue
+                cityname = tenantMapping[city]
+                print(cityname)
+                template_path = os.path.join(r"D:/eGov/Data/WS/Template/CC/CB " + cityname) 
+                # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
+                dfLocality = getLocalityData(cityname)
+                # cbFile = os.path.join(r"D:\eGov\Data\WS\ABASPY\CC\CB Agra",'BEL_Template for Existing Property Detail_CBAgra.xlsx')
+                workbook1 = openpyxl.load_workbook(cbFile)   
+                writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
+                writer.book = workbook1   
+                df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
+                df2.to_excel(writer,sheet_name="Master Data",index=False) 
+                df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
+                dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
+                os.makedirs(template_path, exist_ok=True)
+                sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
+                sheet.insert_rows(1)
+                sheet.insert_cols(3)
+                sheet.move_range("R1:R50000", rows=0, cols=-15, translate=True)   
+                sheet.insert_cols(6, 3)
+                # sheet.insert_cols(7) 
+                # sheet.insert_cols(8) 
+                sheet.move_range("R1:S50000", rows=0, cols=-11, translate=True)
+                # sheet.delete_cols(9)
+                # sheet.delete_cols(16)
+                # sheet.insert_cols(3)                
+                workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS.xlsx'))
+                workbook1.close()
 
-                    Flag=False
-                else:
-                    print("file doesnot exist")
-            if Flag : 
-                break
-                
-                
+                print("Done")
+                count = count + 1
+                # Flag=False
+            else:
+                print("file doesnot exist")
+        # if Flag : 
+        #     break
             
+                
+    print(count)        
 
 
 
