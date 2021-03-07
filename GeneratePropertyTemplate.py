@@ -39,17 +39,24 @@ def main():
 
     for root, dirs, files in os.walk(r"D:\eGov\Data\WS\ABASPY", topdown=True):
         for name in dirs:
-            #print (os.path.join(root, name))
+            # print(dirs)
+            # print (os.path.join(root, name))
+            # print(root)
+            # print(name)            
             subfolder = os.path.join(root, name)
+            # print(subfolder)            
             cbFile =os.path.join(root, name,"BEL_Template for Existing Property Detail.xlsx")
+            # print(cbFile)
             if os.path.exists(cbFile) :  
-                city = "pb."+ subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CB ","" ).strip().lower()
+                city = subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CB ","" ).strip().lower()
+                city = "pb." + city
+                # print(city)
 
                 if city not in tenantMapping:
                     print("Not In city",city)
                     continue
                 cityname = tenantMapping[city]
-                print(cityname)
+                # print(cityname)
                 template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
                 # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                 dfLocality = getLocalityData(cityname)
@@ -76,19 +83,19 @@ def main():
                 sheet.insert_cols(21)
                 sheet.insert_cols(26, 3)
                 sheet.insert_cols(30, 15)             
-                workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS.xlsx'))
+                workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx'))
                 workbook1.close()
 
-                print("Done")
+                print(cityname, " Done")
                 count = count + 1
                 # Flag=False
             else:
-                print("file does not exist")
+                print(cityname, " file does not exist")
         # if Flag : 
         #     break
             
                 
-    print(count)        
+    print("Total Count: ", count)        
 
 
 
