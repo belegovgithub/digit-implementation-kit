@@ -84,30 +84,43 @@ def main():
                 sheet.insert_cols(26, 3)
                 sheet.insert_cols(30, 15)                  
 
-                workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx'))
-
-                addValidationToColumns(sheet,"D","Master Data!$A$2:$A$4")
-                addValidationToColumns(sheet,"H","Master_UsageType!$J$2:$J$9")
-                addValidationToColumns(sheet,"J","Master Data!$O$2:$O$4")
-                addValidationToColumns(sheet,"N","Locality!$A$2:$A$500")
-                addValidationToColumns(sheet,"U","Master Data!$F$2:$F$4")
-                addValidationToColumns(sheet,"Y","Master Data!$P$2:$P$3")
-                addValidationToColumns(sheet,"Z","Master Data!$P$2:$P$3")
-                addValidationToColumns(sheet,"AA","Master Data!$P$2:$P$3")
-                addValidationToColumns(sheet,"AB","Master Data!C$2:$C$5")
-
-                addValidationToColumns(sheet,"AF","Master Data!$K$2:$K$4")
-                addValidationToColumns(sheet,"AI","Master Data!$J$2:$J$3")
-                addValidationToColumns(sheet,"AJ","Master Data!$P$2:$P$3")
-                addValidationToColumns(sheet,"AL","Master Data!$H$2:$H$8")
-                addValidationToColumns(sheet,"AN","Master Data!$D$2:$D$10")
-
-
+                workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx'))        
                 workbook1.close()
+
+
+                # generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+                # workbook2 = openpyxl.load_workbook(generatedFile)   
+                # writer = pd.ExcelWriter(generatedFile, engine='openpyxl')   
+                # writer.book = workbook2
+
+                # sheet = workbook2.get_sheet_by_name('Property Assembly Detail')
+                # addValidationToColumns(sheet,"D","Master Data!$A$2:$A$4")
+                # addValidationToColumns(sheet,"H","Master_UsageType!$J$2:$J$9")
+                # addValidationToColumns(sheet,"J","Master Data!$O$2:$O$4")
+                # addValidationToColumns(sheet,"N","Locality!$A$2:$A$500")
+                # addValidationToColumns(sheet,"U","Master Data!$F$2:$F$4")
+                # addValidationToColumns(sheet,"Y","Master Data!$P$2:$P$3")
+                # addValidationToColumns(sheet,"Z","Master Data!$P$2:$P$3")
+                # addValidationToColumns(sheet,"AA","Master Data!$P$2:$P$3")
+                # addValidationToColumns(sheet,"AB","Master Data!C$2:$C$5")
+                # addValidationToColumns(sheet,"AF","Master Data!$K$2:$K$4")
+                # addValidationToColumns(sheet,"AI","Master Data!$J$2:$J$3")
+                # addValidationToColumns(sheet,"AJ","Master Data!$P$2:$P$3")
+                # addValidationToColumns(sheet,"AL","Master Data!$H$2:$H$8")
+                # addValidationToColumns(sheet,"AN","Master Data!$D$2:$D$10")
+
+                # sheet2 = workbook2.get_sheet_by_name('Property Ownership Details')
+                # addValidationToColumns(sheet,"B","Master Data!C$2:$C$5")
+                # addValidationToColumns(sheet,"F","Master Data!$K$2:$K$4")
+                # addValidationToColumns(sheet,"I","Master Data!$J$2:$J$3")
+                # addValidationToColumns(sheet,"J","Master Data!$P$2:$P$3")
+                # addValidationToColumns(sheet,"L","Master Data!$H$2:$H$8")
+
+                # workbook2.save(generatedFile)        
+                # workbook2.close()
 
                 print(cityname, " Done")
                 count = count + 1
-                return
                 # Flag=False
             else:
                 print(cityname, " file does not exist")
