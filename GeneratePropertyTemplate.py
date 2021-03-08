@@ -9,6 +9,8 @@ import os
 import numpy
 import pandas as pd
 import openpyxl
+from openpyxl import Workbook, utils
+
 from openpyxl.worksheet.datavalidation import DataValidation
 from datetime import datetime, timedelta
 from math import isnan
@@ -64,17 +66,21 @@ def main():
                 workbook1 = openpyxl.load_workbook(cbFile)   
                 writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
                 writer.book = workbook1   
+                sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
+                if(ValidateCols(sheet) == False):
+                    print(cityname, "Column Order Validation Failed")
+                    continue
                 df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
                 df2.to_excel(writer,sheet_name="Master Data",index=False) 
                 df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
                 dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
                 os.makedirs(template_path, exist_ok=True)
-                sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
+                
                 sheet.insert_rows(1)
                 sheet.insert_cols(3)
-                sheet.move_range("R1:R80000", rows=0, cols=-15, translate=True)   
+                sheet.move_range("R1:R50000", rows=0, cols=-15, translate=True)   
                 sheet.insert_cols(6, 3)
-                sheet.move_range("R1:S80000", rows=0, cols=-11, translate=True)
+                sheet.move_range("R1:S50000", rows=0, cols=-11, translate=True)
                 sheet.delete_cols(12)
                 sheet.delete_cols(18, 5)
                 sheet.insert_cols(4, 3) 
@@ -88,36 +94,8 @@ def main():
                 workbook1.close()
 
 
-                # generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
-                # workbook2 = openpyxl.load_workbook(generatedFile)   
-                # writer = pd.ExcelWriter(generatedFile, engine='openpyxl')   
-                # writer.book = workbook2
-
-                # sheet = workbook2.get_sheet_by_name('Property Assembly Detail')
-                # addValidationToColumns(sheet,"D","Master Data!$A$2:$A$4")
-                # addValidationToColumns(sheet,"H","Master_UsageType!$J$2:$J$9")
-                # addValidationToColumns(sheet,"J","Master Data!$O$2:$O$4")
-                # addValidationToColumns(sheet,"N","Locality!$A$2:$A$500")
-                # addValidationToColumns(sheet,"U","Master Data!$F$2:$F$4")
-                # addValidationToColumns(sheet,"Y","Master Data!$P$2:$P$3")
-                # addValidationToColumns(sheet,"Z","Master Data!$P$2:$P$3")
-                # addValidationToColumns(sheet,"AA","Master Data!$P$2:$P$3")
-                # addValidationToColumns(sheet,"AB","Master Data!C$2:$C$5")
-                # addValidationToColumns(sheet,"AF","Master Data!$K$2:$K$4")
-                # addValidationToColumns(sheet,"AI","Master Data!$J$2:$J$3")
-                # addValidationToColumns(sheet,"AJ","Master Data!$P$2:$P$3")
-                # addValidationToColumns(sheet,"AL","Master Data!$H$2:$H$8")
-                # addValidationToColumns(sheet,"AN","Master Data!$D$2:$D$10")
-
-                # sheet2 = workbook2.get_sheet_by_name('Property Ownership Details')
-                # addValidationToColumns(sheet,"B","Master Data!C$2:$C$5")
-                # addValidationToColumns(sheet,"F","Master Data!$K$2:$K$4")
-                # addValidationToColumns(sheet,"I","Master Data!$J$2:$J$3")
-                # addValidationToColumns(sheet,"J","Master Data!$P$2:$P$3")
-                # addValidationToColumns(sheet,"L","Master Data!$H$2:$H$8")
-
-                # workbook2.save(generatedFile)        
-                # workbook2.close()
+                generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+                DataValidation1(generatedFile)
 
                 print(cityname, " Done")
                 count = count + 1
@@ -221,15 +199,99 @@ def main():
             # # save workbook
             # wb.save(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
         # print("Done")    
+def ValidateCols(sheet):
+    proper_column_order = ['Sl No.', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ',
+     'Usage type *', 'CB Name *', 'Street Name*', 'House / Door No*', 'Pin Code*', 'Location', 'ARV', 'RV', 'Financial Year', 
+     'Is Property on Dispute(Yes/No) ', 'Name*', 'Ward No', 'Block No', 'Location', 'Old PropertyCode']
+    # print(proper_column_order)
+    column_list = [c.value for c in next(sheet.iter_rows(min_row=1, max_row=1))]
+    # print(column_list)
+    validated = True
+    for i in range(0, 16):
+        if(proper_column_order[i].strip() != column_list[i].strip()) :
+            validated = False
+            break
 
-def addValidationToColumns (sheet, colName, formula) :
-    dv = DataValidation(type="list", formula1=formula)
+    
+    return validated
+
+    # list_with_values = []
+    # for cell in sheet:
+    #     list_with_values.append(cell.value)
+    
+
+
+def DataValidation1(generatedFile):
+    # generatedFile = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + 'agra' ,'Template for Existing Property-Integrated with ABAS-' + 'agra' + '.xlsx')
+    workbook2 = openpyxl.load_workbook(generatedFile)   
+
+    sheet = workbook2.get_sheet_by_name('Property Assembly Detail')
+    addValidationToColumns(sheet,"D","$A$2:$A$4","Master Data")
+    addValidationToColumns(sheet,"H","$J$2:$J$9","Master_UsageType")
+    # for I
+    addValidationToColumns(sheet,"J","$O$2:$O$4","Master Data")
+    addValidationToColumns(sheet,"N","$A$2:$A$500","Locality")
+    addValidationToColumns(sheet,"U","$F$2:$F$4","Master Data")
+    addValidationToColumns(sheet,"Y","$P$2:$P$3","Master Data")
+    addValidationToColumns(sheet,"Z","$P$2:$P$3","Master Data")
+    addValidationToColumns(sheet,"AA","$P$2:$P$3","Master Data")
+    addValidationToColumns(sheet,"AB","$C$2:$C$5","Master Data")
+    addValidationToColumns(sheet,"AF","$K$2:$K$4","Master Data")
+    addValidationToColumns(sheet,"AI","$J$2:$J$4","Master Data")
+    addValidationToColumns(sheet,"AJ","$P$2:$P$3","Master Data")
+    addValidationToColumns(sheet,"AL","$H$2:$H$8","Master Data")
+    addValidationToColumns(sheet,"AN","$D$2:$D$10","Master Data")
+
+    sheet2 = workbook2.get_sheet_by_name('Property Ownership Details')
+    addValidationToColumns1(sheet2,"B","$C$2:$C$5","Master Data")
+    addValidationToColumns1(sheet2,"F","$K$2:$K$4","Master Data")
+    addValidationToColumns1(sheet2,"I","$J$2:$J$4","Master Data")
+    addValidationToColumns1(sheet2,"J","$P$2:$P$3","Master Data")
+    addValidationToColumns1(sheet2,"L","$H$2:$H$8","Master Data")
+
+
+    # addValidationToColumns(sheet,"N","Locality!$A$2:$A$500")
+    # addValidationToColumns(sheet,"U","Master Data!$F$2:$F$4")
+    # addValidationToColumns(sheet,"Y","Master Data!$P$2:$P$3")
+    # addValidationToColumns(sheet,"Z","Master Data!$P$2:$P$3")
+    # addValidationToColumns(sheet,"AA","Master Data!$P$2:$P$3")
+    # addValidationToColumns(sheet,"AB","Master Data!$C$2:$C$5")
+    # addValidationToColumns(sheet,"AF","Master Data!$K$2:$K$4")
+    # addValidationToColumns(sheet,"AI","Master Data!$J$2:$J$4")
+    # addValidationToColumns(sheet,"AJ","Master Data!$P$2:$P$3")
+    # addValidationToColumns(sheet,"AL","Master Data!$H$2:$H$8")
+    # addValidationToColumns(sheet,"AN","Master Data!$D$2:$D$10")
+
+    # sheet2 = workbook2.get_sheet_by_name('Property Ownership Details')
+    # addValidationToColumns(sheet,"B","Master Data!$C$2:$C$5")
+    # addValidationToColumns(sheet,"F","Master Data!$K$2:$K$4")
+    # addValidationToColumns(sheet,"I","Master Data!$J$2:$J$4")
+    # addValidationToColumns(sheet,"J","Master Data!$P$2:$P$3")
+    # addValidationToColumns(sheet,"L","Master Data!$H$2:$H$8")
+
+    workbook2.save(generatedFile)        
+    workbook2.close()
+
+def addValidationToColumns (sheet, colName, formula,sheetName) :
+    formula1 ="{0}!{1}".format(utils.quote_sheetname(sheetName),formula)
+    dv = DataValidation(type="list", formula1=formula1 )
     dv.error ='Your entry is not in the list'
     dv.errorTitle =  'Invalid Entry'
-    sheet.add_data_validation(dv)
+    # sheet.add_data_validation(dv)
     dv.add("{0}3:{1}{2}".format(colName,colName,sheet.max_row))
     sheet.add_data_validation(dv)
     return
+
+def addValidationToColumns1 (sheet, colName, formula,sheetName) :
+    formula1 ="{0}!{1}".format(utils.quote_sheetname(sheetName),formula)
+    dv = DataValidation(type="list", formula1=formula1 )
+    dv.error ='Your entry is not in the list'
+    dv.errorTitle =  'Invalid Entry'
+    # sheet.add_data_validation(dv)
+    dv.add("{0}2:{1}{2}".format(colName,colName,1000))
+    sheet.add_data_validation(dv)
+    return
+
 
 def getLocalityData(cityname):
     data = []
@@ -257,4 +319,5 @@ def add_column(workbook,sheet_name, column):
 
 if __name__ == "__main__":
     main()
+    # DataValidation1()
 
