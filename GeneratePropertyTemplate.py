@@ -10,7 +10,7 @@ import numpy
 import pandas as pd
 import openpyxl
 from openpyxl import Workbook, utils
-
+from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.worksheet.datavalidation import DataValidation
 from datetime import datetime, timedelta
 from math import isnan
@@ -268,17 +268,39 @@ def DataValidation1(generatedFile):
     # addValidationToColumns(sheet,"I","Master Data!$J$2:$J$4")
     # addValidationToColumns(sheet,"J","Master Data!$P$2:$P$3")
     # addValidationToColumns(sheet,"L","Master Data!$H$2:$H$8")
+    SubUsageValidation(workbook2)
 
     workbook2.save(generatedFile)        
     workbook2.close()
+
+
+def SubUsageValidation(wb):    
+    # wb = openpyxl.load_workbook(generatedFile )
+    sheet1 = wb.get_sheet_by_name('Master Data')
+    tab = Table(displayName="CommercialNonresidential", ref="S1:S26")
+    sheet1.add_table(tab)
+    tab = Table(displayName="IndustrialNonresidential", ref="T1:T5")
+    sheet1.add_table(tab)
+    tab = Table(displayName="InstitutionalNonresidential", ref="U1:U20")
+    sheet1.add_table(tab)
+    tab = Table(displayName="OthersNonresidential", ref="W1:W2")
+    sheet1.add_table(tab)
+    dest=wb.get_sheet_by_name('Property Assembly Detail')
+    for index in range( 3,dest.max_row+1) :
+        dv = DataValidation(type='list', formula1='=INDIRECT(SUBSTITUTE( SUBSTITUTE(SUBSTITUTE(H{0},"(",""),")",""), " ",""))'.format(index))
+        dv.error ='Your entry is not in the list'
+        dv.errorTitle =  'Invalid Entry'
+        dv.add('I{0}'.format(index))
+        dest.add_data_validation(dv)
+    # wb.save(generatedFile)
+    # wb.close()
 
 def addValidationToColumns (sheet, colName, formula,sheetName) :
     formula1 ="{0}!{1}".format(utils.quote_sheetname(sheetName),formula)
     dv = DataValidation(type="list", formula1=formula1 )
     dv.error ='Your entry is not in the list'
     dv.errorTitle =  'Invalid Entry'
-    # sheet.add_data_validation(dv)
-    dv.add("{0}3:{1}{2}".format(colName,colName,sheet.max_row))
+    dv.add("{0}3:{1}{2}".format(colName,colName,sheet.max_row+1))
     sheet.add_data_validation(dv)
     return
 
@@ -287,7 +309,6 @@ def addValidationToColumns1 (sheet, colName, formula,sheetName) :
     dv = DataValidation(type="list", formula1=formula1 )
     dv.error ='Your entry is not in the list'
     dv.errorTitle =  'Invalid Entry'
-    # sheet.add_data_validation(dv)
     dv.add("{0}2:{1}{2}".format(colName,colName,1000))
     sheet.add_data_validation(dv)
     return
@@ -319,5 +340,3 @@ def add_column(workbook,sheet_name, column):
 
 if __name__ == "__main__":
     main()
-    # DataValidation1()
-
