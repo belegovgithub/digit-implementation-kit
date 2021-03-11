@@ -12,6 +12,7 @@ import openpyxl
 from openpyxl import Workbook, utils
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
 from datetime import datetime, timedelta
 from math import isnan
 
@@ -20,7 +21,7 @@ from math import isnan
 # import requests
 # import xlwt
 # from xlwt import Workbook
-#import xlsxwriter
+import xlsxwriter
 
 def main():
     Flag =False
@@ -31,6 +32,7 @@ def main():
     df1 = pd.read_excel(templateFile, 'Property Ownership Details')
     df2 = pd.read_excel(templateFile, 'Master Data')
     df3 = pd.read_excel(templateFile, 'Master_UsageType')
+    
     count = 0
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
@@ -52,7 +54,6 @@ def main():
             if os.path.exists(cbFile) :  
                 city = subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CB ","" ).strip().lower()
                 city = "pb." + city
-                # print(city)
 
                 if city not in tenantMapping:
                     print("Not In city",city)
@@ -62,11 +63,10 @@ def main():
                 template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
                 # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                 dfLocality = getLocalityData(cityname)
-                # cbFile = os.path.join(r"D:\eGov\Data\WS\ABASPY\CC\CB Agra",'BEL_Template for Existing Property Detail_CBAgra.xlsx')
                 workbook1 = openpyxl.load_workbook(cbFile)   
                 writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
-                writer.book = workbook1   
-                sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
+                writer.book = workbook1                  
+                sheet = workbook1.get_sheet_by_name('Property Assembly Detail')                
                 if(ValidateCols(sheet) == False):
                     print(cityname, "Column Order Validation Failed")
                     continue
@@ -75,41 +75,22 @@ def main():
                 df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
                 dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
                 os.makedirs(template_path, exist_ok=True)
-                
-                sheet.insert_rows(1)
-                sheet.insert_cols(3)
-                sheet.move_range("R1:R50000", rows=0, cols=-15, translate=True)   
-                sheet.insert_cols(6, 3)
-                sheet.move_range("R1:S50000", rows=0, cols=-11, translate=True)
-                sheet.delete_cols(12)
-                sheet.delete_cols(18, 5)
-                sheet.insert_cols(4, 3) 
-                sheet.insert_cols(8, 5)    
-                sheet.insert_cols(18)   
-                sheet.insert_cols(21)
-                sheet.insert_cols(26, 3)
-                sheet.insert_cols(30, 15)                  
-
-                workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx'))        
-                workbook1.close()
-
-
+                insert_columns(sheet)  
+                                             
                 generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+                workbook1.save(generatedFile)        
+                workbook1.close()
+                # add_header(templateFile, generatedFile) 
                 DataValidation1(generatedFile)
+
+                
 
                 print(cityname, " Done")
                 count = count + 1
-                # Flag=False
             else:
-                print(cityname, " file does not exist")
-        # if Flag : 
-        #     break
-            
+                print(cityname, " file does not exist")            
                 
-    print("Total Count: ", count)        
-
-
-
+    print("Total Count: ", count)  
             # templateFile = r"D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx"
             # df1 = pd.read_excel(templateFile, 'Property Ownership Details')
             # df2 = pd.read_excel(templateFile, 'Master Data')
@@ -198,7 +179,57 @@ def main():
             # target=wb.copy_worksheet(source)
             # # save workbook
             # wb.save(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
-        # print("Done")    
+        # print("Done")  
+
+def add_header(sheet1, sheet2):
+    wb = openpyxl.load_workbook(r"D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx")                               
+    template_sheet1 = wb.get_sheet_by_name('Property Assembly Detail')
+    template_sheet2 = wb.get_sheet_by_name('Property Ownership Details')  
+    thin = Side(border_style="thin", color="000000")
+    double = Side(border_style="double", color="ff0000")
+    column_list_sheet1 = [c.value for c in next(template_sheet1.iter_rows(min_row=1, max_row=1))]
+    for col_num, value in enumerate(column_list_sheet1):
+        sheet1.cell(row=1, column=col_num+1).value = value
+        sheet1.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="D7E4BC")
+        sheet1.cell(row=1, column=col_num+1).font = Font(bold=True)
+        sheet1.cell(row=1, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
+        sheet1.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
+    column_list_sheet1 = [c.value for c in next(template_sheet1.iter_rows(min_row=2, max_row=2))]
+    for col_num, value in enumerate(column_list_sheet1):
+        sheet1.cell(row=2, column=col_num+1).value = value
+        sheet1.cell(row=2, column=col_num+1).fill = PatternFill("solid", fgColor="D7E4BC")
+        sheet1.cell(row=2, column=col_num+1).font = Font(bold=True)
+        sheet1.cell(row=2, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
+        sheet1.cell(row=2, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
+
+    column_list_sheet2 = [c.value for c in next(template_sheet2.iter_rows(min_row=1, max_row=1))]
+    for col_num, value in enumerate(column_list_sheet2):
+        sheet2.cell(row=1, column=col_num+1).value = value
+        sheet2.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="D7E4BC")
+        sheet2.cell(row=1, column=col_num+1).font = Font(bold=True)
+        sheet2.cell(row=1, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
+        sheet2.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
+
+    sheet1['AR3'].value = sheet2['N2'].value
+
+
+def insert_columns(sheet):
+    sheet.insert_rows(1)
+    sheet.insert_cols(3)
+    sheet.move_range("R1:R50000", rows=0, cols=-15, translate=True)   
+    sheet.insert_cols(6, 3)
+    sheet.move_range("R1:S50000", rows=0, cols=-11, translate=True)
+    sheet.delete_cols(12)
+    sheet.delete_cols(18, 5)
+    sheet.insert_cols(4, 3) 
+    sheet.insert_cols(8, 5)    
+    sheet.insert_cols(18)   
+    sheet.insert_cols(21)
+    sheet.insert_cols(26, 3)
+    sheet.insert_cols(30, 15)
+    
+    return
+
 def ValidateCols(sheet):
     proper_column_order = ['Sl No.', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ',
      'Usage type *', 'CB Name *', 'Street Name*', 'House / Door No*', 'Pin Code*', 'Location', 'ARV', 'RV', 'Financial Year', 
@@ -209,23 +240,18 @@ def ValidateCols(sheet):
     validated = True
     for i in range(0, 16):
         if(proper_column_order[i].strip() != column_list[i].strip()) :
+            print(column_list[i])
             validated = False
             break
 
-    
-    return validated
-
-    # list_with_values = []
-    # for cell in sheet:
-    #     list_with_values.append(cell.value)
-    
+    return validated    
 
 
 def DataValidation1(generatedFile):
     # generatedFile = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + 'agra' ,'Template for Existing Property-Integrated with ABAS-' + 'agra' + '.xlsx')
     workbook2 = openpyxl.load_workbook(generatedFile)   
+    sheet = workbook2.get_sheet_by_name('Property Assembly Detail')    
 
-    sheet = workbook2.get_sheet_by_name('Property Assembly Detail')
     addValidationToColumns(sheet,"D","$A$2:$A$4","Master Data")
     addValidationToColumns(sheet,"H","$J$2:$J$9","Master_UsageType")
     # for I
@@ -249,25 +275,13 @@ def DataValidation1(generatedFile):
     addValidationToColumns1(sheet2,"J","$P$2:$P$3","Master Data")
     addValidationToColumns1(sheet2,"L","$H$2:$H$8","Master Data")
 
-
+    add_header(sheet, sheet2)
+    sheet.merge_cells('B1:L1')
+    sheet.merge_cells('M1:U1')
+    sheet.merge_cells('V1:AA1')
+    sheet.merge_cells('AB1:AP1')
     # addValidationToColumns(sheet,"N","Locality!$A$2:$A$500")
-    # addValidationToColumns(sheet,"U","Master Data!$F$2:$F$4")
-    # addValidationToColumns(sheet,"Y","Master Data!$P$2:$P$3")
-    # addValidationToColumns(sheet,"Z","Master Data!$P$2:$P$3")
-    # addValidationToColumns(sheet,"AA","Master Data!$P$2:$P$3")
-    # addValidationToColumns(sheet,"AB","Master Data!$C$2:$C$5")
-    # addValidationToColumns(sheet,"AF","Master Data!$K$2:$K$4")
-    # addValidationToColumns(sheet,"AI","Master Data!$J$2:$J$4")
-    # addValidationToColumns(sheet,"AJ","Master Data!$P$2:$P$3")
-    # addValidationToColumns(sheet,"AL","Master Data!$H$2:$H$8")
-    # addValidationToColumns(sheet,"AN","Master Data!$D$2:$D$10")
 
-    # sheet2 = workbook2.get_sheet_by_name('Property Ownership Details')
-    # addValidationToColumns(sheet,"B","Master Data!$C$2:$C$5")
-    # addValidationToColumns(sheet,"F","Master Data!$K$2:$K$4")
-    # addValidationToColumns(sheet,"I","Master Data!$J$2:$J$4")
-    # addValidationToColumns(sheet,"J","Master Data!$P$2:$P$3")
-    # addValidationToColumns(sheet,"L","Master Data!$H$2:$H$8")
     SubUsageValidation(workbook2)
 
     workbook2.save(generatedFile)        
@@ -288,8 +302,6 @@ def SubUsageValidation(wb):
     dest=wb.get_sheet_by_name('Property Assembly Detail')
     for index in range( 3,dest.max_row+1) :
         dv = DataValidation(type='list', formula1='=INDIRECT(SUBSTITUTE( SUBSTITUTE(SUBSTITUTE(H{0},"(",""),")",""), " ",""))'.format(index))
-        dv.error ='Your entry is not in the list'
-        dv.errorTitle =  'Invalid Entry'
         dv.add('I{0}'.format(index))
         dest.add_data_validation(dv)
     # wb.save(generatedFile)
@@ -298,8 +310,8 @@ def SubUsageValidation(wb):
 def addValidationToColumns (sheet, colName, formula,sheetName) :
     formula1 ="{0}!{1}".format(utils.quote_sheetname(sheetName),formula)
     dv = DataValidation(type="list", formula1=formula1 )
-    dv.error ='Your entry is not in the list'
-    dv.errorTitle =  'Invalid Entry'
+    # dv.error ='Your entry is not in the list'
+    # dv.errorTitle =  'Invalid Entry'
     dv.add("{0}3:{1}{2}".format(colName,colName,sheet.max_row+1))
     sheet.add_data_validation(dv)
     return
@@ -307,8 +319,6 @@ def addValidationToColumns (sheet, colName, formula,sheetName) :
 def addValidationToColumns1 (sheet, colName, formula,sheetName) :
     formula1 ="{0}!{1}".format(utils.quote_sheetname(sheetName),formula)
     dv = DataValidation(type="list", formula1=formula1 )
-    dv.error ='Your entry is not in the list'
-    dv.errorTitle =  'Invalid Entry'
     dv.add("{0}2:{1}{2}".format(colName,colName,1000))
     sheet.add_data_validation(dv)
     return
@@ -338,5 +348,61 @@ def add_column(workbook,sheet_name, column):
     for rowy, value in enumerate(column, start=1):
         ws.cell(row=rowy, column=new_column, value=value)
 
+def main1(filePath):
+    proper_column_order = ['Sl No.', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ',
+     'Usage type *', 'CB Name *', 'Street Name*', 'House / Door No*', 'Pin Code*', 'Location', 'ARV', 'RV', 'Financial Year', 
+     'Is Property on Dispute(Yes/No) ', 'Name*', 'Ward No', 'Block No', 'Location', 'Old PropertyCode']
+    # filePath =os.path.join(r'D:\eGov\Data\WS\Template','Book1.xlsx')
+    
+    # workbook = openpyxl.load_workbook(filePath)   
+
+    # worksheet = workbook.get_sheet_by_name('Sheet1')
+
+    # Create a Pandas dataframe from some data.
+    data = [10]
+    df = pd.read_excel(filePath, 'Property Assembly Detail')
+    df1 = pd.read_excel(filePath, 'Property Ownership Details')
+    df2 = pd.read_excel(filePath, 'Master Data')
+    df3 = pd.read_excel(filePath, 'Master_UsageType')
+    df4 = pd.read_excel(filePath, 'Locality')
+    # df = pd.DataFrame({'Heading': data,
+    #                 'Longer heading that should be wrapped' : data})
+    # df = pd.DataFrame(proper_column_order)
+    # print(df)
+
+    # Create a Pandas Excel writer using XlsxWriter as the engine.
+    writer = pd.ExcelWriter(filePath, engine='xlsxwriter')
+    # print(385)
+    # Convert the dataframe to an XlsxWriter Excel object. Note that we turn off
+    # the default header and skip one row to allow us to insert a user defined
+    # header.
+    df.to_excel(writer, sheet_name='Property Assembly Detail', index = False)
+    df1.to_excel(writer,sheet_name="Property Ownership Details",startrow=1, index=False, header=False) 
+    df2.to_excel(writer, sheet_name='Master Data', index = False)
+    df3.to_excel(writer,sheet_name='Master_UsageType',index=False) 
+    df4.to_excel(writer, sheet_name='Locality', index = False)
+    # Get the xlsxwriter workbook and worksheet objects.
+    workbook  = writer.book
+    worksheet = writer.sheets['Property Ownership Details']
+
+    # Add a header format.
+    header_format = workbook.add_format({
+        'bold': True,
+        'text_wrap': True,
+        'valign': 'top',
+        'fg_color': '#D7E4BC',
+        'border': 1})
+
+    # Write the column headers with the defined format.
+    for col_num, value in enumerate(proper_column_order):
+        print(col_num , " ", value)
+        worksheet.write(0,col_num, value, header_format)
+
+    # Close the Pandas Excel writer and output the Excel file.
+    writer.save()
+
+    
 if __name__ == "__main__":
     main()
+
+    
