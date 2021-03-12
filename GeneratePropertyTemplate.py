@@ -13,6 +13,7 @@ from openpyxl import Workbook, utils
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
+from openpyxl.comments import Comment
 from datetime import datetime, timedelta
 from math import isnan
 
@@ -51,16 +52,17 @@ def main():
             # print(subfolder)            
             cbFile =os.path.join(root, name,"BEL_Template for Existing Property Detail.xlsx")
             # print(cbFile)
-            if os.path.exists(cbFile) :  
-                city = subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CB ","" ).strip().lower()
-                city = "pb." + city
+            
+            city = subfolder.replace(r"D:\eGov\Data\WS\ABASPY\CB ","" ).strip().lower()
+            city = "pb." + city
 
-                if city not in tenantMapping:
-                    print("Not In city",city)
-                    continue
-                cityname = tenantMapping[city]
-                # print(cityname)
-                template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
+            if city not in tenantMapping:
+                print("Not In city",city)
+                continue
+            cityname = tenantMapping[city]
+
+            if os.path.exists(cbFile) :  
+                template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property1/CB " + cityname) 
                 # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                 dfLocality = getLocalityData(cityname)
                 workbook1 = openpyxl.load_workbook(cbFile)   
@@ -190,14 +192,14 @@ def add_header(sheet1, sheet2):
     column_list_sheet1 = [c.value for c in next(template_sheet1.iter_rows(min_row=1, max_row=1))]
     for col_num, value in enumerate(column_list_sheet1):
         sheet1.cell(row=1, column=col_num+1).value = value
-        sheet1.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="D7E4BC")
+        sheet1.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="07AEF9")
         sheet1.cell(row=1, column=col_num+1).font = Font(bold=True)
         sheet1.cell(row=1, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
         sheet1.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
     column_list_sheet1 = [c.value for c in next(template_sheet1.iter_rows(min_row=2, max_row=2))]
     for col_num, value in enumerate(column_list_sheet1):
         sheet1.cell(row=2, column=col_num+1).value = value
-        sheet1.cell(row=2, column=col_num+1).fill = PatternFill("solid", fgColor="D7E4BC")
+        sheet1.cell(row=2, column=col_num+1).fill = PatternFill("solid", fgColor="07AEF9")
         sheet1.cell(row=2, column=col_num+1).font = Font(bold=True)
         sheet1.cell(row=2, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
         sheet1.cell(row=2, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
@@ -205,13 +207,20 @@ def add_header(sheet1, sheet2):
     column_list_sheet2 = [c.value for c in next(template_sheet2.iter_rows(min_row=1, max_row=1))]
     for col_num, value in enumerate(column_list_sheet2):
         sheet2.cell(row=1, column=col_num+1).value = value
-        sheet2.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="D7E4BC")
+        sheet2.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="07AEF9")
         sheet2.cell(row=1, column=col_num+1).font = Font(bold=True)
         sheet2.cell(row=1, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
         sheet2.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
 
     sheet1['AR3'].value = sheet2['N2'].value
+    add_Comment(sheet1, sheet2)
 
+def add_Comment(sheet1, sheet2):
+    sheet1['F2'].comment = Comment('Applicable only in case of Property Type is Flat/Independent Building','')
+    sheet1['I2'].comment = Comment('This field should be in reference with usage type. Suppose usage type is sleected as  "Commercial" then sub usage type should be any one of commercial category.','')
+    sheet1['K2'].comment = Comment('Applicable only in case of Property type - Flat/Part of Building. Default Value - 1','')
+    sheet1['AJ2'].comment = Comment('Does owner have the same sorrespondance address where the property located. If yes, then no need to fill correspondance address.','')
+    sheet2['J2'].comment = Comment('Does owner have the same sorrespondance address where the property located. If yes, then no need to fill correspondance address.','')
 
 def insert_columns(sheet):
     sheet.insert_rows(1)
