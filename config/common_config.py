@@ -67,7 +67,6 @@ def load_config():
     config.isUpdateallowed = False
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
-    config.LOG_PATH = "D:/Temp/"
     config.URL_LOGIN = config.HOST + "/user/oauth/token"
     config.URL_BILLING_SLAB_CREATE = config.HOST + "/pt-calculator-v2/billingslab/_create"
 
