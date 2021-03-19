@@ -18,6 +18,79 @@ import numpy as np
 import copy 
 
 """
+Check TL Billing slabs , 
+If billing slab values are not properly defined or overlapped exist between billing slab then it will save such billing slab in file 
+"""    
+def bilingWithIssues():
+    dateStr=datetime.now().strftime("%d%m%Y%H%M%S")
+    auth_token = superuser_login()["access_token"]
+    print(auth_token)
+    print("Slab will be copied using available TL module", config.CITY_MODULES_JSON)
+    with io.open(config.CITY_MODULES_JSON, encoding="utf-8") as f:
+        cb_module_data = json.load(f) 
+    issueWithBilling ={}
+
+    for found_index, module in enumerate(cb_module_data["citymodule"]):
+
+        if module["module"]=="TL":
+            for index, teant in enumerate(module['tenants']) :
+                new_slabs_data = []
+                update_slabs_data = []
+                old_slab=[]
+                tenantId =teant['code']
+                cityname=tenantId.split(".")[1]
+                print("====================",tenantId,"=====================")
+                respOfBilling = requests.post(config.HOST + "/tl-calculator/billingslab/_search?tenantId=" + tenantId, json={
+                    "RequestInfo": {
+                        "authToken": auth_token
+                    }
+                })
+                srcbillingSlabs=respOfBilling.json()["billingSlab"]
+                #srcbillingSlabs = list(filter(lambda x: (x["applicationType"] == "NEW"), srcbillingSlabs))    
+                existing_slab_data =dictSlabObject(srcbillingSlabs)
+                #print(os.path.join(config.LOG_PATH,cityname+str(dateStr)+"_mappingOfExistingSlab.json"))
+                with io.open(os.path.join(config.LOG_PATH,cityname+str(dateStr)+"_mappingOfExistingSlab.json"), mode="w", encoding="utf-8") as f:
+                    json.dump(existing_slab_data, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)    
+                for key in existing_slab_data : 
+                    billingSlabs = existing_slab_data[key]
+                    uom =None 
+                    uomEnd =None 
+                    isError =False
+                    for slab in billingSlabs : 
+                        if uom is None : 
+                            uom =slab["uom"]
+                        elif uom != slab["uom"] :
+                            print("Billing Slab is having issue")
+                            isError=True
+                            print(tenantId +"|"+key)
+                            print("Error not same")
+                        if uom is not None :                            
+                            fromUom = slab["fromUom"]
+                            toUom = slab["toUom"]
+                            #print(fromUom,toUom, uomEnd)
+                            #print(type(fromUom),type(toUom), type(uomEnd))
+                            if fromUom >= toUom :
+                                isError=True
+                                print("FROM IS BIGGER THAN TO RANGE")
+                                print((tenantId +"|"+key))
+                            if uomEnd is None : 
+                                uomEnd = toUom          
+                            elif uomEnd !=fromUom :
+                                print("RANGE OVERLAPPED ", (tenantId +"|"+key))
+                                isError=True
+                            uomEnd = toUom
+                    if isError : 
+                        if tenantId not in issueWithBilling : 
+                            issueWithBilling[tenantId]={}
+                        issueWithBilling[tenantId][key]=existing_slab_data[key]
+        
+    print("Billing With Issue : ",os.path.join(config.LOG_PATH, "BillingWithIssue.json"))
+    with io.open(os.path.join(config.LOG_PATH, "BillingWithIssue.json"), mode="w", encoding="utf-8") as f:
+        json.dump(issueWithBilling, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
+
+
+
+"""
 Approach : 
 
 1. Read billing slab from db
@@ -31,6 +104,7 @@ Approach :
 6. Based on updated objects call update function
 
 """
+
 
 def main():
     UPDATE_EVEN_SAME_DATA =True
@@ -83,6 +157,9 @@ def main():
     tenant_id = config.TENANT_ID
 
     auth_token = superuser_login()["access_token"]
+    print(auth_token)
+     
+
 
     slabs = requests.post(config.HOST + "/tl-calculator/billingslab/_search?tenantId=" + tenant_id, json={
         "RequestInfo": {
@@ -93,11 +170,14 @@ def main():
     with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(datetime.now().strftime("%d%m%Y%H%M%S"))+"_billingslab_search_resp.json"), mode="w", encoding="utf-8") as f:
         json.dump(slabs.json()["billingSlab"], f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
     result = slabs.json()["billingSlab"]
+
+    
     #result = list(filter(lambda x: (x["applicationType"] == "NEW"), slabs.json()["billingSlab"]))    
     existing_slab_data =dictSlabObject(result)
     with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"_mappingOfExistingSlab.json"), mode="w", encoding="utf-8") as f:
         json.dump(existing_slab_data, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)    
     
+     
     dfs = open_excel_file(config.TRADE_RATE_WORKBOOK)
     tradeRates = get_sheet(dfs, config.SHEET_TRADERATE)
      
@@ -194,6 +274,8 @@ def main():
     with io.open(os.path.join(config.LOG_PATH,config.CITY_NAME+str(dateStr)+"new.json"), mode="w", encoding="utf-8") as f:
         json.dump(new_slabs_data, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder ) 
  
+     
+     
     if len(new_slabs_data)>0:
         print("Post call")
         res = requests.post(config.HOST + "/tl-calculator/billingslab/_create?tenantId={}".format(tenant_id), json={
@@ -272,7 +354,7 @@ def dictSlabObject(slabObj) :
             mapObj[keyOfSlab]=[]
         mapObj[keyOfSlab].append(ele)
     for key in mapObj : 
-        mapObj[key].sort(reverse=False, key=lambda e: e['fromUom']) 
+        mapObj[key].sort(reverse=False, key=lambda e: (e['fromUom'],e['toUom'])) 
     return mapObj
 
 
@@ -362,3 +444,4 @@ def np_encoder(object):
 
 if __name__ == "__main__":
     main()
+    #bilingWithIssues()
