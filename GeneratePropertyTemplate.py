@@ -22,7 +22,7 @@ from math import isnan
 # import requests
 # import xlwt
 # from xlwt import Workbook
-import xlsxwriter
+# import xlsxwriter
 
 def main():
     Flag =False
@@ -93,96 +93,7 @@ def main():
                 print(cityname, " file does not exist")            
                 
     print("Total Count: ", count)  
-            # templateFile = r"D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx"
-            # df1 = pd.read_excel(templateFile, 'Property Ownership Details')
-            # df2 = pd.read_excel(templateFile, 'Master Data')
-            # df3 = pd.read_excel(templateFile, 'Master_UsageType')
-            # df = pd.read_excel(templateFile, 'Property Ownership Details')
-            # workbook1 = openpyxl.load_workbook(templateFile,  read_only=True)   
-            # writer = pd.ExcelWriter(templateFile, engine='openpyxl')   
-            # writer.book = workbook1    
-            # sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
-
-
-            # cbFile = os.path.join(r"D:\eGov\Data\WS\ABASPY\CC\CB Agra",'BEL_Template for Existing Property Detail_CBAgra.xlsx')
-            # if os.path.exists(cbFile) : 
-            #     workbook1 = openpyxl.load_workbook(cbFile)   
-            #     writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
-            #     writer.book = workbook1   
-            #     df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
-            #     df2.to_excel(writer,sheet_name="Master Data",index=False) 
-            #     # df2 = df2.loc[:, ~df2.columns.str.contains('Unnamed')]
-            #     # df2.drop(df2.columns[df2.columns.str.contains('Unnamed',case = False)],axis = 1, inplace = True)
-            #     # print(df2)
-            #     df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
-            #     dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
-            #     os.makedirs(template_path, exist_ok=True)
-            #     # workbook1.save(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
-            #     # workbook1.close()
-            #     # workbook1 = openpyxl.load_workbook(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))   
-            #     # writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
-            #     # writer.book = workbook1
-            #     # dfProperty = pd.read_excel(os.path.join(template_path,'Template for Existing Property Detail.xlsx'),'Property Assembly Detail')
-            #     # dfProperty.insert(3, "Property Type *", "")
-            #     sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
-            #     sheet.delete_cols(8)
-            #     sheet.delete_cols(15)
-            #     sheet.insert_cols(3)                
-
-            #     # dv = DataValidation(type="list", formula1='"Yes,No"', allow_blank=False, showDropDown = True)
-            #     # sheet.datavalidation.DataValidationList('="Master Data"!$A$2:$A$4')
-            #     # sheet.add_data_validation(dv)
-            #     # dv.ranges.append('C2')
-            #     # sheet.data_validation('C1:C5',{'validate': 'list', 'source': '="Master Data"!$A$2:$A$4'  })
-            #     workbook1.save(os.path.join(template_path,'Template for Existing Property-Integrated with ABAS.xlsx'))
-            #     workbook1.close()
-
-            # # df.to_excel(template_file,sheet_name=cityname,index=False)
-            # # workbook1 = openpyxl.load_workbook(template_file,  read_only=True)
-            # # writer = pd.ExcelWriter(template_file, engine='openpyxl')   
-            # # writer.book = workbook1        
-            # # df.to_excel(writer,sheet_name=cityname,index=False,engine='openpyxl') 
-            # # writer.save()
-            # # writer.close()
-
-            # os.makedirs(template_path, exist_ok=True)  
-            # # df.to_excel(os.path.join(template_path,'Template for Existing Property Detail.xlsx'),index=False)
-            # #Open existing excel file
-            # templateFile = os.path.join(r"D:\eGov\Data\WS\Template",'Template for Existing Property Detail.xlsx')
-            # workbook1 = openpyxl.load_workbook(templateFile)         
-            # writer = pd.ExcelWriter(templateFile, engine='openpyxl')   
-            # writer.book = workbook1    
-            # sheet = workbook1.get_sheet_by_name('Property Assembly Detail')
-            # sheet.insert_cols(0,"Add")
-            # # add_column(workbook1,'Property Assembly Detail', ['new header', 'value1', 'value2'])      
-            # #Add dataframe to excel file 
-            # # df.to_excel(writer,sheet_name="Master_Locality/Mohalla",index=False,engine='openpyxl')                
-            # workbook1.save(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
-            # workbook1.close()
-            # return
-            # shutil.copy(r'D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx',os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
-            # filePath =os.path.join(template_path,'Template for Existing Property Detail.xlsx')
-            # workbook = xlsxwriter.Workbook(filePath)
-            # worksheet = workbook.add_worksheet()
-
-            # worksheet.write(0, 0, 1234)     # Writes an int
-            # worksheet.write(1, 0, 1234.56)  # Writes a float
-            # worksheet.write(2, 0, 'Hello')  # Writes a string
-            # worksheet.write(3, 0, None)     # Writes None
-            # worksheet.write(4, 0, True)     # Writes a bool
-
-            # workbook.close()
-
-            # wb=openpyxl.load_workbook(os.path.join(template_path,'Template for Existing Property Detail.xlsx'), keep_vba = True)
-            # source=wb.get_sheet_by_name('Locality')
-            # # load demo.xlsx 
-            # # get Sheet
-            # # copy sheet
-            # target=wb.copy_worksheet(source)
-            # # save workbook
-            # wb.save(os.path.join(template_path,'Template for Existing Property Detail.xlsx'))
-        # print("Done")  
-
+            
 def add_header(sheet1, sheet2):
     wb = openpyxl.load_workbook(r"D:\eGov\Data\WS\Template\Template for Existing Property Detail.xlsx")                               
     template_sheet1 = wb.get_sheet_by_name('Property Assembly Detail')
@@ -219,8 +130,8 @@ def add_Comment(sheet1, sheet2):
     sheet1['F2'].comment = Comment('Applicable only in case of Property Type is Flat/Independent Building','')
     sheet1['I2'].comment = Comment('This field should be in reference with usage type. Suppose usage type is sleected as  "Commercial" then sub usage type should be any one of commercial category.','')
     sheet1['K2'].comment = Comment('Applicable only in case of Property type - Flat/Part of Building. Default Value - 1','')
-    sheet1['AJ2'].comment = Comment('Does owner have the same sorrespondance address where the property located. If yes, then no need to fill correspondance address.','')
-    sheet2['J2'].comment = Comment('Does owner have the same sorrespondance address where the property located. If yes, then no need to fill correspondance address.','')
+    sheet1['AJ2'].comment = Comment('Does owner have the same sorrespondance address where the property located. If yes, then no need to fill correspondence address.','')
+    sheet2['J2'].comment = Comment('Does owner have the same sorrespondance address where the property located. If yes, then no need to fill correspondence address.','')
 
 def insert_columns(sheet):
     sheet.insert_rows(1)
@@ -289,7 +200,6 @@ def DataValidation1(generatedFile):
     sheet.merge_cells('M1:U1')
     sheet.merge_cells('V1:AA1')
     sheet.merge_cells('AB1:AP1')
-    # addValidationToColumns(sheet,"N","Locality!$A$2:$A$500")
 
     SubUsageValidation(workbook2)
 
@@ -356,59 +266,6 @@ def add_column(workbook,sheet_name, column):
 
     for rowy, value in enumerate(column, start=1):
         ws.cell(row=rowy, column=new_column, value=value)
-
-def main1(filePath):
-    proper_column_order = ['Sl No.', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ',
-     'Usage type *', 'CB Name *', 'Street Name*', 'House / Door No*', 'Pin Code*', 'Location', 'ARV', 'RV', 'Financial Year', 
-     'Is Property on Dispute(Yes/No) ', 'Name*', 'Ward No', 'Block No', 'Location', 'Old PropertyCode']
-    # filePath =os.path.join(r'D:\eGov\Data\WS\Template','Book1.xlsx')
-    
-    # workbook = openpyxl.load_workbook(filePath)   
-
-    # worksheet = workbook.get_sheet_by_name('Sheet1')
-
-    # Create a Pandas dataframe from some data.
-    data = [10]
-    df = pd.read_excel(filePath, 'Property Assembly Detail')
-    df1 = pd.read_excel(filePath, 'Property Ownership Details')
-    df2 = pd.read_excel(filePath, 'Master Data')
-    df3 = pd.read_excel(filePath, 'Master_UsageType')
-    df4 = pd.read_excel(filePath, 'Locality')
-    # df = pd.DataFrame({'Heading': data,
-    #                 'Longer heading that should be wrapped' : data})
-    # df = pd.DataFrame(proper_column_order)
-    # print(df)
-
-    # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter(filePath, engine='xlsxwriter')
-    # print(385)
-    # Convert the dataframe to an XlsxWriter Excel object. Note that we turn off
-    # the default header and skip one row to allow us to insert a user defined
-    # header.
-    df.to_excel(writer, sheet_name='Property Assembly Detail', index = False)
-    df1.to_excel(writer,sheet_name="Property Ownership Details",startrow=1, index=False, header=False) 
-    df2.to_excel(writer, sheet_name='Master Data', index = False)
-    df3.to_excel(writer,sheet_name='Master_UsageType',index=False) 
-    df4.to_excel(writer, sheet_name='Locality', index = False)
-    # Get the xlsxwriter workbook and worksheet objects.
-    workbook  = writer.book
-    worksheet = writer.sheets['Property Ownership Details']
-
-    # Add a header format.
-    header_format = workbook.add_format({
-        'bold': True,
-        'text_wrap': True,
-        'valign': 'top',
-        'fg_color': '#D7E4BC',
-        'border': 1})
-
-    # Write the column headers with the defined format.
-    for col_num, value in enumerate(proper_column_order):
-        print(col_num , " ", value)
-        worksheet.write(0,col_num, value, header_format)
-
-    # Close the Pandas Excel writer and output the Excel file.
-    writer.save()
 
     
 if __name__ == "__main__":
