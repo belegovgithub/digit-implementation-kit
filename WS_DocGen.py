@@ -76,10 +76,10 @@ def getTemplate() :
       "documentType": "PROPERTY_TAX_RECIEPT",
       "active": True,
       "required": True,
-      "hasDropdown": False,
+      "hasDropdown": True,
       "dropdownData": [
         {
-          "code": "PROPERTY_TAX_RECIEPT",
+          "code": "PROPERTY_TAX_RECIEPT.PROPERTY_TAX_RECIEPT",
           "active": True
         }
       ],
@@ -90,10 +90,10 @@ def getTemplate() :
       "documentType": "SELFDECLERATION",
       "active": True,
       "required": True,
-      "hasDropdown": False,
+      "hasDropdown": True,
       "dropdownData": [
         {
-          "code": "SELFDECLERATION",
+          "code": "SELFDECLERATION.SELFDECLERATION",
           "active": True
         }
       ],
@@ -161,7 +161,7 @@ def main():
       cbDocData[tenant] = getTemplate()
     # print(tenantMapping)
     # return
-    dfs = open_excel_file('D:\eGov\Data\WS\DocsMapping&Clarifications_1.xlsx')
+    dfs = open_excel_file('D:\wsDoc\DocsMapping&Clarifications_2.xlsx')
     df = get_sheet(dfs, "Sheet2")
     for ind in df.index: 
         row =df.iloc[ind]
@@ -172,13 +172,17 @@ def main():
             continue
         cbDocs =cbDocData[cbName]
         docCategory = getValue(df,row,"Doc Category" ,None ) 
-        # docDesc = getValue(df,row,"Doc Description" ,"" ) 
+        docHeading = getValue(df,row,"Heading" ,"" )
+        docHeadingHi = getValue(df,row,"Heading_hi" ,"" )
+        docDesc = getValue(df,row,"Doc Description" ,"" ) 
         docDescHindi = getValue(df,row,"Doc Description Hindi" ,"" ) 
         mandatoryFld = bool (row[df.columns.get_loc("M_OR_N")].astype(int))
         dropDownCode = getValue(df,row,"DOC_MAPPING" ,None ) 
+        dropDownCode_org = getValue(df,row,"DOC_MAPPING" ,None ) 
         dropDownText = getValue(df,row,"Additional Docs" ,"" )
         dropDownTextHindi = getValue(df,row,"Additional Docs Hindi" ,"" ) 
         docList  = list(filter(lambda doc: doc["code"]==docCategory, cbDocs))
+        dropDownCode = docCategory +"."+dropDownCode
         if docCategory is None or dropDownCode is None : 
             print("Code is none for cb ",cbName)
         if len(docList) == 0 : 
@@ -187,7 +191,7 @@ def main():
                     "documentType": docCategory,
                     "active":True,
                     "required": True,
-                    "hasDropdown": False,
+                    "hasDropdown": True,
                     "dropdownData": [
                         {
                         "code": dropDownCode,
@@ -204,26 +208,38 @@ def main():
                   }
             docList[0]["dropdownData"].append(ele)
             docList[0]["hasDropdown"] = True
-        # if len(list(filter(lambda doc: doc["code"]==docCategory, localizationData))) ==0 : 
-        #   enLoc(docCategory, docDesc)
-        #   enLoc(docCategory+"_DESCRIPTION", docDesc)
-        #   enLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDesc)
-        #   enLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
-        #   enLoc(docCategory, docDesc)
-
-        #   hiLoc(docCategory, docDescHindi)
-        #   hiLoc(docCategory+"_DESCRIPTION", docDescHindi)
-        #   hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDescHindi)
-        #   hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
-        #   hiLoc(docCategory, docDescHindi)
-        #   enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
-        #   hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+        withUnderscore = dropDownCode.replace(".","_")
+        if len(list(filter(lambda doc: doc["code"]==docCategory, localizationData))) ==0 : 
+          enLoc(docCategory, docHeading)
+          enLoc(docCategory+"_DESCRIPTION", docDesc)
+          enLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDesc)
+          enLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
+          enLoc("WS_SERVICES_MASTERS_"+withUnderscore+"_LABEL", dropDownText)
+          enLoc(dropDownCode, dropDownText)
+          enLoc(dropDownCode.replace(".","_"), dropDownText)
+          enLoc(dropDownCode_org, dropDownText)
+          enLoc("WS_"+dropDownCode, dropDownText)
+          hiLoc(docCategory, docHeadingHi)
+          hiLoc(docCategory+"_DESCRIPTION", docDescHindi)
+          hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_HEADING", docDescHindi)
+          hiLoc("WS_SERVICES_MASTERS_"+docCategory+"_DESCRIPTION_NOTE", "-")
+          hiLoc("WS_SERVICES_MASTERS_"+withUnderscore+"_LABEL", dropDownTextHindi)
+          hiLoc(dropDownCode, dropDownTextHindi)
+          hiLoc(dropDownCode.replace(".","_"), dropDownTextHindi)
+          hiLoc(dropDownCode_org, dropDownTextHindi)
+          hiLoc("WS_"+dropDownCode, dropDownTextHindi)
            
-        # if len(list(filter(lambda doc: doc["code"]==dropDownCode, localizationData))) ==0 : 
-        #   enLoc(dropDownCode, dropDownText)
-        #   hiLoc(dropDownCode, dropDownTextHindi)
-        #   enLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
-        #   hiLoc("WS_SERVICES_MASTERS_"+dropDownCode+"_LABEL", dropDownText)
+        if len(list(filter(lambda doc: doc["code"]==dropDownCode, localizationData))) ==0 : 
+          enLoc(dropDownCode, dropDownText)
+          enLoc(dropDownCode.replace(".","_"), dropDownText)
+          enLoc(dropDownCode_org, dropDownText)
+          enLoc("WS_"+dropDownCode, dropDownText)
+          enLoc("WS_SERVICES_MASTERS_"+withUnderscore+"_LABEL", dropDownText)
+          hiLoc(dropDownCode, dropDownTextHindi)
+          hiLoc(dropDownCode_org, dropDownTextHindi)
+          hiLoc("WS_SERVICES_MASTERS_"+withUnderscore+"_LABEL", dropDownTextHindi)
+          hiLoc("WS_"+dropDownCode, dropDownTextHindi)
+          hiLoc(dropDownCode.replace(".","_"), dropDownTextHindi)
 
              
 
@@ -231,11 +247,13 @@ def main():
         
 
     # print(json.dumps(cbDocData))
-    # with io.open(os.path.join(r"D:\eGov\Data\WS","cbDocData.json"), mode="w", encoding="utf-8") as f:
-    #   json.dump(cbDocData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
-    # with io.open(os.path.join(r"D:\wsDoc","localization_hi.json"), mode="w", encoding="utf-8") as f:
-    #   json.dump(localizationDataHi, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
-    with io.open(os.path.join(r"D:\eGov\Data\WS","cbData.json"), mode="w", encoding="utf-8") as f:
+    with io.open(os.path.join(r"D:\wsDoc\Localization","cbDocData.json"), mode="w", encoding="utf-8") as f:
+      json.dump(cbDocData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)   
+    with io.open(os.path.join(r"D:\wsDoc\Localization","localization_hi.json"), mode="w", encoding="utf-8") as f:
+      json.dump(localizationDataHi, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+    with io.open(os.path.join(r"D:\wsDoc\Localization","localization_en.json"), mode="w", encoding="utf-8") as f:
+      json.dump(localizationData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+    with io.open(os.path.join(r"D:\wsDoc\Localization","cbData.json"), mode="w", encoding="utf-8") as f:
         json.dump(cbDocData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)       
     for ele in cbDocData : 
         docList=cbDocData[ele]
