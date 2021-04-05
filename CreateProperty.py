@@ -59,10 +59,11 @@ def main():
                 continue
             tenantMapping[module["code"].lower()]=module["code"].lower()[3:]
 
-    # for root, dirs, files in os.walk(r"D:\WS\WaterSewerageTemplates", topdown=True):
+    # Iterate all cbs
+    # for root, dirs, files in os.walk(r"D:\eGov\Data\WS\Template\Property", topdown=True):
     #     for name in dirs:          
     #         subfolder = os.path.join(root, name)         
-    #         city = subfolder.replace(r"D:\WS\WaterSewerageTemplates\CB ","" ).strip().lower()
+    #         city = subfolder.replace(r"D:\eGov\Data\WS\Template\Property\CB ","" ).strip().lower()
     #         city = "pb." + city
 
     #         if city not in tenantMapping:
@@ -105,14 +106,14 @@ def main():
     #             print("Water File doesnot exist for ", cityname) 
     #         logfile.close()
 
-    # Doing for one cb at a atime
-    cityname = 'ajmer'
-    root = 'D:\WS\WaterSewerageTemplates'
-    name = 'CB ' + cityname
-    propertyFile =os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(),'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
-    waterFile = os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(), "Template for Existing Water Connection Detail.xlsx")
-    sewerageFile = os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(), "Template for Existing Sewerage Connection Detail.xlsx")
-    logfile = open(os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(), "Logfile.txt"), "w")            
+    # Doing for one cb at a time
+    cityname = 'agra'
+    root = r'D:\eGov\Data\WS\Template\Property'
+    name = 'CB ' + cityname.lower()
+    propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+    waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
+    sewerageFile = os.path.join(root, name, "Template for Existing Sewerage Connection Detail.xlsx")
+    logfile = open(os.path.join(root, name, "Logfile.txt"), "w")            
     # validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
     # if(validate == False):                
     #     print('Data validation Failed for mobile entry, Please check the log file.') 
@@ -160,7 +161,7 @@ def validateDataForProperty(propertyFile, logfile):
         for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True):
             if pd.isna(row[0]):
                 validated = False
-                reason = 'Sl no. column is empty'
+                reason = 'Sl no. column is empty\n'
                 logfile.write(reason)
                 break
             if pd.isna(row[1]) or pd.isna(row[27]):

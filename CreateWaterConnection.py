@@ -45,6 +45,10 @@ def validateData(propertySheet, waterFile, logfile, cityname):
             validated = False
             reason = 'Sl no. column is empty\n'
             logfile.write(reason)
+        if pd.isna(row[1]):
+            validated = False
+            reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
+            logfile.write(reason) 
         if pd.isna(row[2]):
             validated = False
             reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
