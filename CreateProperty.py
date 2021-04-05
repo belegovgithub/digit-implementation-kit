@@ -107,8 +107,8 @@ def main():
     #         logfile.close()
 
     # Doing for one cb at a time
-    cityname = 'clementtown'
-    root = r'D:\WS\WaterSewerageTemplates'
+    cityname = 'agra'
+    root = r'D:\eGov\Data\WS\Template\Property'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -121,23 +121,23 @@ def main():
     validate =  validateDataForProperty(propertyFile, logfile)            
     if(validate == False):                
         print('Data validation for property Failed, Please check the log file.') 
-        # return
+        return
     else:
         print('Data validation for property success.')
-    # if os.path.exists(propertyFile) :                  
-    #     wb_property = openpyxl.load_workbook(propertyFile) 
-    #     sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
-    #     sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
-    #     localitySheet = wb_property.get_sheet_by_name('Locality')
-    #     df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
-    #     locality_data = {}
-    #     for ind in df.index: 
-    #         locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
-    #     createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
-    #     wb_property.save(propertyFile)        
-    #     wb_property.close()
-    # else:
-    #     print("Property File doesnot exist for ", cityname) 
+    if os.path.exists(propertyFile) :                  
+        wb_property = openpyxl.load_workbook(propertyFile) 
+        sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+        sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
+        localitySheet = wb_property.get_sheet_by_name('Locality')
+        df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
+        locality_data = {}
+        for ind in df.index: 
+            locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
+        createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+        wb_property.save(propertyFile)        
+        wb_property.close()
+    else:
+        print("Property File doesnot exist for ", cityname) 
     
     if os.path.exists(waterFile) : 
         ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
@@ -173,9 +173,13 @@ def validateDataForProperty(propertyFile, logfile):
                 reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ',  ownership type is empty.\n'
                 logfile.write(reason)
             if(str(row[27]) != "Multiple Owners"):
-                if pd.isna(row[28]) or pd.isna(row[29]):
+                if pd.isna(row[28]):
                     validated = False
-                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', mobile no. or name is empty.\n'
+                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', name is empty.\n'
+                    logfile.write(reason)
+                if pd.isna(row[29]):
+                    validated = False
+                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', mobile no. is empty.\n'
                     logfile.write(reason)
                 if(len(str(row[29])) != 10):
                     validated = False
@@ -339,7 +343,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         wb_sewerage.close()
         wb_sewerage = openpyxl.load_workbook(sewerageFile) 
         sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-        for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row,values_only=True):
+        for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row,values_only=True):
             if pd.isna(row[0]):
                 continue
             if(str(row[3]).strip() == 'Yes'):

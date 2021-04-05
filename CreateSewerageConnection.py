@@ -4,7 +4,7 @@ import io
 import os 
 import sys
 from common import superuser_login
-from WaterConnection import *
+from SewerageConnection import *
 from PropertyTax import *
 import pandas as pd
 import openpyxl
@@ -12,82 +12,82 @@ import openpyxl
 def main():
     Flag =False
     
-def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname) :
+def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
-    wb_water = openpyxl.load_workbook(waterFile) 
-    waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
-    print('no. of rows in water file: ', waterSheet.max_row) 
-    validate = validateData(propertySheet, waterFile, logfile, cityname)  
+    wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+    sewerageSheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details')  
+    print('no. of rows in sewerage file: ', sewerageSheet.max_row) 
+    validate = validateData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
-        print('Data validation for water Failed, Please check the log file.') 
+        print('Data validation for sewerage Failed, Please check the log file.') 
         return
     else:
-        print('Data validation for water success.')
-    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
-    wb_water.save(waterFile)        
-    wb_water.close()
+        print('Data validation for sewerage success.')
+    createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
+    wb_sewerage.save(sewerageFile)        
+    wb_sewerage.close()
 
-def validateData(propertySheet, waterFile, logfile, cityname):
+def validateData(propertySheet, sewerageFile, logfile, cityname):
     validate = True
-    wb_water = openpyxl.load_workbook(waterFile) 
-    water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
+    wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+    sewerage_sheet = wb_sewerage.get_sheet_by_name('sewerage Connection Details') 
     index = 2
-    reason = 'Water file validation starts.\n'
+    reason = 'sewerage file validation starts.\n'
     print(reason)
     logfile.write(reason)
     
-    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row,values_only=True):
+    for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row,values_only=True):
         index = index + 1
         if pd.isna(row[1]):
             break
         if pd.isna(row[0]):
             validated = False
-            reason = 'Sl no. column is empty\n'
+            reason = 'Sewerage File data validation failed, Sl no. column is empty\n'
             logfile.write(reason)
         if pd.isna(row[1]):
             validated = False
-            reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
+            reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
             logfile.write(reason) 
         if pd.isna(row[2]):
             validated = False
-            reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
+            reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
             logfile.write(reason)
         if pd.isna(row[3]):
             validated = False
-            reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
+            reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
             logfile.write(reason)
         if(str(row[3]).strip() == 'No'):
             if pd.isna(row[4]) or pd.isna(row[5]):
                 validated = False
-                reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
+                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
                 logfile.write(reason) 
             if not pd.isna(row[5]):
                 if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[5]))):
                     validated = False
-                    reason = 'Water File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                    reason = 'Sewerage File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
                     logfile.write(reason)  
         abas_ids = [] 
         for index in range(3, propertySheet.max_row):
             if pd.isna(propertySheet['A{0}'.format(index)].value):
                 validated = False
-                reason = 'Water File data validation failed, Sl no. column is empty'
+                reason = 'Sewerage File data validation failed, Sl no. column is empty'
                 logfile.write(reason)
                 break
             abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
         if not pd.isna(row[1]):
             if str(row[1]).strip() not in abas_ids:
                 validated = False
-                reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
+                reason = 'there is no abas id available in property data for sewerage connection sl no. '+ str(row[0]) +'\n'
                 logfile.write(reason) 
 
-    reason = 'Water file validation ends.\n'
+    reason = 'sewerage file validation ends.\n'
     print(reason)
     logfile.write(reason) 
     return validate
 
 
-def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
+def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name):
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
@@ -117,7 +117,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             owner_obj[abas_id].append(owner)
 
     index = 2
-    for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row, values_only=True):
+    for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row, values_only=True):
         # try:  
         index = index + 1
         abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
@@ -126,7 +126,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
-            print("empty Abas id in water file")
+            print("empty Abas id in sewerage file")
             return
         
         status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
@@ -137,23 +137,13 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             for found_index, resProperty in enumerate(res["Properties"]):
                 propertyId = resProperty["propertyId"]
                 break
-            waterConnection = WaterConnection()
+            sewerageConnection = SewerageConnection()
             connectionHolder = ConnectionHolder()
             processInstance = ProcessInstance()
             additionalDetail = AdditionalDetail()
-            waterConnection.connectionHolders = []
+            sewerageConnection.connectionHolders = []
             if(str(row[3]).strip() == 'Yes'):
-                waterConnection.connectionHolders = None
-                # owner = owner_obj[abasPropertyId]
-                # connectionHolder.name = owner.name
-                # connectionHolder.mobileNumber = owner.mobileNumber
-                # connectionHolder.fatherOrHusbandName = owner.fatherOrHusbandName
-                # connectionHolder.emailId = owner.emailId
-                # connectionHolder.correspondenceAddress = owner.correspondenceAddress
-                # connectionHolder.relationship = owner.relationship
-                # connectionHolder.ownerType = owner.ownerType
-                # connectionHolder.gender = owner.gender
-                # connectionHolder.sameAsPropertyAddress = True
+                sewerageConnection.connectionHolders = None
             else:
                 connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
                 connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
@@ -164,67 +154,63 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 connectionHolder.ownerType = process_special_category(str(row[13]).strip())
                 connectionHolder.gender = process_gender(str(row[7]).strip())
                 connectionHolder.sameAsPropertyAddress = False
-                waterConnection.connectionHolders.append(connectionHolder)
+                sewerageConnection.connectionHolders.append(connectionHolder)
             
-            waterConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
-            waterConnection.pipeSize = getValue(str(row[14]).strip(),float,0.25)
-            waterConnection.proposedPipeSize = getValue(str(row[14]).strip(),float,0.25)
-            waterConnection.waterSource = process_water_source(str(row[15]).strip())
-            if(waterConnection.waterSource != 'OTHERS'):
-                waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
+            sewerageConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
+            sewerageConnection.drainageSize = getValue(str(row[14]).strip(),float,0.25)
+            sewerageConnection.proposedDrainageSize = getValue(str(row[14]).strip(),float,0.25)
+            if(sewerageConnection.waterSource != 'OTHERS'):
+                sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
             else:
-                waterConnection.waterSubSource = ''
-                waterConnection.sourceInfo = 'Other'
-            waterConnection.connectionType = process_connection_type(str(row[16]).strip())
-            waterConnection.motorInfo  = process_motor_info(str(row[17]).strip())
-            waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
-            waterConnection.authorizedConnection = process_connection_permission(str(row[19]).strip())
-            waterConnection.noOfTaps = getValue(str(row[23]).strip(),int,1)
-            waterConnection.proposedTaps = getValue(str(row[23]).strip(),int,1)
-            if( waterConnection.connectionType == 'Metered'):
-                waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
-                additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
+                sewerageConnection.waterSubSource = ''
+                sewerageConnection.sourceInfo = 'Other'
+            sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
+            sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
+            sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
+            sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
+            sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
+            
             additionalDetail.locality = ''
-            waterConnection.additionalDetails = additionalDetail
+            sewerageConnection.additionalDetails = additionalDetail
             processInstance.action = 'ACTIVATE_CONNECTION'
-            waterConnection.tenantId = tenantId
-            waterConnection.propertyId = propertyId
-            waterConnection.processInstance = processInstance
-            waterConnection.water = True
-            waterConnection.sewerage = False
-            waterConnection.service = 'Water'
-            waterConnection.applicationType = 'NEW_WATER_CONNECTION'
-            waterConnection.applicationStatus = 'CONNECTION_ACTIVATED'
-            waterConnection.source = 'MUNICIPAL_RECORDS'
-            waterConnection.channel = 'DATA_ENTRY'
-            waterConnection.status = 'ACTIVE'
+            sewerageConnection.tenantId = tenantId
+            sewerageConnection.propertyId = propertyId
+            sewerageConnection.processInstance = processInstance
+            sewerageConnection.water = False
+            sewerageConnection.sewerage = True
+            sewerageConnection.service = 'Sewerage'
+            sewerageConnection.applicationType = 'NEW_SEWERAGE_CONNECTION'
+            sewerageConnection.applicationStatus = 'CONNECTION_ACTIVATED'
+            sewerageConnection.source = 'MUNICIPAL_RECORDS'
+            sewerageConnection.channel = 'DATA_ENTRY'
+            sewerageConnection.status = 'ACTIVE'
 
             auth_token = superuser_login()["access_token"]
-            status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
-            with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
+            status, res = sewerageConnection.search_sewerage_connection(auth_token, tenantId, sewerageConnection.oldConnectionNo)               
+            with io.open(os.path.join(root, name,"sewerage_search_res.json"), mode="w", encoding="utf-8") as f:
                 json.dump(res, f, indent=2,  ensure_ascii=False)  
-            if(len(res['WaterConnection']) == 0):
-                statusCode, res = waterConnection.upload_water(auth_token, tenantId, waterConnection.oldConnectionNo, root, name)
-                with io.open(os.path.join(root, name,"water_create_res.json"), mode="w", encoding="utf-8") as f:
+            if(len(res['SewerageConnections']) == 0):
+                statusCode, res = sewerageConnection.upload_sewerage(auth_token, tenantId, sewerageConnection.oldConnectionNo, root, name)
+                with io.open(os.path.join(root, name,"sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
                     json.dump(res, f, indent=2,  ensure_ascii=False)  
-                waterconnectionNo = '' 
+                sewerageconnectionNo = '' 
                 if(statusCode == 200 or statusCode == 201):
-                    for found_index, resProperty in enumerate(res["WaterConnection"]):
+                    for found_index, resProperty in enumerate(res["SewerageConnections"]):
                         connectionNo = resProperty["connectionNo"]
                         value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
                         logfile.write(value)
-                        sheet1['Y{0}'.format(index)].value = connectionNo
-                        reason = 'water connection created for abas id ' + str(property.abasPropertyId)
+                        sheet1['T{0}'.format(index)].value = connectionNo
+                        reason = 'sewerage connection created for abas id ' + str(property.abasPropertyId)
                         logfile.write(reason)
                         print(reason)
                         createdCount = createdCount + 1
                 else:
-                    reason = 'water not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
+                    reason = 'sewerage not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
                     logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
-                reason = 'water connection exist for abas id ' + str(property.abasPropertyId)
+                reason = 'sewerage connection exist for abas id ' + str(property.abasPropertyId)
                 logfile.write(reason)
                 print(reason)
                 searchedCount = searchedCount + 1
@@ -234,11 +220,11 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             logfile.write(reason)
             
 
-    reason = 'Water created count: '+ str(createdCount)
+    reason = 'sewerage created count: '+ str(createdCount)
     print(reason)
-    reason = 'Water not created count: '+ str(notCreatedCount)
+    reason = 'sewerage not created count: '+ str(notCreatedCount)
     print(reason)
-    reason = 'Water searched count: '+ str(searchedCount)
+    reason = 'sewerage searched count: '+ str(searchedCount)
     print(reason)
         # except:
         #     print("Something went wrong in sl no ", row[0])

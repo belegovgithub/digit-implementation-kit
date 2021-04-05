@@ -18,6 +18,7 @@ class AdditionalDetail:
         self.initialMeterReading = initialMeterReading
         self.locality = locality
 
+
 class ProcessInstance:
     action: Optional[str]
 
@@ -69,21 +70,23 @@ class Property:
         self.propertyId = propertyId,
         self.tenantId = tenantId
 
-class WaterConnection:
+class SewerageConnection:
     tenantId: Optional[str]
     propertyId: Optional[str]
     status: Optional[str]
     connectionNo: Optional[str]
     oldConnectionNo: Optional[str]
-    proposedTaps: Optional[int]
-    proposedPipeSize: Optional[float]
+    proposedWaterClosets: Optional[int]
+    proposedToilets: Optional[int]
+    proposedDrainageSize: Optional[int]
     propertyOwnership: Optional[str]
     connectionHolders: Optional[List[ConnectionHolder]]
     service: Optional[str]  
     water: Optional[str]  
     sewerage: Optional[str]  
-    pipeSize : Optional[float]
-    noOfTaps: Optional[int]
+    drainageSize : Optional[int]
+    noOfWaterClosets: Optional[int]
+    noOfToilets: Optional[int]
     motorInfo: Optional[str]
     applicationType: Optional[str]
     authorizedConnection: Optional[str]
@@ -100,12 +103,12 @@ class WaterConnection:
     channel: Optional[str]
     creationReason: Optional[str]
     applicationStatus: Optional[str]
-    def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None,
-                 status: Optional[str]  =None, connectionNo: Optional[str] = None, oldConnectionNo: Optional[str] = None,
-                 proposedTaps: Optional[int] = None, proposedPipeSize: Optional[float] = None, propertyOwnership: Optional[str]= None,
+    def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None, status: Optional[str]  =None,
+                  connectionNo: Optional[str] = None, oldConnectionNo: Optional[str] = None, proposedWaterClosets: Optional[int] = None,
+                 proposedToilets: Optional[int] = None, proposedDrainageSize: Optional[int] = None, propertyOwnership: Optional[str]= None,
                  connectionHolders: Optional[List[ConnectionHolder]] = None, service: Optional[str] = None,
-                 water: Optional[str] = None, sewerage: Optional[str] = None,
-                 pipeSize : Optional[float] = None, noOfTaps: Optional[int] = None, motorInfo: Optional[str] = None,
+                 water: Optional[str] = None, sewerage: Optional[str] = None, drainageSize: Optional[int] = None, 
+                 noOfWaterClosets : Optional[int] = None, noOfToilets: Optional[int] = None, motorInfo: Optional[str] = None,
                  applicationType: Optional[str] = None, authorizedConnection: Optional[str] = None,
                  waterSource: Optional[str] = None, sourceInfo: Optional[str] = None,
                  waterSubSource: Optional[str] = None, connectionType : Optional[str] = None, meterId : Optional[str] = None,
@@ -118,15 +121,17 @@ class WaterConnection:
         self.status = status
         self.connectionNo = connectionNo
         self.oldConnectionNo = oldConnectionNo
-        self.proposedTaps = proposedTaps
-        self.proposedPipeSize = proposedPipeSize
+        self.proposedWaterClosets = proposedWaterClosets
+        self.proposedToilets = proposedToilets
+        self.proposedDrainageSize = proposedDrainageSize
         self.propertyOwnership = propertyOwnership
         self.connectionHolders = connectionHolders
         self.service = service
         self.water = water
         self.sewerage = sewerage
-        self.pipeSize = pipeSize
-        self.noOfTaps = noOfTaps
+        self.drainageSize = drainageSize
+        self.noOfWaterClosets = noOfWaterClosets
+        self.noOfToilets = noOfToilets
         self.motorInfo = motorInfo
         self.applicationType = applicationType
         self.authorizedConnection = authorizedConnection
@@ -144,31 +149,31 @@ class WaterConnection:
         self.creationReason = creationReason
         self.applicationStatus = applicationStatus
 
-    def get_water_json(self):
-        water_encoder = PropertyEncoder().encode(self)
-        # print(json.loads(water_encoder))
-        return convert_json(json.loads(water_encoder), underscore_to_camel)
+    def get_sewerage_json(self):
+        sewerage_encoder = PropertyEncoder().encode(self)
+        # print(json.loads(sewerage_encoder))
+        return convert_json(json.loads(sewerage_encoder), underscore_to_camel)
 
-    def upload_water(self, access_token, tenantId,  oldConnectionNo, root, name):       
+    def upload_sewerage(self, access_token, tenantId,  oldConnectionNo, root, name):       
         request_data = {
             "RequestInfo": {
                 "authToken": access_token
             },
-            "WaterConnection": 
-                self.get_water_json()            
+            "SewerageConnection": 
+                self.get_sewerage_json()            
         }
         # print(json.dumps(request_data, indent=2)) 
-        with io.open(os.path.join(root, name,"water_create_req.json"), mode="w", encoding="utf-8") as f:
+        with io.open(os.path.join(root, name,"sewerage_create_req.json"), mode="w", encoding="utf-8") as f:
             json.dump(request_data, f, indent=2,  ensure_ascii=False) 
         
         response = requests.post(
-            urljoin(config.HOST, "/ws-services/wc/_create"),
+            urljoin(config.HOST, "/sw-services/swc/_create"),
             json=request_data)
 
         return response.status_code, response.json()        
 
-    def search_water_connection(self,auth_token, tenantId, oldConnectionNo):
-        url = urljoin(config.HOST, '/ws-services/wc/_search')        
+    def search_sewerage_connection(self,auth_token, tenantId, oldConnectionNo):
+        url = urljoin(config.HOST, '/sw-services/swc/_search')        
         request_body = {}
         request_body["RequestInfo"] = {"authToken": auth_token}
         params = {"searchType":"CONNECTION","tenantId": tenantId, "oldConnectionNumber": oldConnectionNo}
@@ -179,4 +184,3 @@ class WaterConnection:
             return True, res
         else:
             return False, res
-
