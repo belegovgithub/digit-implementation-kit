@@ -107,8 +107,8 @@ def main():
     #         logfile.close()
 
     # Doing for one cb at a time
-    cityname = 'agra'
-    root = r'D:\eGov\Data\WS\Template\Property'
+    cityname = 'clementtown'
+    root = r'D:\WS\WaterSewerageTemplates'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -158,15 +158,19 @@ def validateDataForProperty(propertyFile, logfile):
         print(reason)
         logfile.write(reason)
         print('no. of rows in Property file sheet 1: ', sheet1.max_row) 
-        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True):
+        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True): 
             if pd.isna(row[0]):
                 validated = False
                 reason = 'Sl no. column is empty\n'
                 logfile.write(reason)
                 break
-            if pd.isna(row[1]) or pd.isna(row[27]):
+            if pd.isna(row[1]):
                 validated = False
-                reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', abas property id or ownership type is empty.\n'
+                reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', abas property id  is empty.\n'
+                logfile.write(reason)
+            if pd.isna(row[27]):
+                validated = False
+                reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ',  ownership type is empty.\n'
                 logfile.write(reason)
             if(str(row[27]) != "Multiple Owners"):
                 if pd.isna(row[28]) or pd.isna(row[29]):
@@ -192,14 +196,18 @@ def validateDataForProperty(propertyFile, logfile):
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', sub usage category is empty.\n'
                     logfile.write(reason)
+            
 
         for index in range(3, sheet1.max_row):
-            if pd.isna(row[0]):
-                validated = False
-                reason = 'Sl no. column is empty'
-                logfile.write(reason)
-                break
-            abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
+            try: 
+                if pd.isna(sheet1['A{0}'.format(index)].value):
+                    validated = False
+                    reason = 'Sl no. column is empty'
+                    logfile.write(reason)
+                    break
+                abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
+            except:
+                print("abas id is empty.")
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
         if(len(duplicate_ids) >= 1):
             validated = False
