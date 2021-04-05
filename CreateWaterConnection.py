@@ -57,7 +57,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
         return
     else:
         print('Data validation for water success.')
-    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)    
+    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
     wb_water.save(waterFile)        
     wb_water.close()
 
@@ -88,10 +88,11 @@ def validateData(waterFile, logfile, cityname):
                 reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
                 logfile.write(reason) 
             if not pd.isna(row[28]):
-                if not bool(re.match("[a-zA-Z \\-'`\\.]+$",str(row[5]))):
+                if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[5]))):
                     validated = False
                     reason = 'Name has invalid characters for abas id'+ str(row[0]) +'\n'
                     logfile.write(reason)   
+            
     return validate
 
 
@@ -135,7 +136,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
-            continue
+            print("empty Abas id in water file")
+            return
         
         status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
         with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
@@ -193,7 +195,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 waterConnection.meterId = getValue(str(row[20]).strip(),str,"")
                 additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
             waterConnection.additionalDetails = additionalDetail
-            processInstance.action = 'ACTIVATE_CONNECTION'
+            processInstance.action = 'ACTIVE'
             waterConnection.tenantId = tenantId
             waterConnection.propertyId = propertyId
             waterConnection.processInstance = processInstance
@@ -230,18 +232,22 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
+            else:
+                reason = 'water connection exist for abas id ' + str(property.abasPropertyId)
+                logfile.write(reason)
+                print(reason)
+                searchedCount = searchedCount + 1
                         
         else:
-            reason = 'water already created for abas id '+ str(property.abasPropertyId) + '\n'
+            reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
             logfile.write(reason)
-            print(reason)
-            searchedCount = searchedCount + 1
+            
 
     reason = 'Water created count: '+ str(createdCount)
     print(reason)
-    reason = 'Water not created count: '+ str(createdCount)
+    reason = 'Water not created count: '+ str(notCreatedCount)
     print(reason)
-    reason = 'Water searched count: '+ str(createdCount)
+    reason = 'Water searched count: '+ str(searchedCount)
     print(reason)
         # except:
         #     print("Something went wrong in sl no ", row[0])

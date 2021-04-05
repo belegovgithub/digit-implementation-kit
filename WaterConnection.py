@@ -154,7 +154,7 @@ class WaterConnection:
 
     def get_water_json(self):
         water_encoder = PropertyEncoder().encode(self)
-        print(json.loads(water_encoder))
+        # print(json.loads(water_encoder))
         return convert_json(json.loads(water_encoder), underscore_to_camel)
 
     def upload_water(self, access_token, tenantId,  oldConnectionNo, root, name):       

@@ -104,6 +104,7 @@ def main():
                 ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
             else:
                 print("Water File doesnot exist for ", cityname) 
+            logfile.close()
 
 
 def validateDataForProperty(propertyFile, logfile):
@@ -134,7 +135,7 @@ def validateDataForProperty(propertyFile, logfile):
                     reason = 'Mobile number not correct for sl no. '+ str(row[0]) +'\n'
                     logfile.write(reason)
                     if not pd.isna(row[28]):
-                        if not bool(re.match("[a-zA-Z \\-'`\\.]+$",str(row[28]))):
+                        if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[28]))):
                             validated = False
                             reason = 'Name has invalid characters '+ str(row[0]) +'\n'
                             logfile.write(reason)
@@ -469,25 +470,21 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 print(reason)
                 notCreatedCount = notCreatedCount + 1
         else:
-            reason = 'property already created for abas id '+ str(property.abasPropertyId) + '\n'
+            reason = 'property already exist for abas id '+ str(property.abasPropertyId) + '\n'
             logfile.write(reason)
             print(reason)
             searchedCount = searchedCount + 1
 
     reason = 'property created count: '+ str(createdCount)
     print(reason)
-    reason = 'property not created count: '+ str(createdCount)
+    reason = 'property not created count: '+ str(notCreatedCount)
     print(reason)
-    reason = 'property searched count: '+ str(createdCount)
+    reason = 'property searched count: '+ str(searchedCount)
     print(reason)
     
 
         # except:
         #     print("Something went wrong in sl no ", row[0])
-    
-    print(searchedCount)
-    print(createdCount)
-    print(notCreatedCount)
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
