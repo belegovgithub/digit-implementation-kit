@@ -51,7 +51,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')   
-    validate = validateData(waterFile, logfile, cityname)  
+    validate = validateData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
         return
@@ -61,7 +61,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     wb_water.save(waterFile)        
     wb_water.close()
 
-def validateData(waterFile, logfile, cityname):
+def validateData(propertySheet, waterFile, logfile, cityname):
     validate = True
     wb_water = openpyxl.load_workbook(waterFile) 
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
@@ -80,19 +80,27 @@ def validateData(waterFile, logfile, cityname):
             logfile.write(reason)
         if pd.isna(row[3]):
             validated = False
-            reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', same as property address is empty.\n'
+            reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
             logfile.write(reason)
         if(str(row[3]).strip() == 'No'):
             if pd.isna(row[4]) or pd.isna(row[5]):
                 validated = False
                 reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
                 logfile.write(reason) 
-            if not pd.isna(row[28]):
+            if not pd.isna(row[5]):
                 if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[5]))):
                     validated = False
-                    reason = 'Name has invalid characters for abas id'+ str(row[0]) +'\n'
-                    logfile.write(reason)   
-            
+                    reason = 'Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                    logfile.write(reason)  
+        abas_ids = [] 
+        for index in range(3, propertySheet.max_row):
+            abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
+        if not pd.isna(row[1]):
+            if str(row[1]).strip() not in abas_ids:
+                validated = False
+                reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
+                logfile.write(reason) 
+
     return validate
 
 
@@ -176,7 +184,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 connectionHolder.sameAsPropertyAddress = False
                 waterConnection.connectionHolders.append(connectionHolder)
             
-            waterConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,"")
+            waterConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
             waterConnection.pipeSize = getValue(str(row[14]).strip(),float,0.25)
             waterConnection.proposedPipeSize = getValue(str(row[14]).strip(),float,0.25)
             waterConnection.waterSource = process_water_source(str(row[15]).strip())
@@ -192,7 +200,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             waterConnection.noOfTaps = getValue(str(row[23]).strip(),int,1)
             waterConnection.proposedTaps = getValue(str(row[23]).strip(),int,1)
             if( waterConnection.connectionType == 'Metered'):
-                waterConnection.meterId = getValue(str(row[20]).strip(),str,"")
+                waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
                 additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
             waterConnection.additionalDetails = additionalDetail
             processInstance.action = 'ACTIVE'
