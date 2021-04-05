@@ -11,68 +11,39 @@ import openpyxl
 
 def main():
     Flag =False
-    tenantMapping={}
-    count = 0
-    with io.open(config.CITY_MODULES_JSON, encoding="utf-8") as f:
-        cb_module_data = json.load(f)
-        for found_index, module in enumerate(cb_module_data["citymodule"]):
-            if module["module"]=="WS":  
-                for index, tenant in enumerate(module["tenants"]):
-                    tenantMapping[tenant["code"].lower()]=tenant["code"].lower()[3:]
-
-    for root, dirs, files in os.walk(r"D:\eGov\Data\WS\Template\Property", topdown=True):
-        for name in dirs:          
-            subfolder = os.path.join(root, name)         
-
-            city = subfolder.replace(r"D:\eGov\Data\WS\Template\Property\CB ","" ).strip().lower()
-            city = "pb." + city
-
-            if city not in tenantMapping:
-                print("Not In city",city)
-                continue
-            cityname = tenantMapping[city]
-            print(cityname)
-            propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
-            if os.path.exists(propertyFile) :  
-                wb = openpyxl.load_workbook(propertyFile) 
-                propertySheet = wb.get_sheet_by_name('Property Assembly Detail') 
-            waterFile = os.path.join(root, name,"Template for Existing Water Connection Detail.xlsx")
-            sewerageFile = os.path.join(root, name,"Template for Existing Sewerage Connection Detail.xlsx")
-            if os.path.exists(waterFile) :  
-                wb = openpyxl.load_workbook(waterFile) 
-                waterSheet = wb.get_sheet_by_name('Water Connection Details')   
-
-                createWaterJson(propertySheet, waterSheet, cityname)  
-            else:
-                print("File doesnot exist for ", cityname)  
-
+    
 def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
-    waterSheet = wb_water.get_sheet_by_name('Water Connection Details')   
+    waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
+    print('no. of rows in water file: ', waterSheet.max_row) 
     validate = validateData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
-        return
+        # return
     else:
         print('Data validation for water success.')
-    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
-    wb_water.save(waterFile)        
-    wb_water.close()
+    # createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
+    # wb_water.save(waterFile)        
+    # wb_water.close()
 
 def validateData(propertySheet, waterFile, logfile, cityname):
     validate = True
     wb_water = openpyxl.load_workbook(waterFile) 
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
     index = 2
-    for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row,values_only=True):
+    reason = 'Water file validation starts.\n'
+    print(reason)
+    logfile.write(reason)
+    
+    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row,values_only=True):
         index = index + 1
         if pd.isna(row[1]):
-            continue
+            break
         if pd.isna(row[0]):
             validated = False
-            reason = 'Sl no. column is empty'
+            reason = 'Sl no. column is empty\n'
             logfile.write(reason)
         if pd.isna(row[2]):
             validated = False
@@ -94,6 +65,11 @@ def validateData(propertySheet, waterFile, logfile, cityname):
                     logfile.write(reason)  
         abas_ids = [] 
         for index in range(3, propertySheet.max_row):
+            if pd.isna(propertySheet['A{0}'.format(index)].value):
+                validated = False
+                reason = 'Sl no. column is empty'
+                logfile.write(reason)
+                break
             abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
         if not pd.isna(row[1]):
             if str(row[1]).strip() not in abas_ids:
@@ -101,6 +77,9 @@ def validateData(propertySheet, waterFile, logfile, cityname):
                 reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
                 logfile.write(reason) 
 
+    reason = 'Water file validation ends.\n'
+    print(reason)
+    logfile.write(reason) 
     return validate
 
 
@@ -134,7 +113,6 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             owner_obj[abas_id].append(owner)
 
     index = 2
-    print('no. of rows in water file: ', waterSheet.max_row)
     for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row, values_only=True):
         # try:  
         index = index + 1

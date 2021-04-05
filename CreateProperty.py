@@ -59,52 +59,90 @@ def main():
                 continue
             tenantMapping[module["code"].lower()]=module["code"].lower()[3:]
 
-    for root, dirs, files in os.walk(r"D:\eGov\Data\WS\Template\Property", topdown=True):
-        for name in dirs:          
-            subfolder = os.path.join(root, name)         
+    # for root, dirs, files in os.walk(r"D:\WS\WaterSewerageTemplates", topdown=True):
+    #     for name in dirs:          
+    #         subfolder = os.path.join(root, name)         
+    #         city = subfolder.replace(r"D:\WS\WaterSewerageTemplates\CB ","" ).strip().lower()
+    #         city = "pb." + city
 
-            city = subfolder.replace(r"D:\eGov\Data\WS\Template\Property\CB ","" ).strip().lower()
-            city = "pb." + city
-
-            if city not in tenantMapping:
-                print("Not In city",city)
-                continue
-            cityname = tenantMapping[city]
-            print(cityname)
-            propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
-            waterFile = os.path.join(root, name,"Template for Existing Water Connection Detail.xlsx")
-            sewerageFile = os.path.join(root, name,"Template for Existing Sewerage Connection Detail.xlsx")
-            logfile = open(os.path.join(root, name,"Logfile.txt"), "w")            
-            validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
-            if(validate == False):                
-                print('Data validation Failed for mobile entry, Please check the log file.') 
-                return
-            validate =  validateDataForProperty(propertyFile, logfile)            
-            if(validate == False):                
-                print('Data validation for property Failed, Please check the log file.') 
-                return
-            else:
-                print('Data validation for property success.')
-            if os.path.exists(propertyFile) :                  
-                wb_property = openpyxl.load_workbook(propertyFile) 
-                sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
-                sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
-                localitySheet = wb_property.get_sheet_by_name('Locality')
-                df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
-                locality_data = {}
-                for ind in df.index: 
-                    locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
-                createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
-                wb_property.save(propertyFile)        
-                wb_property.close()
-            else:
-                print("Property File doesnot exist for ", cityname) 
+    #         if city not in tenantMapping:
+    #             print("Not In city",city)
+    #             continue
+    #         cityname = tenantMapping[city]
+    #         print(cityname)
+    #         propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+    #         waterFile = os.path.join(root, name,"Template for Existing Water Connection Detail.xlsx")
+    #         sewerageFile = os.path.join(root, name,"Template for Existing Sewerage Connection Detail.xlsx")
+    #         logfile = open(os.path.join(root, name,"Logfile.txt"), "w")            
+    #         # validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
+    #         # if(validate == False):                
+    #         #     print('Data validation Failed for mobile entry, Please check the log file.') 
+    #         #     return
+    #         validate =  validateDataForProperty(propertyFile, logfile)            
+    #         if(validate == False):                
+    #             print('Data validation for property Failed, Please check the log file.') 
+    #             # return
+    #         else:
+    #             print('Data validation for property success.')
+    #         # if os.path.exists(propertyFile) :                  
+    #         #     wb_property = openpyxl.load_workbook(propertyFile) 
+    #         #     sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+    #         #     sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
+    #         #     localitySheet = wb_property.get_sheet_by_name('Locality')
+    #         #     df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
+    #         #     locality_data = {}
+    #         #     for ind in df.index: 
+    #         #         locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
+    #         #     createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+    #         #     wb_property.save(propertyFile)        
+    #         #     wb_property.close()
+    #         # else:
+    #         #     print("Property File doesnot exist for ", cityname) 
             
-            if os.path.exists(waterFile) : 
-                ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
-            else:
-                print("Water File doesnot exist for ", cityname) 
-            logfile.close()
+    #         if os.path.exists(waterFile) : 
+    #             ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+    #         else:
+    #             print("Water File doesnot exist for ", cityname) 
+    #         logfile.close()
+
+    # Doing for one cb at a atime
+    cityname = 'ajmer'
+    root = 'D:\WS\WaterSewerageTemplates'
+    name = 'CB ' + cityname
+    propertyFile =os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(),'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+    waterFile = os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(), "Template for Existing Water Connection Detail.xlsx")
+    sewerageFile = os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(), "Template for Existing Sewerage Connection Detail.xlsx")
+    logfile = open(os.path.join(r"D:\WS\WaterSewerageTemplates\CB "+  cityname.lower(), "Logfile.txt"), "w")            
+    # validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
+    # if(validate == False):                
+    #     print('Data validation Failed for mobile entry, Please check the log file.') 
+    #     return
+    validate =  validateDataForProperty(propertyFile, logfile)            
+    if(validate == False):                
+        print('Data validation for property Failed, Please check the log file.') 
+        # return
+    else:
+        print('Data validation for property success.')
+    # if os.path.exists(propertyFile) :                  
+    #     wb_property = openpyxl.load_workbook(propertyFile) 
+    #     sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+    #     sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
+    #     localitySheet = wb_property.get_sheet_by_name('Locality')
+    #     df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
+    #     locality_data = {}
+    #     for ind in df.index: 
+    #         locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
+    #     createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+    #     wb_property.save(propertyFile)        
+    #     wb_property.close()
+    # else:
+    #     print("Property File doesnot exist for ", cityname) 
+    
+    if os.path.exists(waterFile) : 
+        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+    else:
+        print("Water File doesnot exist for ", cityname) 
+    logfile.close()        
 
 
 def validateDataForProperty(propertyFile, logfile):
@@ -115,12 +153,16 @@ def validateDataForProperty(propertyFile, logfile):
         sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
         abas_ids = []        
-        
+        reason = 'Property file validation starts.\n'
+        print(reason)
+        logfile.write(reason)
+        print('no. of rows in Property file sheet 1: ', sheet1.max_row) 
         for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True):
             if pd.isna(row[0]):
                 validated = False
                 reason = 'Sl no. column is empty'
                 logfile.write(reason)
+                break
             if pd.isna(row[1]) or pd.isna(row[27]):
                 validated = False
                 reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', abas property id or ownership type is empty.\n'
@@ -134,11 +176,11 @@ def validateDataForProperty(propertyFile, logfile):
                     validated = False
                     reason = 'Mobile number not correct for sl no. '+ str(row[0]) +'\n'
                     logfile.write(reason)
-                    if not pd.isna(row[28]):
-                        if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[28]))):
-                            validated = False
-                            reason = 'Name has invalid characters '+ str(row[0]) +'\n'
-                            logfile.write(reason)
+                if not pd.isna(row[28]):
+                    if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[28]))):
+                        validated = False
+                        reason = 'Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                        logfile.write(reason)
             if pd.isna(row[7]):
                 validated = False
                 reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', usage category is empty.\n'
@@ -151,6 +193,11 @@ def validateDataForProperty(propertyFile, logfile):
                     logfile.write(reason)
 
         for index in range(3, sheet1.max_row):
+            if pd.isna(row[0]):
+                validated = False
+                reason = 'Sl no. column is empty'
+                logfile.write(reason)
+                break
             abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
         if(len(duplicate_ids) >= 1):
@@ -158,10 +205,28 @@ def validateDataForProperty(propertyFile, logfile):
             reason = 'Property File data validation failed. ' +'Duplicate abas property id for '+ str(duplicate_ids) +'\n'
             logfile.write(reason)        
         for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row,values_only=True):
-            if pd.isna(row[0]) or pd.isna(row[3]):
-                validated = False
-                reason = 'Property File data validation failed, mobile no. or abas id is empty in multiple owner sheet.\n'
-                logfile.write(reason)
+            if not pd.isna(row[0]):
+                if pd.isna(row[3]):
+                    validated = False
+                    reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', mobile no. is empty in multiple owner sheet.\n'
+                    logfile.write(reason)
+                if pd.isna(row[2]):
+                    validated = False
+                    reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', name is empty.\n'
+                    logfile.write(reason)
+                if(len(str(row[3])) != 10):
+                    validated = False
+                    reason = 'Mobile number not correct for abas id '+ str(row[0]) +'\n'
+                    logfile.write(reason)
+                if not pd.isna(row[2]):
+                    if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[2]))):
+                        validated = False
+                        reason = 'Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                        logfile.write(reason)
+
+        reason = 'Property file validation ends.\n'
+        print(reason)
+        logfile.write(reason)
         return validated
 
                     
