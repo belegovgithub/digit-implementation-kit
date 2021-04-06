@@ -10,6 +10,7 @@ import openpyxl
 import collections
 import re
 from CreateWaterConnection import *
+from CreateSewerageConnection import *
 
 # class CreateProprty(Property):
 #     def __init__(self, *args, **kwargs):
@@ -107,8 +108,8 @@ def main():
     #         logfile.close()
 
     # Doing for one cb at a time
-    cityname = 'agra'
-    root = r'D:\eGov\Data\WS\Template\Property'
+    cityname = 'varanasi'
+    root = r'D:\eGov\Data\WS\Template\WaterSewerageTemplates'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -118,13 +119,14 @@ def main():
     # if(validate == False):                
     #     print('Data validation Failed for mobile entry, Please check the log file.') 
     #     return
-    validate =  validateDataForProperty(propertyFile, logfile)            
-    if(validate == False):                
-        print('Data validation for property Failed, Please check the log file.') 
-        return
-    else:
-        print('Data validation for property success.')
-    if os.path.exists(propertyFile) :                  
+    
+    if os.path.exists(propertyFile) :  
+        validate =  validateDataForProperty(propertyFile, logfile)            
+        if(validate == False):                
+            print('Data validation for property Failed, Please check the log file.') 
+            # return
+        else:
+            print('Data validation for property success.')                
         wb_property = openpyxl.load_workbook(propertyFile) 
         sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
@@ -133,14 +135,19 @@ def main():
         locality_data = {}
         for ind in df.index: 
             locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
-        createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
-        wb_property.save(propertyFile)        
-        wb_property.close()
+        # createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+        # wb_property.save(propertyFile)        
+        # wb_property.close()
     else:
         print("Property File doesnot exist for ", cityname) 
     
     if os.path.exists(waterFile) : 
         ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+    else:
+        print("Water File doesnot exist for ", cityname) 
+
+    if os.path.exists(sewerageFile) : 
+        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
     else:
         print("Water File doesnot exist for ", cityname) 
     logfile.close()        
@@ -150,93 +157,92 @@ def validateDataForProperty(propertyFile, logfile):
     validated = True
     reason = ''
     try:
-        if os.path.exists(propertyFile) : 
-            wb_property = openpyxl.load_workbook(propertyFile) 
-            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
-            sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
-            abas_ids = []        
-            reason = 'Property file validation starts.\n'
-            print(reason)
-            logfile.write(reason)
-            print('no. of rows in Property file sheet 1: ', sheet1.max_row) 
-            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True): 
-                if pd.isna(row[0]):
+        wb_property = openpyxl.load_workbook(propertyFile) 
+        sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+        sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
+        abas_ids = []        
+        reason = 'Property file validation starts.\n'
+        print(reason)
+        logfile.write(reason)
+        print('no. of rows in Property file sheet 1: ', sheet1.max_row) 
+        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True): 
+            if pd.isna(row[0]):
+                validated = False
+                reason = 'Sl no. column is empty\n'
+                logfile.write(reason)
+                break
+            if pd.isna(row[1]):
+                validated = False
+                reason = 'Property File sheet1 data validation failed for sl no. '+ str(row[0]) + ', abas property id  is empty.\n'
+                logfile.write(reason)
+            if pd.isna(row[27]):
+                validated = False
+                reason = 'Property File sheet1 data validation failed for sl no. '+ str(row[0]) + ',  ownership type is empty.\n'
+                logfile.write(reason)
+            if(str(row[27]) != "Multiple Owners"):
+                if pd.isna(row[28]):
+                    validated = False
+                    reason = 'Property File sheet1 data validation failed for sl no. '+ str(row[0]) + ', name is empty.\n'
+                    logfile.write(reason)
+                if pd.isna(row[29]):
+                    validated = False
+                    reason = 'Property File data sheet1 validation failed for sl no. '+ str(row[0]) + ', mobile no. is empty.\n'
+                    logfile.write(reason)
+                elif(len(str(row[29]).strip()) != 10):
+                    validated = False
+                    reason = 'Property File data sheet1 validation failed, Mobile number not correct for sl no. '+ str(row[0]) +'\n'
+                    logfile.write(reason)
+                if not pd.isna(row[28]):
+                    if not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):
+                        validated = False
+                        reason = 'Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                        logfile.write(reason)
+            if pd.isna(row[7]):
+                validated = False
+                reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', usage category is empty.\n'
+                logfile.write(reason)
+            elif(str(row[7]).strip() == 'Commercial ( Nonresidential )' or str(row[7]).strip() == 'Institutional ( Nonresidential )'
+                    or str(row[7]).strip() == 'Industrial ( Nonresidential )' or str(row[7]).strip() == 'Others ( Nonresidential )'):
+                if pd.isna(row[8]):
+                    validated = False
+                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', sub usage category is empty.\n'
+                    logfile.write(reason)
+            
+
+        for index in range(3, sheet1.max_row):
+            try: 
+                if pd.isna(sheet1['A{0}'.format(index)].value):
                     validated = False
                     reason = 'Sl no. column is empty\n'
                     logfile.write(reason)
                     break
-                if pd.isna(row[1]):
+                abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
+            except Exception as ex:
+                print("validateDataForProperty Exception: abas id is empty: ",ex)
+        duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
+        if(len(duplicate_ids) >= 1):
+            validated = False
+            reason = 'Property File data validation failed. ' +'Duplicate abas property id for '+ str(duplicate_ids) +'\n'
+            logfile.write(reason)        
+        for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row,values_only=True):
+            if not pd.isna(row[0]):
+                if pd.isna(row[3]):
                     validated = False
-                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', abas property id  is empty.\n'
+                    reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', mobile no. is empty in multiple owner sheet.\n'
                     logfile.write(reason)
-                if pd.isna(row[27]):
+                if pd.isna(row[2]):
                     validated = False
-                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ',  ownership type is empty.\n'
+                    reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', name is empty.\n'
                     logfile.write(reason)
-                if(str(row[27]) != "Multiple Owners"):
-                    if pd.isna(row[28]):
-                        validated = False
-                        reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', name is empty.\n'
-                        logfile.write(reason)
-                    if pd.isna(row[29]):
-                        validated = False
-                        reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', mobile no. is empty.\n'
-                        logfile.write(reason)
-                    if(len(str(row[29])) != 10):
-                        validated = False
-                        reason = 'Mobile number not correct for sl no. '+ str(row[0]) +'\n'
-                        logfile.write(reason)
-                    if not pd.isna(row[28]):
-                        if not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):
-                            validated = False
-                            reason = 'Name has invalid characters for sl no. '+ str(row[0]) +'\n'
-                            logfile.write(reason)
-                if pd.isna(row[7]):
+                if(len(str(row[3])) != 10):
                     validated = False
-                    reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', usage category is empty.\n'
+                    reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
                     logfile.write(reason)
-                elif(str(row[7]).strip() == 'Commercial ( Nonresidential )' or str(row[7]).strip() == 'Institutional ( Nonresidential )'
-                        or str(row[7]).strip() == 'Industrial ( Nonresidential )' or str(row[7]).strip() == 'Others ( Nonresidential )'):
-                    if pd.isna(row[8]):
+                if not pd.isna(row[2]):
+                    if not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):
                         validated = False
-                        reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', sub usage category is empty.\n'
+                        reason = 'Property File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
                         logfile.write(reason)
-                
-
-            for index in range(3, sheet1.max_row):
-                try: 
-                    if pd.isna(sheet1['A{0}'.format(index)].value):
-                        validated = False
-                        reason = 'Sl no. column is empty\n'
-                        logfile.write(reason)
-                        break
-                    abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
-                except Exception as ex:
-                    print("validateDataForProperty Exception: abas id is empty: ",ex)
-            duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
-            if(len(duplicate_ids) >= 1):
-                validated = False
-                reason = 'Property File data validation failed. ' +'Duplicate abas property id for '+ str(duplicate_ids) +'\n'
-                logfile.write(reason)        
-            for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row,values_only=True):
-                if not pd.isna(row[0]):
-                    if pd.isna(row[3]):
-                        validated = False
-                        reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', mobile no. is empty in multiple owner sheet.\n'
-                        logfile.write(reason)
-                    if pd.isna(row[2]):
-                        validated = False
-                        reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', name is empty.\n'
-                        logfile.write(reason)
-                    if(len(str(row[3])) != 10):
-                        validated = False
-                        reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
-                        logfile.write(reason)
-                    if not pd.isna(row[2]):
-                        if not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):
-                            validated = False
-                            reason = 'Property File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
-                            logfile.write(reason)
     except Exception as ex:
         print("validateDataForProperty Exception: ",ex)
     reason = 'Property file validation ends.\n'

@@ -21,17 +21,17 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
-        return
+        # return
     else:
         print('Data validation for sewerage success.')
-    createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
-    wb_sewerage.save(sewerageFile)        
-    wb_sewerage.close()
+    # createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
+    # wb_sewerage.save(sewerageFile)        
+    # wb_sewerage.close()
 
 def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
-    validate = True
+    validated = True
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
-    sewerage_sheet = wb_sewerage.get_sheet_by_name('sewerage Connection Details') 
+    sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
     index = 2
     reason = 'sewerage file validation starts.\n'
     print(reason)
@@ -66,7 +66,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 if not pd.isna(row[5]):
                     if not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                         validated = False
-                        reason = 'Sewerage File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                        reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
                         logfile.write(reason)  
             abas_ids = [] 
             for index in range(3, propertySheet.max_row):
@@ -86,7 +86,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     reason = 'sewerage file validation ends.\n'
     print(reason)
     logfile.write(reason) 
-    return validate
+    return validated
 
 
 def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name):

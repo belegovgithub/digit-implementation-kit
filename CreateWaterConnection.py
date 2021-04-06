@@ -21,15 +21,15 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
-        return
+        # return
     else:
         print('Data validation for water success.')
-    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
-    wb_water.save(waterFile)        
-    wb_water.close()
+    # createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
+    # wb_water.save(waterFile)        
+    # wb_water.close()
 
 def validateWaterData(propertySheet, waterFile, logfile, cityname):
-    validate = True
+    validated = True
     wb_water = openpyxl.load_workbook(waterFile) 
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
     index = 2
@@ -40,6 +40,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row,values_only=True):
         index = index + 1
         try:        
+            print(type(row[0]))
             if pd.isna(row[1]):
                 break
             if pd.isna(row[0]):
@@ -66,7 +67,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 if not pd.isna(row[5]):
                     if not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                         validated = False
-                        reason = 'Water File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                        reason = 'Water File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
                         logfile.write(reason)  
             abas_ids = [] 
             for index in range(3, propertySheet.max_row):
@@ -86,7 +87,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     reason = 'Water file validation ends.\n'
     print(reason)
     logfile.write(reason) 
-    return validate
+    return validated
 
 
 def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
