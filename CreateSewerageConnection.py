@@ -18,7 +18,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
     sewerageSheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details')  
     print('no. of rows in sewerage file: ', sewerageSheet.max_row) 
-    validate = validateData(propertySheet, sewerageFile, logfile, cityname)  
+    validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
         return
@@ -28,7 +28,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     wb_sewerage.save(sewerageFile)        
     wb_sewerage.close()
 
-def validateData(propertySheet, sewerageFile, logfile, cityname):
+def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     validate = True
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
     sewerage_sheet = wb_sewerage.get_sheet_by_name('sewerage Connection Details') 
@@ -37,50 +37,52 @@ def validateData(propertySheet, sewerageFile, logfile, cityname):
     print(reason)
     logfile.write(reason)
     
-    for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row,values_only=True):
+    for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row,values_only=True):        
         index = index + 1
-        if pd.isna(row[1]):
-            break
-        if pd.isna(row[0]):
-            validated = False
-            reason = 'Sewerage File data validation failed, Sl no. column is empty\n'
-            logfile.write(reason)
-        if pd.isna(row[1]):
-            validated = False
-            reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
-            logfile.write(reason) 
-        if pd.isna(row[2]):
-            validated = False
-            reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
-            logfile.write(reason)
-        if pd.isna(row[3]):
-            validated = False
-            reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
-            logfile.write(reason)
-        if(str(row[3]).strip() == 'No'):
-            if pd.isna(row[4]) or pd.isna(row[5]):
-                validated = False
-                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
-                logfile.write(reason) 
-            if not pd.isna(row[5]):
-                if not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
-                    validated = False
-                    reason = 'Sewerage File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
-                    logfile.write(reason)  
-        abas_ids = [] 
-        for index in range(3, propertySheet.max_row):
-            if pd.isna(propertySheet['A{0}'.format(index)].value):
-                validated = False
-                reason = 'Sewerage File data validation failed, Sl no. column is empty'
-                logfile.write(reason)
+        try:
+            if pd.isna(row[1]):
                 break
-            abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
-        if not pd.isna(row[1]):
-            if str(row[1]).strip() not in abas_ids:
+            if pd.isna(row[0]):
                 validated = False
-                reason = 'there is no abas id available in property data for sewerage connection sl no. '+ str(row[0]) +'\n'
+                reason = 'Sewerage File data validation failed, Sl no. column is empty\n'
+                logfile.write(reason)
+            if pd.isna(row[1]):
+                validated = False
+                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
                 logfile.write(reason) 
-
+            if pd.isna(row[2]):
+                validated = False
+                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
+                logfile.write(reason)
+            if pd.isna(row[3]):
+                validated = False
+                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
+                logfile.write(reason)
+            if(str(row[3]).strip() == 'No'):
+                if pd.isna(row[4]) or pd.isna(row[5]):
+                    validated = False
+                    reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
+                    logfile.write(reason) 
+                if not pd.isna(row[5]):
+                    if not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
+                        validated = False
+                        reason = 'Sewerage File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                        logfile.write(reason)  
+            abas_ids = [] 
+            for index in range(3, propertySheet.max_row):
+                if pd.isna(propertySheet['A{0}'.format(index)].value):
+                    validated = False
+                    reason = 'Sewerage File data validation failed, Sl no. column is empty'
+                    logfile.write(reason)
+                    break
+                abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
+            if not pd.isna(row[1]):
+                if str(row[1]).strip() not in abas_ids:
+                    validated = False
+                    reason = 'there is no abas id available in property data for sewerage connection sl no. '+ str(row[0]) +'\n'
+                    logfile.write(reason) 
+        except Exception as ex:
+            print("validateSewerageData Exception: ", row[0], '   ', ex)
     reason = 'sewerage file validation ends.\n'
     print(reason)
     logfile.write(reason) 
@@ -92,98 +94,102 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     searchedCount = 0
     notCreatedCount = 0
     owner_obj = {}
-    for i in range(3, propertySheet.max_row):        
-        abas_id = propertySheet['B{0}'.format(i)].value.strip()
-        for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
-            owner = Owner()
-            address = Address()
-            address.buildingName = getValue(row[17].strip(),str,"")
-            address.doorNo = getValue(str(row[18]).strip(),str,"")
-            correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
-            owner.name = getValue(str(row[28]).strip(),str,"NAME")
-            owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
-            owner.emailId = getValue(str(row[30]).strip(),str,"")
-            owner.gender = process_gender(str(row[31]).strip())
-            owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
-            owner.relationship =  process_relationship(str(row[34]).strip())
-            owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
-            if(owner.sameAsPeropertyAddress ==  'Yes'):
-                owner.correspondenceAddress = correspondence_address
-            else: 
-                owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
-            owner.ownerType =  process_special_category(str(row[37]).strip())
-            if abas_id not in owner_obj:
-                owner_obj[abas_id] = []
-            owner_obj[abas_id].append(owner)
-
+    for i in range(3, propertySheet.max_row):    
+        try:    
+            abas_id = propertySheet['B{0}'.format(i)].value.strip()
+            for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
+                owner = Owner()
+                address = Address()
+                address.buildingName = getValue(row[17].strip(),str,"")
+                address.doorNo = getValue(str(row[18]).strip(),str,"")
+                correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
+                owner.name = getValue(str(row[28]).strip(),str,"NAME")
+                owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
+                owner.emailId = getValue(str(row[30]).strip(),str,"")
+                owner.gender = process_gender(str(row[31]).strip())
+                owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
+                owner.relationship =  process_relationship(str(row[34]).strip())
+                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
+                if(owner.sameAsPeropertyAddress ==  'Yes'):
+                    owner.correspondenceAddress = correspondence_address
+                else: 
+                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
+                owner.ownerType =  process_special_category(str(row[37]).strip())
+                if abas_id not in owner_obj:
+                    owner_obj[abas_id] = []
+                owner_obj[abas_id].append(owner)
+        except Exception as ex:
+            print("createSewerageJson Exception: ", row[0], '   ', ex)
     index = 2
     for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row, values_only=True):
-        # try:  
-        index = index + 1
-        abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
-        property = Property() 
-        auth_token = superuser_login()["access_token"]
-        tenantId = 'pb.'+ cityname
-        property.tenantId = tenantId
-        if pd.isna(abasPropertyId):
-            print("empty Abas id in sewerage file")
-            return
-        
-        status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
-        with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
-            json.dump(res, f, indent=2,  ensure_ascii=False) 
-        propertyId = ''
-        if(len(res['Properties']) >= 1):
-            for found_index, resProperty in enumerate(res["Properties"]):
-                propertyId = resProperty["propertyId"]
-                break
-            sewerageConnection = SewerageConnection()
-            connectionHolder = ConnectionHolder()
-            processInstance = ProcessInstance()
-            additionalDetail = AdditionalDetail()
-            sewerageConnection.connectionHolders = []
-            if(str(row[3]).strip() == 'Yes'):
-                sewerageConnection.connectionHolders = None
-            else:
-                connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
-                connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
-                connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
-                connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
-                connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
-                connectionHolder.relationship = process_relationship(str(row[10]).strip())
-                connectionHolder.ownerType = process_special_category(str(row[13]).strip())
-                connectionHolder.gender = process_gender(str(row[7]).strip())
-                connectionHolder.sameAsPropertyAddress = False
-                sewerageConnection.connectionHolders.append(connectionHolder)
+        try:  
+            index = index + 1
+            abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
+            property = Property() 
+            auth_token = superuser_login()["access_token"]
+            tenantId = 'pb.'+ cityname
+            property.tenantId = tenantId
+            if pd.isna(abasPropertyId):
+                print("empty Abas id in sewerage file")
+                return
             
-            sewerageConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
-            sewerageConnection.drainageSize = getValue(str(row[14]).strip(),float,0.25)
-            sewerageConnection.proposedDrainageSize = getValue(str(row[14]).strip(),float,0.25)
-            if(sewerageConnection.waterSource != 'OTHERS'):
-                sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
-            else:
-                sewerageConnection.waterSubSource = ''
-                sewerageConnection.sourceInfo = 'Other'
-            sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
-            sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
-            sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
-            sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
-            sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
-            
-            additionalDetail.locality = ''
-            sewerageConnection.additionalDetails = additionalDetail
-            processInstance.action = 'ACTIVATE_CONNECTION'
-            sewerageConnection.tenantId = tenantId
-            sewerageConnection.propertyId = propertyId
-            sewerageConnection.processInstance = processInstance
-            sewerageConnection.water = False
-            sewerageConnection.sewerage = True
-            sewerageConnection.service = 'Sewerage'
-            sewerageConnection.applicationType = 'NEW_SEWERAGE_CONNECTION'
-            sewerageConnection.applicationStatus = 'CONNECTION_ACTIVATED'
-            sewerageConnection.source = 'MUNICIPAL_RECORDS'
-            sewerageConnection.channel = 'DATA_ENTRY'
-            sewerageConnection.status = 'ACTIVE'
+            status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
+            with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
+                json.dump(res, f, indent=2,  ensure_ascii=False) 
+            propertyId = ''
+            if(len(res['Properties']) >= 1):
+                for found_index, resProperty in enumerate(res["Properties"]):
+                    propertyId = resProperty["propertyId"]
+                    break
+                sewerageConnection = SewerageConnection()
+                connectionHolder = ConnectionHolder()
+                processInstance = ProcessInstance()
+                additionalDetail = AdditionalDetail()
+                sewerageConnection.connectionHolders = []
+                if(str(row[3]).strip() == 'Yes'):
+                    sewerageConnection.connectionHolders = None
+                else:
+                    connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
+                    connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
+                    connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
+                    connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
+                    connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
+                    connectionHolder.relationship = process_relationship(str(row[10]).strip())
+                    connectionHolder.ownerType = process_special_category(str(row[13]).strip())
+                    connectionHolder.gender = process_gender(str(row[7]).strip())
+                    connectionHolder.sameAsPropertyAddress = False
+                    sewerageConnection.connectionHolders.append(connectionHolder)
+                
+                sewerageConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
+                sewerageConnection.drainageSize = getValue(str(row[14]).strip(),float,0.25)
+                sewerageConnection.proposedDrainageSize = getValue(str(row[14]).strip(),float,0.25)
+                if(sewerageConnection.waterSource != 'OTHERS'):
+                    sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
+                else:
+                    sewerageConnection.waterSubSource = ''
+                    sewerageConnection.sourceInfo = 'Other'
+                sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
+                sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
+                sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
+                sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
+                sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
+                
+                additionalDetail.locality = ''
+                sewerageConnection.additionalDetails = additionalDetail
+                processInstance.action = 'ACTIVATE_CONNECTION'
+                sewerageConnection.tenantId = tenantId
+                sewerageConnection.propertyId = propertyId
+                sewerageConnection.processInstance = processInstance
+                sewerageConnection.water = False
+                sewerageConnection.sewerage = True
+                sewerageConnection.service = 'Sewerage'
+                sewerageConnection.applicationType = 'NEW_SEWERAGE_CONNECTION'
+                sewerageConnection.applicationStatus = 'CONNECTION_ACTIVATED'
+                sewerageConnection.source = 'MUNICIPAL_RECORDS'
+                sewerageConnection.channel = 'DATA_ENTRY'
+                sewerageConnection.status = 'ACTIVE'
+        except Exception as ex:
+            print("createSewerageJson Exception: ", row[0], '   ', ex)
 
             auth_token = superuser_login()["access_token"]
             status, res = sewerageConnection.search_sewerage_connection(auth_token, tenantId, sewerageConnection.oldConnectionNo)               

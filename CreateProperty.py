@@ -212,7 +212,7 @@ def validateDataForProperty(propertyFile, logfile):
                         break
                     abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
                 except Exception as ex:
-                    print("Exception: abas id is empty: ",ex)
+                    print("validateDataForProperty Exception: abas id is empty: ",ex)
             duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
             if(len(duplicate_ids) >= 1):
                 validated = False
@@ -230,15 +230,15 @@ def validateDataForProperty(propertyFile, logfile):
                         logfile.write(reason)
                     if(len(str(row[3])) != 10):
                         validated = False
-                        reason = 'Mobile number not correct for abas id '+ str(row[0]) +'\n'
+                        reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
                         logfile.write(reason)
                     if not pd.isna(row[2]):
                         if not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):
                             validated = False
-                            reason = 'Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                            reason = 'Property File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
                             logfile.write(reason)
     except Exception as ex:
-        print("Error: ",ex)
+        print("validateDataForProperty Exception: ",ex)
     reason = 'Property file validation ends.\n'
     print(reason)
     logfile.write(reason)
@@ -359,7 +359,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         else:
             print("Sewerage File doesnot exist for ", cityname) 
     except Exception as ex:
-        print("Exception: ",ex)
+        print("enterDefaultMobileNo Exception: ",ex)
 
     return validated
 
@@ -390,7 +390,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     multiple_owner_obj[abas_id] = []
                 multiple_owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print("Error: ",ex)
+            print("createPropertyJson Exception: ",ex)
     index = 2
     for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True):       
         try:   
@@ -536,8 +536,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             auth_token = superuser_login()["access_token"]
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
         except Exception as ex:
-            print("Exception: ",ex)
-            
+            print("createPropertyJson Exception: ",ex)
+
         if(len(res['Properties']) == 0):
             statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name,)
             with io.open(os.path.join(root, name,"property_create_res.json"), mode="w", encoding="utf-8") as f:

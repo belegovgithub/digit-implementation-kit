@@ -18,7 +18,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
     print('no. of rows in water file: ', waterSheet.max_row) 
-    validate = validateData(propertySheet, waterFile, logfile, cityname)  
+    validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
         return
@@ -28,7 +28,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     wb_water.save(waterFile)        
     wb_water.close()
 
-def validateData(propertySheet, waterFile, logfile, cityname):
+def validateWaterData(propertySheet, waterFile, logfile, cityname):
     validate = True
     wb_water = openpyxl.load_workbook(waterFile) 
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
@@ -82,7 +82,7 @@ def validateData(propertySheet, waterFile, logfile, cityname):
                     reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
                     logfile.write(reason) 
         except Exception as ex:
-            print("Exception: ", row[0], '   ', ex)
+            print("validateWaterData Exception: ", row[0], '   ', ex)
     reason = 'Water file validation ends.\n'
     print(reason)
     logfile.write(reason) 
@@ -119,7 +119,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     owner_obj[abas_id] = []
                 owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print("Exception: ", row[0], '   ', ex)
+            print("createWaterJson Exception: ", row[0], '   ', ex)
 
     index = 2
     for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row, values_only=True):
@@ -205,7 +205,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 waterConnection.channel = 'DATA_ENTRY'
                 waterConnection.status = 'ACTIVE'
             except Exception as ex:
-                print("Exception: ", row[0], '   ', ex)
+                print("createWaterJson Exception: ", row[0], '   ', ex)
             auth_token = superuser_login()["access_token"]
             status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
             with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
