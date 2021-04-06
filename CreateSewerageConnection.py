@@ -36,7 +36,14 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     reason = 'sewerage file validation starts.\n'
     print(reason)
     logfile.write(reason)
-    
+    abas_ids = [] 
+    for index in range(3, propertySheet.max_row):
+        if pd.isna(propertySheet['A{0}'.format(index)].value):
+            validated = False
+            reason = 'Sewerage File data validation failed, Sl no. column is empty'
+            logfile.write(reason)
+            break
+        abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
     for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row,values_only=True):        
         index = index + 1
         try:
@@ -68,14 +75,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                         validated = False
                         reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
                         logfile.write(reason)  
-            abas_ids = [] 
-            for index in range(3, propertySheet.max_row):
-                if pd.isna(propertySheet['A{0}'.format(index)].value):
-                    validated = False
-                    reason = 'Sewerage File data validation failed, Sl no. column is empty'
-                    logfile.write(reason)
-                    break
-                abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
+            
             if not pd.isna(row[1]):
                 if str(row[1]).strip() not in abas_ids:
                     validated = False
@@ -232,8 +232,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     print(reason)
     reason = 'sewerage searched count: '+ str(searchedCount)
     print(reason)
-        # except:
-        #     print("Something went wrong in sl no ", row[0])
+
 
 def getTime(dateObj,defValue=None) :
     try : 
