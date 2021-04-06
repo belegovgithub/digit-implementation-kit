@@ -208,7 +208,7 @@ class Property:
 
     def get_property_json(self):
         property_encoder = PropertyEncoder().encode(self)
-        return convert_json(json.loads(property_encoder), underscore_to_camel())
+        return convert_json(json.loads(property_encoder), underscore_to_camel)
 
     def upload_property(self, access_token):
         request_data = {
