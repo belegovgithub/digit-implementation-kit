@@ -63,7 +63,7 @@ def validateData(propertySheet, sewerageFile, logfile, cityname):
                 reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
                 logfile.write(reason) 
             if not pd.isna(row[5]):
-                if not bool(re.match("[a-zA-Z \\-\\.]+$",str(row[5]))):
+                if not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                     validated = False
                     reason = 'Sewerage File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
                     logfile.write(reason)  
@@ -248,23 +248,6 @@ def getTime(dateObj,defValue=None) :
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
 
-def process_water_source(value):
-    water_source_MAP = {
-        'Ground-Borewell': 'GROUND.BOREWELL',
-        'Ground-Handpump':'GROUND.HANDPUMP',
-        'Ground-Well':'GROUND.WELL',
-        'Surface-River':'SURFACE.RIVER',
-        'Surface-Canal':'SURFACE.CANAL',
-        'Surface-Lake':'SURFACE.LAKE',
-        'Surface-Pond':'SURFACE.POND',
-        'Surface-Rainwater':'SURFACE.RAINWATER',
-        'Surface-Recycled Water':'SURFACE.RECYCLEDWATER',
-        'Pipe-Treated':'PIPE.TREATED',
-        'Pipe-Raw':'PIPE.RAW',
-        'Others':'OTHERS',
-        'None': 'OTHERS'
-    }
-    return water_source_MAP[value]
 
 def process_relationship(value):
     relationship_MAP = {
@@ -292,23 +275,6 @@ def process_connection_type(value):
     }
     return connection_MAP[value]
 
-def process_motor_info(value):
-    motor_info_MAP = {
-        "None": "WITHOUTPUMP",
-        "With Pump": "WITHPUMP",
-        "Without Pump": "WITHOUTPUMP"
-    }
-    return motor_info_MAP[value]
-
-def process_property_type(value):
-    PT_MAP = {
-        "None": "BUILTUP",
-        "Vacant Land": "VACANT",
-        "Flat/Part of the building": "BUILTUP.SHAREDPROPERTY",
-        "Independent Building": "BUILTUP.INDEPENDENTPROPERTY"
-    }
-    return PT_MAP[value]
-
 def process_propertyOwnership(value):
     propertyOwnership_MAP = {
         "None": "HOR",
@@ -324,22 +290,6 @@ def process_connection_permission(value):
         "None": "AUTHORIZED"
     }
     return connection_permission_MAP[value]
-
-def process_sub_usage_type(value):  
-    SUB_USAGE_MAP = {
-        'None':'' ,'Animal Dairy(Below 10 Cattle)':'NONRESIDENTIAL.COMMERCIAL.ANIMALDAIRYLESS' , 'Animal Dairy(Above 10 Cattle)':'NONRESIDENTIAL.COMMERCIAL.ANIMALDAIRYMORE' , 'Bank':'NONRESIDENTIAL.COMMERCIAL.BANK' , 'Dhobi':'NONRESIDENTIAL.COMMERCIAL.DHOBI' , 'Dyers':'NONRESIDENTIAL.COMMERCIAL.DYERS' , 'Movie Theatre':'NONRESIDENTIAL.COMMERCIAL.ENTERTAINMENT.MOVIETHEATRE' , 'Multiplex':'NONRESIDENTIAL.COMMERCIAL.ENTERTAINMENT.MULTIPLEX' , 'Marriage Palace':'NONRESIDENTIAL.COMMERCIAL.EVENTSPACE.MARRIAGEPALACE' , 'Ac Restaurant':'NONRESIDENTIAL.COMMERCIAL.FOODJOINTS.ACRESTAURANT' , 'Non Ac Restaurant':'NONRESIDENTIAL.COMMERCIAL.FOODJOINTS.NONACRESTAURANT' , 'Bhojanalaya/Tea Shop/Halwai Shop':'NONRESIDENTIAL.COMMERCIAL.FOODJOINTS.TEA' , 'Hotels':'NONRESIDENTIAL.COMMERCIAL.HOTELS' , 'Pathlab':'NONRESIDENTIAL.COMMERCIAL.MEDICALFACILITY.PATHLAB' , 'Private Dispensary':'NONRESIDENTIAL.COMMERCIAL.MEDICALFACILITY.PVTDISPENSARY' , 'Private Hospital':'NONRESIDENTIAL.COMMERCIAL.MEDICALFACILITY.PVTHOSPITAL' , 'Office Space(Less Than 10 Persons)':'NONRESIDENTIAL.COMMERCIAL.OFFICESPACELESS' , 'Office Space(More Than 10 Persons)':'NONRESIDENTIAL.COMMERCIAL.OFFICESPACEMORE' , 'Other Commercial Usage':'NONRESIDENTIAL.COMMERCIAL.OTHERCOMMERCIALSUBMINOR.OTHERCOMMERCIAL' , 'Petrol Pump':'NONRESIDENTIAL.COMMERCIAL.PETROLPUMP' , 'Grocery Store':'NONRESIDENTIAL.COMMERCIAL.RETAIL.GROCERY' , 'Malls':'NONRESIDENTIAL.COMMERCIAL.RETAIL.MALLS' , 'Pharmacy':'NONRESIDENTIAL.COMMERCIAL.RETAIL.PHARMACY' , 'Showroom':'NONRESIDENTIAL.COMMERCIAL.RETAIL.SHOWROOM' , 'Service Centre':'NONRESIDENTIAL.COMMERCIAL.SERVICECENTER' , 'Statutory Organisation':'NONRESIDENTIAL.COMMERCIAL.STATUTORY.STATUTORYORGANISATION' , 'Manufacturing Facility(Less Than 10 Persons)':'NONRESIDENTIAL.INDUSTRIAL.MANUFACTURINGFACILITY.MANUFACTURINGFACILITYLESS' , 'Manufacturing Facility(More Than 10 Persons)':'NONRESIDENTIAL.INDUSTRIAL.MANUFACTURINGFACILITY.MANUFACTURINGFACILITYMORE' , 'Other Industrial Usage':'NONRESIDENTIAL.INDUSTRIAL.OTHERINDUSTRIALSUBMINOR.OTHERINDUSTRIAL' , 'Godown/Warehouse':'NONRESIDENTIAL.INDUSTRIAL.WAREHOUSE.WAREHOUSE' , 'College':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.COLLEGES' , 'Other Private Educational Institute':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.OTHEREDUCATIONAL' , 'Polytechnic':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.POLYTECHNICS' , 'School':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.SCHOOL' , 'Training Institute':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.TRAININGINSTITUTES' , 'Govt. Aided Educational Institute':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONALGOVAIDED.GOVAIDEDEDUCATIONAL' , 'Historical Building':'NONRESIDENTIAL.INSTITUTIONAL.HISTORICAL.HISTORICAL' , 'Stray Animal Care Center':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.ANIMALCARE' , 'Home For The Disabled / Destitute':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.DISABLEDHOME' , 'Old Age Homes':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.OLDAGEHOMES' , 'Orphanage':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.ORPHANAGE' , 'Others':'NONRESIDENTIAL.INSTITUTIONAL.OTHERINSTITUTIONALSUBMINOR.OTHERINSTITUTIONAL' , 'Community Hall':'NONRESIDENTIAL.INSTITUTIONAL.PUBLICFACILITY.COMMUNITYHALL' , 'Govt. Hospital & Dispensary':'NONRESIDENTIAL.INSTITUTIONAL.PUBLICFACILITY.GOVTHOSPITAL' , 'Public Libraries':'NONRESIDENTIAL.INSTITUTIONAL.PUBLICFACILITY.LIBRARIES' , 'Golf Club':'NONRESIDENTIAL.INSTITUTIONAL.RECREATIONAL.GOLFCLUB' , 'Social Club':'NONRESIDENTIAL.INSTITUTIONAL.RECREATIONAL.SOCIALCLUB' , 'Sports Stadium':'NONRESIDENTIAL.INSTITUTIONAL.RECREATIONAL.SPORTSSTADIUM' , 'Religious':'NONRESIDENTIAL.INSTITUTIONAL.RELIGIOUSINSTITUITION.RELIGIOUS' , 'Cremation/ Burial Ground':'NONRESIDENTIAL.OTHERS.PUBLICFACILITY.CREMATIONBURIAL'
-    }
-    return SUB_USAGE_MAP[value]
-
-def process_ownership_type(value):
-    Ownsership_MAP = {
-        "None": "INDIVIDUAL.SINGLEOWNER",
-        "Single Owner": "INDIVIDUAL.SINGLEOWNER",
-        "Multiple Owners": "INDIVIDUAL.MULTIPLEOWNERS",
-        "Institutional- Private": "INSTITUTIONALPRIVATE",
-        "Institutional- Government": "INSTITUTIONALGOVERNMENT"
-    }
-    return Ownsership_MAP[value]
 
 def process_special_category(value):
     special_category_MAP = {
