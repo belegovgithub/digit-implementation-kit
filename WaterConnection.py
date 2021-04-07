@@ -173,7 +173,7 @@ class WaterConnection:
         url = urljoin(config.HOST, '/ws-services/wc/_search')        
         request_body = {}
         request_body["RequestInfo"] = {"authToken": auth_token}
-        params = {"searchType":"CONNECTION","tenantId": tenantId, "oldConnectionNumber": oldConnectionNo}
+        params = {"tenantId": tenantId, "oldConnectionNumber": oldConnectionNo}
 
         obj = requests.post(url, params=params, json=request_body)
         res = obj.json()

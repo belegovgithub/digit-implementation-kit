@@ -139,7 +139,7 @@ def cbMain(cityname):
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
     sewerageFile = os.path.join(root, name, "Template for Existing Sewerage Connection Detail.xlsx")
     logfile = open(os.path.join(root, name, "Logfile.json"), "w")   
-    logfile.write("[")         
+    logfile.write("[ ")         
     # validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
     # if(validate == False):                
     #     print('Data validation Failed for mobile entry, Please check the log file.') 
@@ -149,7 +149,7 @@ def cbMain(cityname):
         validate =  validateDataForProperty(propertyFile, logfile)            
         if(validate == False):                
             print('Data validation for property Failed, Please check the log file.') 
-            
+            # return
         else:
             print('Data validation for property success.')                
         wb_property = openpyxl.load_workbook(propertyFile) 
@@ -352,7 +352,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                     if pd.isna(row[29]):
                         mobileNumber = mobileNumber + 1                    
                         value = 'AD{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-                        logfile.write(value)
+                        # logfile.write(value)
                         sheet1['AD{0}'.format(index)].value = mobileNumber
             index = 1
             for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row ,values_only=True): 
@@ -632,12 +632,12 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     createdCount = createdCount + 1
             else:
                 reason = 'property not created status code '+ str(statusCode) + ' for abas id ' + str(property.abasPropertyId) + ' response: ', str(res)  + '\n'
-                logfile.write(reason)
+                # logfile.write(reason)
                 print(reason)
                 notCreatedCount = notCreatedCount + 1
         else:
             reason = 'property already exist for abas id '+ str(property.abasPropertyId) + '\n'
-            logfile.write(reason)
+            # logfile.write(reason)
             # print(reason)
             searchedCount = searchedCount + 1
 

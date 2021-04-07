@@ -22,7 +22,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
-        return
+        # return
     else:
         print('Data validation for water success.')
     createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
@@ -249,20 +249,20 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     for found_index, resProperty in enumerate(res["WaterConnection"]):
                         connectionNo = resProperty["connectionNo"]
                         value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
-                        logfile.write(value)
-                        sheet1['Y{0}'.format(index)].value = connectionNo
+                        # logfile.write(value)
+                        waterSheet['Y{0}'.format(index)].value = connectionNo
                         reason = 'water connection created for abas id ' + str(property.abasPropertyId)
                         logfile.write(reason)
                         # print(reason)
                         createdCount = createdCount + 1
                 else:
                     reason = 'water not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
-                    logfile.write(reason)
+                    # logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
                 reason = 'water connection exist for abas id ' + str(property.abasPropertyId)
-                logfile.write(reason)
+                # logfile.write(reason)
                 # print(reason)
                 searchedCount = searchedCount + 1
                         

@@ -22,7 +22,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
-        return
+        # return
     else:
         print('Data validation for sewerage success.')
     # createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
@@ -234,25 +234,25 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         connectionNo = resProperty["connectionNo"]
                         value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
                         logfile.write(value)
-                        sheet1['T{0}'.format(index)].value = connectionNo
+                        sewerageSheet['T{0}'.format(index)].value = connectionNo
                         reason = 'sewerage connection created for abas id ' + str(property.abasPropertyId)
-                        logfile.write(reason)
-                        print(reason)
+                        # logfile.write(reason)
+                        # print(reason)
                         createdCount = createdCount + 1
                 else:
                     reason = 'sewerage not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
-                    logfile.write(reason)
+                    # logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
                 reason = 'sewerage connection exist for abas id ' + str(property.abasPropertyId)
-                logfile.write(reason)
-                print(reason)
+                # logfile.write(reason)
+                # print(reason)
                 searchedCount = searchedCount + 1
                         
         else:
             reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
-            logfile.write(reason)
+            # logfile.write(reason)
             
 
     reason = 'sewerage created count: '+ str(createdCount)
