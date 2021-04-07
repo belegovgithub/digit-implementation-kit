@@ -109,6 +109,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
             print(config.CITY_NAME,"validateSewerageData Exception: ", row[0], '   ', ex)
+            write(logfile,sewerageFile,sewerage_sheet.title,row[0],str(ex) ,row[1])
     reason = 'sewerage file validation ends.\n'
     print(reason)
     #logfile.write(reason) 

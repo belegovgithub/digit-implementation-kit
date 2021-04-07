@@ -108,7 +108,9 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
+            write(logfile,waterFile,water_sheet.title,row[0],str(ex) ,row[1])
             print(config.CITY_NAME,"validateWaterData Exception: ", row[0], '   ', ex)
+           
     reason = 'Water file validation ends.\n'
     print(reason)
     #logfile.write(reason) 
