@@ -35,60 +35,77 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     index = 2
     reason = 'Water file validation starts.\n'
     print(reason)
-    logfile.write(reason)
+    #logfile.write(reason)
     abas_ids = [] 
     try:
         for index in range(3, propertySheet.max_row):
             if pd.isna(propertySheet['A{0}'.format(index)].value):
                 validated = False
-                reason = 'Water File data validation failed, Sl no. column is empty'
-                logfile.write(reason)
+                reason = 'Water File data validation failed, Sl no. column is empty\n'
+                write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
+                #logfile.write(reason)
                 break
             abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
     except Exception as ex:
-        print("validateWaterData Exception: ", ex)
+        print("validateWaterData Exception: ", ex)  
+    emptyRows =0 
     for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row,values_only=True):
         index = index + 1
         try:        
-            if pd.isna(row[1]):
+            if emptyRows > 10 :
                 break
+            if pd.isna(row[0]) and pd.isna(row[1]):
+                emptyRows = emptyRows +1
+                continue
             if pd.isna(row[0]):
                 validated = False
+                print("NOT CONTINUING")
                 reason = 'Sl no. column is empty\n'
-                logfile.write(reason)
+                write(logfile,waterFile,water_sheet.title,row[0],'Sl no. column is empty',row[1])
+                #logfile.write(reason)
             if pd.isna(row[1]):
                 validated = False
                 reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
-                logfile.write(reason) 
+                #logfile.write(reason) 
+                write(logfile,waterFile,water_sheet.title,row[0],'abas id is empty',row[1])
             if pd.isna(row[2]):
                 validated = False
                 reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
-                logfile.write(reason)
+                #logfile.write(reason)
+                write(logfile,waterFile,water_sheet.title,row[0],'old connection number is empty',row[1])
             if pd.isna(row[3]):
                 validated = False
                 reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
-                logfile.write(reason)
+                #logfile.write(reason)
+                write(logfile,waterFile,water_sheet.title,row[0],'same as property address cell is empty',row[1])
             if(str(row[3]).strip() == 'No'):
-                if pd.isna(row[4]) or pd.isna(row[5]):
+                if pd.isna(row[4]) :
                     validated = False
-                    reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', mobile number or name is empty.\n'
-                    logfile.write(reason) 
-                if not pd.isna(row[5]):
-                    if not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
+                    reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number is empty.\n'
+                    #logfile.write(reason) 
+                    write(logfile,waterFile,water_sheet.title,row[0],'mobile number is empty',row[1])
+                if pd.isna(row[5]):
+                    validated = False
+                    reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ',name is empty.\n'
+                    #logfile.write(reason) 
+                    write(logfile,waterFile,water_sheet.title,row[0],' name is empty',row[1])
+                elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                         validated = False
-                        reason = 'Water File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
-                        logfile.write(reason)  
+                        reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                        #logfile.write(reason)  
+                        write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
             
             if not pd.isna(row[1]):
                 if str(row[1]).strip() not in abas_ids:
                     validated = False
                     reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
-                    logfile.write(reason) 
+                    #logfile.write(reason) 
+                    write(logfile,waterFile,water_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
             print("validateWaterData Exception: ", row[0], '   ', ex)
     reason = 'Water file validation ends.\n'
     print(reason)
-    logfile.write(reason) 
+    #logfile.write(reason) 
     return validated
 
 
