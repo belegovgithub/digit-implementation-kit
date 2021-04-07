@@ -100,6 +100,7 @@ class WaterConnection:
     channel: Optional[str]
     creationReason: Optional[str]
     applicationStatus: Optional[str]
+    oldApplication: Optional[bool]
     def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None,
                  status: Optional[str]  =None, connectionNo: Optional[str] = None, oldConnectionNo: Optional[str] = None,
                  proposedTaps: Optional[int] = None, proposedPipeSize: Optional[float] = None, propertyOwnership: Optional[str]= None,
@@ -112,7 +113,7 @@ class WaterConnection:
                  processInstance: Optional[ProcessInstance] = None, documents: Optional[List[Document]] = None,
                  additionalDetails: Optional[AdditionalDetail] =None, 
                  property: Optional[Property] = None, source: Optional[str] = None, channel: Optional[str] = None,
-                 creationReason: Optional[str] = None, applicationStatus: Optional[str] = None ) -> None:
+                 creationReason: Optional[str] = None, applicationStatus: Optional[str] = None, oldApplication: Optional[bool] = False ) -> None:
         self.tenantId = tenantId
         self.propertyId = propertyId
         self.status = status
@@ -143,6 +144,7 @@ class WaterConnection:
         self.channel = channel
         self.creationReason = creationReason
         self.applicationStatus = applicationStatus
+        self.oldApplication = oldApplication
 
     def get_water_json(self):
         water_encoder = PropertyEncoder().encode(self)
@@ -161,11 +163,11 @@ class WaterConnection:
         with io.open(os.path.join(root, name,"water_create_req.json"), mode="w", encoding="utf-8") as f:
             json.dump(request_data, f, indent=2,  ensure_ascii=False) 
         
-        response = requests.post(
-            urljoin(config.HOST, "/ws-services/wc/_create"),
-            json=request_data)
+        # response = requests.post(
+        #     urljoin(config.HOST, "/ws-services/wc/_create"),
+        #     json=request_data)
 
-        return response.status_code, response.json()        
+        # return response.status_code, response.json()        
 
     def search_water_connection(self,auth_token, tenantId, oldConnectionNo):
         url = urljoin(config.HOST, '/ws-services/wc/_search')        

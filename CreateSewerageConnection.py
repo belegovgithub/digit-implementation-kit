@@ -7,6 +7,7 @@ from common import superuser_login
 from SewerageConnection import *
 from PropertyTax import *
 import pandas as pd
+# from CreateProperty import getValue
 import openpyxl
 
 def main():
@@ -50,7 +51,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
             abas_ids.append(propSheetABASId.strip())   
     except Exception as ex:
-        print(config.CITY_NAME,"validateSewerageData Exception: ", ex)
+        print(config.CITY_NAME," validateSewerageData Exception: ", ex)
     emptyRows =0 
     for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row +1 ,values_only=True):        
         index = index + 1
@@ -93,10 +94,10 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     #logfile.write(reason) 
                     write(logfile,sewerageFile,sewerage_sheet.title,row[0],' name is empty',row[1])
                 elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
-                        validated = False
-                        reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
-                        #logfile.write(reason)  
-                        write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Name has invalid characters',row[1])
+                    validated = False
+                    reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                    #logfile.write(reason)  
+                    write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Name has invalid characters',row[1])
             
             if not pd.isna(row[1]):
                 abasid = row[1]
@@ -108,7 +109,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     #logfile.write(reason) 
                     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
-            print(config.CITY_NAME,"validateSewerageData Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME," validateSewerageData Exception: ", row[0], '   ', ex)
             write(logfile,sewerageFile,sewerage_sheet.title,row[0],str(ex) ,row[1])
     reason = 'sewerage file validation ends.\n'
     print(reason)
@@ -146,7 +147,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     owner_obj[abas_id] = []
                 owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print(config.CITY_NAME,"createSewerageJson Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME," createSewerageJson Exception: ", row[0], '   ', ex)
     index = 2
     for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row +1 , values_only=True):
         try:  
@@ -157,8 +158,8 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
             tenantId = 'pb.'+ cityname
             property.tenantId = tenantId
             if pd.isna(abasPropertyId):
-                print("empty Abas id in sewerage file")
-                return
+                print("empty Abas id in sewerage file for sl no. ", row[0])
+                continue
             
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
@@ -215,6 +216,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                 sewerageConnection.source = 'MUNICIPAL_RECORDS'
                 sewerageConnection.channel = 'DATA_ENTRY'
                 sewerageConnection.status = 'ACTIVE'
+                waterConnection.oldApplication = True
         except Exception as ex:
             print("createSewerageJson Exception: ", row[0], '   ', ex)
 

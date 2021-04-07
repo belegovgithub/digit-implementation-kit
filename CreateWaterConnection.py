@@ -7,6 +7,7 @@ from common import superuser_login
 from WaterConnection import *
 from PropertyTax import *
 import pandas as pd
+# from CreateProperty import getValue
 import openpyxl
 
 def main():
@@ -24,9 +25,9 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
         # return
     else:
         print('Data validation for water success.')
-    # createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
-    # wb_water.save(waterFile)        
-    # wb_water.close()
+    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
+    wb_water.save(waterFile)        
+    wb_water.close()
 
 def validateWaterData(propertySheet, waterFile, logfile, cityname):
     validated = True
@@ -50,7 +51,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
             abas_ids.append(propSheetABASId.strip())     
     except Exception as ex:
-        print(config.CITY_NAME,"validateWaterData Exception: ", ex)  
+        print(config.CITY_NAME," validateWaterData Exception: ", ex)  
  
     emptyRows =0 
     for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row +1 ,values_only=True):
@@ -93,10 +94,10 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,row[0],' name is empty',row[1])
                 elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
-                        validated = False
-                        reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
-                        #logfile.write(reason)  
-                        write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
+                    validated = False
+                    reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                    #logfile.write(reason)  
+                    write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
             
             if not pd.isna(row[1]):
                 abasid = row[1]
@@ -109,8 +110,8 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     write(logfile,waterFile,water_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
             write(logfile,waterFile,water_sheet.title,row[0],str(ex) ,row[1])
-            print(config.CITY_NAME,"validateWaterData Exception: ", row[0], '   ', ex)
-           
+            print(config.CITY_NAME," validateWaterData Exception: ", row[0], '   ', ex)
+
     reason = 'Water file validation ends.\n'
     print(reason)
     #logfile.write(reason) 
@@ -147,7 +148,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     owner_obj[abas_id] = []
                 owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print("createWaterJson Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME," createWaterJson Exception: ", row[0], '   ', ex)
 
     index = 2
     for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row +1 , values_only=True):
@@ -159,8 +160,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
-            print("empty Abas id in water file")
-            return
+            print("empty Abas id in water file for sl no. ", row[0])
+            continue
         
         status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
         with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
@@ -232,6 +233,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 waterConnection.source = 'MUNICIPAL_RECORDS'
                 waterConnection.channel = 'DATA_ENTRY'
                 waterConnection.status = 'ACTIVE'
+                waterConnection.oldApplication = True
             except Exception as ex:
                 print("createWaterJson Exception: ", row[0], '   ', ex)
             auth_token = superuser_login()["access_token"]

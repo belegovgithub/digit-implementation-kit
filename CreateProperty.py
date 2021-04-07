@@ -50,7 +50,7 @@ INDEX_STATE_HINDI = 33
 
 def main() :
     config.INSERT_DATA =False
-    root = r'D:\TLApp\WaterSewerageTemplates-20210407T043138Z-001\WaterSewerageTemplates'
+    root = r'D:\eGov\Data\WS\Template\Property'
     logfile = open(os.path.join(root,   "errorCBs.text"), "w")  
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
@@ -61,19 +61,15 @@ def main() :
             
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):
-                print("Processing for CB "+cityname)
+                print("Processing for CB "+cityname.upper())
                 try : 
-                    if True: # cityname == 'ahmedabad' :
+                    if cityname == 'agra' :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 
                     print("Error in processing CB ",cityname , ex)
                     logfile.write(cityname+"\n")
     logfile.close()
-
-
-            
-
 
 
 def cbMain(cityname):
@@ -89,10 +85,10 @@ def cbMain(cityname):
 
 
     # Iterate all cbs
-    # for root, dirs, files in os.walk(r"D:\eGov\Data\WS\Template\Property", topdown=True):
+    # for root, dirs, files in os.walk(r"D:\eGov\Data\WS\Template\WaterSewerageTemplates", topdown=True):
     #     for name in dirs:          
     #         subfolder = os.path.join(root, name)         
-    #         city = subfolder.replace(r"D:\eGov\Data\WS\Template\Property\CB ","" ).strip().lower()
+    #         city = subfolder.replace(r"D:\eGov\Data\WS\Template\WaterSewerageTemplates\CB ","" ).strip().lower()
     #         city = "pb." + city
 
     #         if city not in tenantMapping:
@@ -137,7 +133,7 @@ def cbMain(cityname):
 
     # Doing for one cb at a time
     #cityname = 'varanasi'
-    root = r'D:\TLApp\WaterSewerageTemplates-20210407T043138Z-001\WaterSewerageTemplates'
+    root = r'D:\eGov\Data\WS\Template\Property'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -164,9 +160,9 @@ def cbMain(cityname):
         locality_data = {}
         for ind in df.index: 
             locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
-        # createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
-        # wb_property.save(propertyFile)        
-        # wb_property.close()
+        createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+        wb_property.save(propertyFile)        
+        wb_property.close()
     else:
         print("Property File doesnot exist for ", cityname) 
     
@@ -263,7 +259,7 @@ def validateDataForProperty(propertyFile, logfile):
                         write(logfile,propertyFile,sheet1.title,row[0],'sub usage category is empty',row[1])
                         #logfile.write(reason)
             except Exception as ex:
-                print(config.CITY_NAME,"validateDataForProperty Exception: ",ex)
+                print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
                 write(logfile,propertyFile,sheet1.title,row[0],str(ex) ,row[1])
 
         for index in range(3, sheet1.max_row +1 ):
@@ -279,7 +275,7 @@ def validateDataForProperty(propertyFile, logfile):
                     propSheetABASId = str(int(sheet1['B{0}'.format(index)].value)) 
                 abas_ids.append(propSheetABASId.strip())
             except Exception as ex:
-                print( config.CITY_NAME,  "validateDataForProperty Exception: abas id is empty: ",ex)
+                print( config.CITY_NAME,  " validateDataForProperty Exception: abas id is empty: ",ex)
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
 
         if(len(duplicate_ids) >= 1):
@@ -314,10 +310,10 @@ def validateDataForProperty(propertyFile, logfile):
                             write(logfile,propertyFile,sheet2.title,None,'Name has invalid characters',row[0])
                             #logfile.write(reason)
             except Exception as ex:
-                print(config.CITY_NAME,"validateDataForProperty Exception: ",ex)
+                print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
                 write(logfile,propertyFile,sheet2.title,None,str(ex) ,row[0])
     except Exception as ex:
-        print(config.CITY_NAME,"validateDataForProperty Exception: ",ex)
+        print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
          
     # reason = 'Property file validation ends.\n'
     # print(reason)
@@ -439,7 +435,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         else:
             print("Sewerage File doesnot exist for ", cityname) 
     except Exception as ex:
-        print(config.CITY_NAME,"enterDefaultMobileNo Exception: ",ex)
+        print(config.CITY_NAME," enterDefaultMobileNo Exception: ",ex)
 
     return validated
 
@@ -470,7 +466,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     multiple_owner_obj[abas_id] = []
                 multiple_owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print(config.CITY_NAME,"createPropertyJson Exception: ",ex)
+            print(config.CITY_NAME," createPropertyJson Exception: ",ex)
     index = 2
     for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True):       
         try:   
@@ -478,8 +474,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             property = Property()  
             property.abasPropertyId =  getValue(str(row[1]).strip(),str,None)
             if pd.isna(property.abasPropertyId):
-                print("empty Abas id in property file")
-                return     
+                print("empty Abas id in property file for sl no. ", row[0])
+                continue     
             
             locality = Locality()
             address  = Address()
@@ -616,7 +612,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             auth_token = superuser_login()["access_token"]
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
         except Exception as ex:
-            print(config.CITY_NAME,"createPropertyJson Exception: ",ex)
+            print(config.CITY_NAME," createPropertyJson Exception: ",ex)
 
         if(len(res['Properties']) == 0):
             statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name,)
@@ -650,10 +646,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
     print(reason)
     reason = 'property searched count: '+ str(searchedCount)
     print(reason)
-    
 
-        # except:
-        #     print("Something went wrong in sl no ", row[0])
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname

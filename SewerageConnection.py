@@ -103,6 +103,7 @@ class SewerageConnection:
     channel: Optional[str]
     creationReason: Optional[str]
     applicationStatus: Optional[str]
+    oldApplication: Optional[bool]
     def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None, status: Optional[str]  =None,
                   connectionNo: Optional[str] = None, oldConnectionNo: Optional[str] = None, proposedWaterClosets: Optional[int] = None,
                  proposedToilets: Optional[int] = None, proposedDrainageSize: Optional[int] = None, propertyOwnership: Optional[str]= None,
@@ -115,7 +116,7 @@ class SewerageConnection:
                  processInstance: Optional[ProcessInstance] = None, documents: Optional[List[Document]] = None,
                  additionalDetails: Optional[AdditionalDetail] =None, 
                  property: Optional[Property] = None, source: Optional[str] = None, channel: Optional[str] = None,
-                 creationReason: Optional[str] = None, applicationStatus: Optional[str] = None ) -> None:
+                 creationReason: Optional[str] = None, applicationStatus: Optional[str] = None, oldApplication: Optional[bool] = False  ) -> None:
         self.tenantId = tenantId
         self.propertyId = propertyId
         self.status = status
@@ -148,6 +149,7 @@ class SewerageConnection:
         self.channel = channel
         self.creationReason = creationReason
         self.applicationStatus = applicationStatus
+        self.oldApplication = oldApplication
 
     def get_sewerage_json(self):
         sewerage_encoder = PropertyEncoder().encode(self)
