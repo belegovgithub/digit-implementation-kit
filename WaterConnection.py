@@ -163,11 +163,11 @@ class WaterConnection:
         with io.open(os.path.join(root, name,"water_create_req.json"), mode="w", encoding="utf-8") as f:
             json.dump(request_data, f, indent=2,  ensure_ascii=False) 
         
-        # response = requests.post(
-        #     urljoin(config.HOST, "/ws-services/wc/_create"),
-        #     json=request_data)
+        response = requests.post(
+            urljoin(config.HOST, "/ws-services/wc/_create"),
+            json=request_data)
 
-        # return response.status_code, response.json()        
+        return response.status_code, response.json()        
 
     def search_water_connection(self,auth_token, tenantId, oldConnectionNo):
         url = urljoin(config.HOST, '/ws-services/wc/_search')        

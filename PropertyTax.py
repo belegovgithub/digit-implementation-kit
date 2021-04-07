@@ -107,15 +107,17 @@ class Unit:
     occupancyType: Optional[str]
     constructionDetail : Optional[ConstructionDetail]
     arv: Optional[float]
+    floorNo: Optional[int]
 
     def __init__(self, usageCategory: Optional[str] = None,
                  occupancyType: Optional[str] = None,
                  constructionDetail : Optional[ConstructionDetail] = None,
-                 arv: Optional[float] = None) -> None:
+                 arv: Optional[float] = None, floorNo: Optional[int] = 0) -> None:
         self.usageCategory = usageCategory
         self.occupancyType = occupancyType
         self.constructionDetail = constructionDetail
         self.arv = arv
+        self.floorNo = floorNo
 
 
 class Institution:
@@ -210,7 +212,7 @@ class Property:
         url = urljoin(config.HOST, '/property-services/property/_search')        
         request_body = {}
         request_body["RequestInfo"] = {"authToken": auth_token}
-        params = {"tenantId": tenantId, "abasPropertyids": abasPropertyId}
+        params = {"tenantId": tenantId, "abasPropertyids": abasPropertyId}        
         obj = requests.post(url, params=params, json=request_body)
         res = obj.json()
         # print(json.dumps(res, indent=2))

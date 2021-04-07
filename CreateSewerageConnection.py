@@ -22,7 +22,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
-        # return
+        return
     else:
         print('Data validation for sewerage success.')
     # createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
@@ -159,7 +159,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
             property.tenantId = tenantId
             if pd.isna(abasPropertyId):
                 print("empty Abas id in sewerage file for sl no. ", row[0])
-                continue
+                break
             
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:

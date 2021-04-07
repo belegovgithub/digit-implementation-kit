@@ -62,13 +62,13 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
-                try : 
-                    if cityname == 'agra' :
-                        config.CITY_NAME = cityname
-                        cbMain(cityname)
-                except Exception as ex: 
-                    print("Error in processing CB ",cityname , ex)
-                    logfile.write(cityname+"\n")
+                # try : 
+                if cityname == 'agra' :
+                    config.CITY_NAME = cityname
+                    cbMain(cityname)
+                # except Exception as ex: 
+                #     print("Error in processing CB ",cityname , ex)
+                #     logfile.write(cityname+"\n")
     logfile.close()
 
 
@@ -196,12 +196,12 @@ def validateDataForProperty(propertyFile, logfile):
         sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
         abas_ids = []        
-        # reason = 'Property file validation starts.\n'
-        # print(reason)
+        reason = 'Property file validation starts.\n'
+        print(reason)
         # logfile.write(reason)
-        print('no. of rows in Property file sheet 1: ', sheet1.max_row +1 ) 
+        print('no. of rows in Property file sheet 1: ', sheet1.max_row ) 
         emptyRows=0
-        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True): 
+        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True): 
             try : 
                 if emptyRows > 10 :
                     break
@@ -262,7 +262,7 @@ def validateDataForProperty(propertyFile, logfile):
                 print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
                 write(logfile,propertyFile,sheet1.title,row[0],str(ex) ,row[1])
 
-        for index in range(3, sheet1.max_row +1 ):
+        for index in range(3, sheet1.max_row +1):
             try: 
                 if pd.isna(sheet1['B{0}'.format(index)].value):
                     validated = False
@@ -284,7 +284,7 @@ def validateDataForProperty(propertyFile, logfile):
             write(logfile,propertyFile,sheet1.title,None,'Duplicate ABAS property id for '+ str(duplicate_ids))
             #logfile.write(reason)      
           
-        for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row +1 ,values_only=True):
+        for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row ,values_only=True):
             try :
                 if not pd.isna(row[0]):
                     if pd.isna(row[3]):
@@ -315,8 +315,8 @@ def validateDataForProperty(propertyFile, logfile):
     except Exception as ex:
         print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
          
-    # reason = 'Property file validation ends.\n'
-    # print(reason)
+    reason = 'Property file validation ends.\n'
+    print(reason)
     # logfile.write(reason)
     return validated
 
@@ -334,7 +334,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_property = openpyxl.load_workbook(propertyFile) 
             sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
             sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')        
-            for i in range(3, sheet1.max_row +1 ):
+            for i in range(3, sheet1.max_row +1):
                 abas_id = sheet1['B{0}'.format(i)].value.strip()
                 for row in sheet1.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
                     owner = {}               
@@ -344,7 +344,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                         owner_obj[abas_id] = []
                     owner_obj[abas_id].append(owner)
             index = 2
-            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True):
+            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):
                 index = index + 1
                 if pd.isna(row[1]):
                     continue 
@@ -355,7 +355,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                         logfile.write(value)
                         sheet1['AD{0}'.format(index)].value = mobileNumber
             index = 1
-            for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row +1 ,values_only=True): 
+            for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row ,values_only=True): 
                 index = index + 1 
                 if pd.isna(row[0]):
                     print("empty abas id in property file sheet2 while property validation")
@@ -375,7 +375,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_water = openpyxl.load_workbook(waterFile) 
             water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
             index = 2
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row +1 ,values_only=True):
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
                 index = index + 1
                 if pd.isna(row[0]):
                     continue
@@ -390,7 +390,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_water.close()
             wb_water = openpyxl.load_workbook(waterFile) 
             water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row +1 ,values_only=True):
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
                 if pd.isna(row[0]):
                     continue
                 if(str(row[3]).strip() == 'Yes'):
@@ -407,7 +407,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_sewerage = openpyxl.load_workbook(sewerageFile) 
             sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
             index = 2
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row +1 ,values_only=True):
+            for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
                 index = index + 1
                 if pd.isna(row[0]):
                     continue
@@ -422,7 +422,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_sewerage.close()
             wb_sewerage = openpyxl.load_workbook(sewerageFile) 
             sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row +1 ,values_only=True):
+            for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
                 if pd.isna(row[0]):
                     continue
                 if(str(row[3]).strip() == 'Yes'):
@@ -441,14 +441,14 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
 
 def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, name):
     # abas_ids_multiple_owner = []
-    # for index in range(2, sheet2.max_row +1 ):
+    # for index in range(2, sheet2.max_row +1):
     #     abas_ids_multiple_owner.append(sheet2['A{0}'.format(index)].value)
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
 
     multiple_owner_obj = {}
-    for i in range(2, sheet2.max_row +1 ):   
+    for i in range(2, sheet2.max_row +1):   
         try:     
             abas_id = sheet2['A{0}'.format(i)].value.strip()
             for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
@@ -468,7 +468,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
         except Exception as ex:
             print(config.CITY_NAME," createPropertyJson Exception: ",ex)
     index = 2
-    for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True):       
+    for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):       
         try:   
             index = index + 1  
             property = Property()  
@@ -507,6 +507,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
             unit.occupancyType = process_occupancy_type(str(row[9]).strip())
             unit.arv = getValue(row[21],int,0) 
+            unit.floorNo = 0
             if(len(property.subUsageCategory) == 0):
                 unit.usageCategory = property.usageCategory
             else:                
@@ -605,7 +606,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
 
             additionalDetail.isRainwaterHarvesting = False
             property.additional_details= additionalDetail
-            property.source = 'MUNICIPAL_RECORDS'
+            property.source = 'LEGACY_RECORD'
             property.channel = 'MIGRATION'
             property.creationReason = 'DATA_UPLOAD'
             # print('property ', property.get_property_json())
@@ -627,7 +628,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     sheet1['AQ{0}'.format(index)].value = propertyId
                     reason = 'property created for abas id ' + str(property.abasPropertyId)
                     logfile.write(reason)
-                    print(reason)
+                    # print(reason)
                     createdCount = createdCount + 1
             else:
                 reason = 'property not created status code '+ str(statusCode) + ' for abas id ' + str(property.abasPropertyId) + ' response: ', str(res)  + '\n'
@@ -637,7 +638,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
         else:
             reason = 'property already exist for abas id '+ str(property.abasPropertyId) + '\n'
             logfile.write(reason)
-            print(reason)
+            # print(reason)
             searchedCount = searchedCount + 1
 
     reason = 'property created count: '+ str(createdCount)
@@ -701,7 +702,7 @@ def process_govt_institution_type(value):
 
 def process_property_type(value):
     PT_MAP = {
-        "None": "BUILTUP.SHAREDPROPERTY",
+        "None": "BUILTUP.INDEPENDENTPROPERTY",
         "Vacant Land": "VACANT",
         "Flat/Part of the building": "BUILTUP.SHAREDPROPERTY",
         "Independent Building": "BUILTUP.INDEPENDENTPROPERTY"

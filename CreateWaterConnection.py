@@ -18,11 +18,11 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
-    print('no. of rows in water file: ', waterSheet.max_row +1 ) 
+    print('no. of rows in water file: ', waterSheet.max_row ) 
     validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
-        # return
+        return
     else:
         print('Data validation for water success.')
     createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
@@ -54,7 +54,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
  
     emptyRows =0 
-    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row +1 ,values_only=True):
+    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row ,values_only=True):
         index = index + 1
         try:        
             if emptyRows > 10 :
@@ -103,7 +103,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 abasid = row[1]
                 if type(abasid) == int or type(abasid) ==float : 
                     abasid = str(int (abasid))
-                if abasid.strip() not in abas_ids:
+                if abasid.strip() not in abas_ids:                    
                     validated = False
                     reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
                     #logfile.write(reason) 
@@ -123,7 +123,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     searchedCount = 0
     notCreatedCount = 0
     owner_obj = {}
-    for i in range(3, propertySheet.max_row +1 ):  
+    for i in range(3, propertySheet.max_row +1):  
         try:      
             abas_id = propertySheet['B{0}'.format(i)].value.strip()
             for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
@@ -151,7 +151,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             print(config.CITY_NAME," createWaterJson Exception: ", row[0], '   ', ex)
 
     index = 2
-    for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row +1 , values_only=True):
+    for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row , values_only=True):
         
         index = index + 1
         abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
@@ -161,7 +161,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
             print("empty Abas id in water file for sl no. ", row[0])
-            continue
+            break
         
         status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
         with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
@@ -253,7 +253,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         sheet1['Y{0}'.format(index)].value = connectionNo
                         reason = 'water connection created for abas id ' + str(property.abasPropertyId)
                         logfile.write(reason)
-                        print(reason)
+                        # print(reason)
                         createdCount = createdCount + 1
                 else:
                     reason = 'water not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
@@ -263,7 +263,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             else:
                 reason = 'water connection exist for abas id ' + str(property.abasPropertyId)
                 logfile.write(reason)
-                print(reason)
+                # print(reason)
                 searchedCount = searchedCount + 1
                         
         else:
