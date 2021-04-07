@@ -1072,5 +1072,13 @@ def search_Workflow(auth_token, tenant_id=config.TENANT_ID,workflowId ="NewTL"):
     return requests.post(url, params=params, json=request_body).json()
 
 
-
- 
+import os
+def write(logfile,excelPath,sheetName, sNo,msg ,abasid=None) :
+    logMsg ={
+        "Excel Name" : os.path.basename(excelPath),
+        "Sheet Name" : sheetName,
+        "S No" : sNo,
+        "ABAS ID" :abasid,
+        "Data Entry Error Message" : msg
+    } 
+    logfile.write(json.dumps(logMsg, cls=DateTimeEncoder) +" ,")
