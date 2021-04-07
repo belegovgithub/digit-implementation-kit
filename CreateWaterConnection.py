@@ -17,7 +17,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
-    print('no. of rows in water file: ', waterSheet.max_row) 
+    print('no. of rows in water file: ', waterSheet.max_row +1 ) 
     validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
@@ -38,28 +38,31 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     #logfile.write(reason)
     abas_ids = [] 
     try:
-        for index in range(3, propertySheet.max_row):
-            if pd.isna(propertySheet['A{0}'.format(index)].value):
-                validated = False
-                reason = 'Water File data validation failed, Sl no. column is empty\n'
-                write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
+        for index in range(3, propertySheet.max_row +1 ):
+            if pd.isna(propertySheet['B{0}'.format(index)].value):
+                # validated = False
+                # reason = 'Water File data validation failed, Sl no. column is empty\n'
+                # write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
                 #logfile.write(reason)
-                break
-            abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
+                continue
+            propSheetABASId = propertySheet['B{0}'.format(index)].value
+            if type(propSheetABASId) == int or type(propSheetABASId) == float:
+                propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
+            abas_ids.append(propSheetABASId.strip())     
     except Exception as ex:
-        print("validateWaterData Exception: ", ex)  
+        print(config.CITY_NAME,"validateWaterData Exception: ", ex)  
+ 
     emptyRows =0 
-    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row,values_only=True):
+    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row +1 ,values_only=True):
         index = index + 1
         try:        
             if emptyRows > 10 :
                 break
-            if pd.isna(row[0]) and pd.isna(row[1]):
+            if pd.isna(row[1]):
                 emptyRows = emptyRows +1
                 continue
             if pd.isna(row[0]):
                 validated = False
-                print("NOT CONTINUING")
                 reason = 'Sl no. column is empty\n'
                 write(logfile,waterFile,water_sheet.title,row[0],'Sl no. column is empty',row[1])
                 #logfile.write(reason)
@@ -96,13 +99,16 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                         write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
             
             if not pd.isna(row[1]):
-                if str(row[1]).strip() not in abas_ids:
+                abasid = row[1]
+                if type(abasid) == int or type(abasid) ==float : 
+                    abasid = str(int (abasid))
+                if abasid.strip() not in abas_ids:
                     validated = False
                     reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
-            print("validateWaterData Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME,"validateWaterData Exception: ", row[0], '   ', ex)
     reason = 'Water file validation ends.\n'
     print(reason)
     #logfile.write(reason) 
@@ -114,7 +120,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     searchedCount = 0
     notCreatedCount = 0
     owner_obj = {}
-    for i in range(3, propertySheet.max_row):  
+    for i in range(3, propertySheet.max_row +1 ):  
         try:      
             abas_id = propertySheet['B{0}'.format(i)].value.strip()
             for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
@@ -142,7 +148,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             print("createWaterJson Exception: ", row[0], '   ', ex)
 
     index = 2
-    for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row, values_only=True):
+    for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row +1 , values_only=True):
         
         index = index + 1
         abasPropertyId =  getValue(str(row[1]).strip(),str,None)  

@@ -50,22 +50,26 @@ INDEX_STATE_HINDI = 33
 
 def main() :
     config.INSERT_DATA =False
+    root = r'D:\TLApp\WaterSewerageTemplates-20210407T043138Z-001\WaterSewerageTemplates'
+    logfile = open(os.path.join(root,   "errorCBs.text"), "w")  
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
             if module["city"]["ulbGrade"]=="ST":
                 continue
             cityname =module["code"].lower()[3:]
-            root = r'D:\TLApp\WaterSewerageTemplates-20210406T114138Z-001\WaterSewerageTemplates'
+            
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname)
                 try : 
-                    if True :
+                    if True : #cityname == 'jalandhar' :
+                        config.CITY_NAME = cityname
                         cbMain(cityname)
-                except : 
-                    print("Error in processing CB ",cityname)
-            
+                except Exception as ex: 
+                    print("Error in processing CB ",cityname , ex)
+                    logfile.write(cityname+"\n")
+    logfile.close()
 
 
             
@@ -133,7 +137,7 @@ def cbMain(cityname):
 
     # Doing for one cb at a time
     #cityname = 'varanasi'
-    root = r'D:\TLApp\WaterSewerageTemplates-20210406T114138Z-001\WaterSewerageTemplates'
+    root = r'D:\TLApp\WaterSewerageTemplates-20210407T043138Z-001\WaterSewerageTemplates'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -183,7 +187,7 @@ def cbMain(cityname):
 
     logfile.close()        
     df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-    df.to_excel(os.path.join(root, name, "DataValidation.xlsx"), index = None)
+    df.to_excel(os.path.join(root, name, "Data Entries Issues.xlsx"), index = None)
     #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
 
 
@@ -199,9 +203,9 @@ def validateDataForProperty(propertyFile, logfile):
         # reason = 'Property file validation starts.\n'
         # print(reason)
         # logfile.write(reason)
-        print('no. of rows in Property file sheet 1: ', sheet1.max_row) 
+        print('no. of rows in Property file sheet 1: ', sheet1.max_row +1 ) 
         emptyRows=0
-        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True): 
+        for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True): 
             if emptyRows > 10 :
                 break
             if pd.isna(row[0]) and pd.isna(row[1])  and pd.isna(row[2]):
@@ -212,7 +216,6 @@ def validateDataForProperty(propertyFile, logfile):
                 reason = 'Sl no. column is empty'
                 write(logfile,propertyFile,sheet1.title,row[0],reason)
                 #logfile.write(reason)
-
                 break
             if pd.isna(row[1]):
                 validated = False
@@ -260,24 +263,28 @@ def validateDataForProperty(propertyFile, logfile):
                     #logfile.write(reason)
             
 
-        for index in range(3, sheet1.max_row):
+        for index in range(3, sheet1.max_row +1 ):
             try: 
-                if pd.isna(sheet1['A{0}'.format(index)].value):
+                if pd.isna(sheet1['B{0}'.format(index)].value):
                     validated = False
                     reason = 'Sl no. column is empty'
                     write(logfile,propertyFile,sheet1.title,row[0],'Sl no. column is empty')
                     #logfile.write(reason)
                     break
-                abas_ids.append(sheet1['B{0}'.format(index)].value.strip())
+                propSheetABASId = sheet1['B{0}'.format(index)].value
+                if type(propSheetABASId) == int or type(propSheetABASId) == float:
+                    propSheetABASId = str(int(sheet1['B{0}'.format(index)].value)) 
+                abas_ids.append(propSheetABASId.strip())
             except Exception as ex:
-                print("validateDataForProperty Exception: abas id is empty: ",ex)
+                print( config.CITY_NAME,  "validateDataForProperty Exception: abas id is empty: ",ex)
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
+
         if(len(duplicate_ids) >= 1):
             validated = False
             reason = 'Property File data validation failed. ' +'Duplicate abas property id for '+ str(duplicate_ids) +'\n'
             write(logfile,propertyFile,sheet1.title,None,'Duplicate abas property id for '+ str(duplicate_ids))
             #logfile.write(reason)        
-        for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row,values_only=True):
+        for row in sheet2.iter_rows(min_row=3, max_col=12, max_row=sheet2.max_row +1 ,values_only=True):
             if not pd.isna(row[0]):
                 if pd.isna(row[3]):
                     validated = False
@@ -302,7 +309,7 @@ def validateDataForProperty(propertyFile, logfile):
                         write(logfile,propertyFile,sheet2.title,None,'Name has invalid characters',row[0])
                         #logfile.write(reason)
     except Exception as ex:
-        print("validateDataForProperty Exception: ",ex)
+        print(config.CITY_NAME,"validateDataForProperty Exception: ",ex)
     # reason = 'Property file validation ends.\n'
     # print(reason)
     # logfile.write(reason)
@@ -322,7 +329,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_property = openpyxl.load_workbook(propertyFile) 
             sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
             sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')        
-            for i in range(3, sheet1.max_row):
+            for i in range(3, sheet1.max_row +1 ):
                 abas_id = sheet1['B{0}'.format(i)].value.strip()
                 for row in sheet1.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
                     owner = {}               
@@ -332,7 +339,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                         owner_obj[abas_id] = []
                     owner_obj[abas_id].append(owner)
             index = 2
-            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True):
+            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True):
                 index = index + 1
                 if pd.isna(row[1]):
                     continue 
@@ -343,7 +350,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                         logfile.write(value)
                         sheet1['AD{0}'.format(index)].value = mobileNumber
             index = 1
-            for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row,values_only=True): 
+            for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row +1 ,values_only=True): 
                 index = index + 1 
                 if pd.isna(row[0]):
                     print("empty abas id in property file sheet2 while property validation")
@@ -363,7 +370,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_water = openpyxl.load_workbook(waterFile) 
             water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
             index = 2
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row,values_only=True):
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row +1 ,values_only=True):
                 index = index + 1
                 if pd.isna(row[0]):
                     continue
@@ -378,7 +385,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_water.close()
             wb_water = openpyxl.load_workbook(waterFile) 
             water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row,values_only=True):
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row +1 ,values_only=True):
                 if pd.isna(row[0]):
                     continue
                 if(str(row[3]).strip() == 'Yes'):
@@ -395,7 +402,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_sewerage = openpyxl.load_workbook(sewerageFile) 
             sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
             index = 2
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row,values_only=True):
+            for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row +1 ,values_only=True):
                 index = index + 1
                 if pd.isna(row[0]):
                     continue
@@ -410,7 +417,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_sewerage.close()
             wb_sewerage = openpyxl.load_workbook(sewerageFile) 
             sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row,values_only=True):
+            for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row +1 ,values_only=True):
                 if pd.isna(row[0]):
                     continue
                 if(str(row[3]).strip() == 'Yes'):
@@ -423,20 +430,20 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         else:
             print("Sewerage File doesnot exist for ", cityname) 
     except Exception as ex:
-        print("enterDefaultMobileNo Exception: ",ex)
+        print(config.CITY_NAME,"enterDefaultMobileNo Exception: ",ex)
 
     return validated
 
 def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, name):
     # abas_ids_multiple_owner = []
-    # for index in range(2, sheet2.max_row):
+    # for index in range(2, sheet2.max_row +1 ):
     #     abas_ids_multiple_owner.append(sheet2['A{0}'.format(index)].value)
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
 
     multiple_owner_obj = {}
-    for i in range(2, sheet2.max_row):   
+    for i in range(2, sheet2.max_row +1 ):   
         try:     
             abas_id = sheet2['A{0}'.format(i)].value.strip()
             for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
@@ -454,9 +461,9 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     multiple_owner_obj[abas_id] = []
                 multiple_owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print("createPropertyJson Exception: ",ex)
+            print(config.CITY_NAME,"createPropertyJson Exception: ",ex)
     index = 2
-    for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row,values_only=True):       
+    for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row +1 ,values_only=True):       
         try:   
             index = index + 1  
             property = Property()  
@@ -600,7 +607,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             auth_token = superuser_login()["access_token"]
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
         except Exception as ex:
-            print("createPropertyJson Exception: ",ex)
+            print(config.CITY_NAME,"createPropertyJson Exception: ",ex)
 
         if(len(res['Properties']) == 0):
             statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name,)

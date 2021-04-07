@@ -17,7 +17,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
     sewerageSheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details')  
-    print('no. of rows in sewerage file: ', sewerageSheet.max_row) 
+    print('no. of rows in sewerage file: ', sewerageSheet.max_row +1 ) 
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
@@ -38,23 +38,26 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     #logfile.write(reason)
     abas_ids = [] 
     try:
-        for index in range(3, propertySheet.max_row):
-            if pd.isna(propertySheet['A{0}'.format(index)].value):
-                validated = False
-                reason = 'Sewerage File data validation failed, Sl no. column is empty'
-                #logfile.write(reason)
-                write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
-                break
-            abas_ids.append(propertySheet['B{0}'.format(index)].value.strip())   
+        for index in range(3, propertySheet.max_row +1 ):
+            if pd.isna(propertySheet['B{0}'.format(index)].value):
+                # validated = False
+                # reason = 'Sewerage File data validation failed, Sl no. column is empty'
+                # #logfile.write(reason)
+                # write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
+                continue
+            propSheetABASId = propertySheet['B{0}'.format(index)].value
+            if type(propSheetABASId) == int or type(propSheetABASId) == float:
+                propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
+            abas_ids.append(propSheetABASId.strip())   
     except Exception as ex:
-        print("validateSewerageData Exception: ", ex)
+        print(config.CITY_NAME,"validateSewerageData Exception: ", ex)
     emptyRows =0 
-    for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row,values_only=True):        
+    for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row +1 ,values_only=True):        
         index = index + 1
         try:
             if emptyRows > 10 :
                 break
-            if pd.isna(row[0]) and pd.isna(row[1]):
+            if pd.isna(row[1]):
                 emptyRows = emptyRows +1
                 continue
             if pd.isna(row[0]):
@@ -96,13 +99,16 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                         write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Name has invalid characters',row[1])
             
             if not pd.isna(row[1]):
-                if str(row[1]).strip() not in abas_ids:
+                abasid = row[1]
+                if type(abasid) == int or type(abasid) ==float : 
+                    abasid = str(int (abasid))
+                if abasid.strip() not in abas_ids:
                     validated = False
                     reason = 'there is no abas id available in property data for sewerage connection sl no. '+ str(row[0]) +'\n'
                     #logfile.write(reason) 
                     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
-            print("validateSewerageData Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME,"validateSewerageData Exception: ", row[0], '   ', ex)
     reason = 'sewerage file validation ends.\n'
     print(reason)
     #logfile.write(reason) 
@@ -114,7 +120,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     searchedCount = 0
     notCreatedCount = 0
     owner_obj = {}
-    for i in range(3, propertySheet.max_row):    
+    for i in range(3, propertySheet.max_row +1 ):    
         try:    
             abas_id = propertySheet['B{0}'.format(i)].value.strip()
             for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
@@ -139,9 +145,9 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     owner_obj[abas_id] = []
                 owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print("createSewerageJson Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME,"createSewerageJson Exception: ", row[0], '   ', ex)
     index = 2
-    for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row, values_only=True):
+    for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row +1 , values_only=True):
         try:  
             index = index + 1
             abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
