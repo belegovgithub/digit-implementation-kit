@@ -3,12 +3,12 @@ from config import config
 import io
 import os 
 import sys
-from common import superuser_login
 from SewerageConnection import *
 from PropertyTax import *
 import pandas as pd
 # from CreateProperty import getValue
 import openpyxl
+import collections
 
 def main():
     Flag =False
@@ -22,12 +22,14 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
-        # return
+        if config.INSERT_DATA: 
+            return
     else:
         print('Data validation for sewerage success.')
-    # createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
-    # wb_sewerage.save(sewerageFile)        
-    # wb_sewerage.close()
+    if config.INSERT_DATA: 
+        createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
+        wb_sewerage.save(sewerageFile)        
+        wb_sewerage.close()
 
 def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     validated = True
@@ -38,6 +40,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     print(reason)
     #logfile.write(reason)
     abas_ids = [] 
+    old_connections = []
     try:
         for index in range(3, propertySheet.max_row +1 ):
             if pd.isna(propertySheet['B{0}'.format(index)].value):
@@ -111,6 +114,19 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
         except Exception as ex:
             print(config.CITY_NAME," validateSewerageData Exception: ", row[0], '   ', ex)
             write(logfile,sewerageFile,sewerage_sheet.title,row[0],str(ex) ,row[1])
+    for index in range(3, sewerage_sheet.max_row +1):
+        try:
+            oldConnectionNo = sewerage_sheet['C{0}'.format(index)].value
+            if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
+                oldConnectionNo = str(int(sewerage_sheet['C{0}'.format(index)].value)) 
+            old_connections.append(oldConnectionNo.strip())
+    duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
+
+    if(len(duplicate_ids) >= 1):
+        validated = False
+        reason = 'Sewerage File data validation failed. ' +'Duplicate old connection no for '+ str(duplicate_ids) +'\n'
+        write(logfile,sewerageFile,sewerage_sheet.title,None,'Duplicate old connection no for '+ str(duplicate_ids))
+        #logfile.write(reason)  
     reason = 'sewerage file validation ends.\n'
     print(reason)
     #logfile.write(reason) 
@@ -196,12 +212,13 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                 else:
                     sewerageConnection.waterSubSource = ''
                     sewerageConnection.sourceInfo = 'Other'
-                sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
+                sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
                 sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
                 sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
                 sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
                 sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
-                
+                if not pd.isna(row[17]):
+                    waterConnection.connectionExecutionDate = getTime(row[17])
                 additionalDetail.locality = ''
                 sewerageConnection.additionalDetails = additionalDetail
                 processInstance.action = 'ACTIVATE_CONNECTION'
@@ -216,7 +233,6 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                 sewerageConnection.source = 'MUNICIPAL_RECORDS'
                 sewerageConnection.channel = 'DATA_ENTRY'
                 sewerageConnection.status = 'ACTIVE'
-                waterConnection.oldApplication = True
         except Exception as ex:
             print("createSewerageJson Exception: ", row[0], '   ', ex)
 
@@ -311,7 +327,7 @@ def process_connection_type(value):
 
 def process_propertyOwnership(value):
     propertyOwnership_MAP = {
-        "None": "HOR",
+        "None": None,
         "HOR": "HOR",
         "Tenant": "TENANT"
     }

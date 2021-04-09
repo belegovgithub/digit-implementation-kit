@@ -7,6 +7,7 @@ import os
 import requests
 from config import config
 from uploader.parsers.utils import PropertyEncoder, convert_json, underscore_to_camel
+from datetime import date
 
 
 class PropertyAdditionalDetails:
@@ -45,9 +46,16 @@ class Address:
 
 class AdditionalDetails:
     isRainwaterHarvesting: Optional[bool]
+    isPropertyDisputed: Optional[bool]
+    isPropertyAuthorized: Optional[bool]
 
-    def __init__(self, isRainwaterHarvesting: Optional[bool] = False) -> None:
+    def __init__(self, isRainwaterHarvesting: Optional[bool] = False,
+                isPropertyDisputed: Optional[bool] = False,
+                isPropertyAuthorized: Optional[bool] = False) -> None:
         self.isRainwaterHarvesting = isRainwaterHarvesting
+        self.isPropertyDisputed = isPropertyDisputed
+        self.isPropertyAuthorized = isPropertyAuthorized
+
 
 
 class Document:
@@ -72,6 +80,7 @@ class Owner:
     name: Optional[str]
     mobileNumber: Optional[str]
     fatherOrHusbandName: Optional[str]
+    dob: Optional[date]
     emailId: Optional[str]
     correspondenceAddress: Optional[str]
     relationship: Optional[str]
@@ -83,6 +92,7 @@ class Owner:
 
     def __init__(self, name: Optional[str] = None,
                  mobileNumber: Optional[str] = None, fatherOrHusbandName: Optional[str] = None,
+                 dob: Optional[date] = None,
                  emailId: Optional[str] = None, correspondenceAddress: Optional[str] = None,
                  relationship: Optional[str] = None, ownerType: Optional[str] = None,
                  gender: Optional[str] = None,
@@ -93,6 +103,7 @@ class Owner:
         self.name = name
         self.mobileNumber = mobileNumber
         self.fatherOrHusbandName = fatherOrHusbandName
+        self.dob = dob
         self.emailId = emailId
         self.correspondenceAddress = correspondenceAddress
         self.relationship = relationship

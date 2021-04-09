@@ -48,10 +48,9 @@ INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
 
-def main() :
-    config.INSERT_DATA =False
-    root = r'D:\eGov\Data\WS\Template\Property'
-    logfile = open(os.path.join(root,   "errorCBs.text"), "w")  
+def main() : 
+    root = r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+    logfile = open(os.path.join(root,   "errorCBs.txt"), "w")  
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
@@ -62,13 +61,13 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
-                # try : 
-                if cityname == 'agra' :
-                    config.CITY_NAME = cityname
-                    cbMain(cityname)
-                # except Exception as ex: 
-                #     print("Error in processing CB ",cityname , ex)
-                #     logfile.write(cityname+"\n")
+                try : 
+                    if  cityname =='kamptee'    :
+                        config.CITY_NAME = cityname
+                        cbMain(cityname)
+                except Exception as ex: 
+                    print("Error in processing CB ",cityname , ex)
+                    logfile.write(cityname+"\n")
     logfile.close()
 
 
@@ -133,7 +132,7 @@ def cbMain(cityname):
 
     # Doing for one cb at a time
     #cityname = 'varanasi'
-    root = r'D:\eGov\Data\WS\Template\Property'
+    root = r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -149,7 +148,8 @@ def cbMain(cityname):
         validate =  validateDataForProperty(propertyFile, logfile)            
         if(validate == False):                
             print('Data validation for property Failed, Please check the log file.') 
-            # return
+            if config.INSERT_DATA: 
+                return
         else:
             print('Data validation for property success.')                
         wb_property = openpyxl.load_workbook(propertyFile) 
@@ -159,10 +159,11 @@ def cbMain(cityname):
         df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
         locality_data = {}
         for ind in df.index: 
-            locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
-        createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
-        wb_property.save(propertyFile)        
-        wb_property.close()
+            locality_data[df['Locality Name'][ind]] =  df['Code'][ind]   
+        if config.INSERT_DATA: 
+            createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+            wb_property.save(propertyFile)        
+            wb_property.close()
     else:
         print("Property File doesnot exist for ", cityname) 
     
@@ -183,7 +184,7 @@ def cbMain(cityname):
 
     logfile.close()        
     df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-    df.to_excel(os.path.join(root, name, "Data Entries Issues.xlsx"), index = None)
+    df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
     #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
 
 
@@ -235,7 +236,7 @@ def validateDataForProperty(propertyFile, logfile):
                         reason = 'Property File data sheet1 validation failed for sl no. '+ str(row[0]) + ', mobile no. is empty.\n'
                         write(logfile,propertyFile,sheet1.title,row[0],'mobile no. is empty',row[1])
                         #logfile.write(reason)
-                    elif not pd.isna(row[29]) and (len(str(row[29]).strip()) != 10):
+                    elif not pd.isna(row[29]) and (len(str(row[29]).strip().replace(".0", "")) != 10):
                         validated = False
                         reason = 'Property File data sheet1 validation failed, Mobile number not correct for sl no. '+ str(row[0]) +'\n'
                         write(logfile,propertyFile,sheet1.title,row[0],'Mobile number not correct',row[1])
@@ -458,6 +459,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 owner.mobileNumber = getValue(str(row[3]).strip(),str,"3000000000")
                 owner.emailId = getValue(str(row[4]).strip(),str,"")
                 owner.gender = process_gender(str(row[5]).strip())
+                if not pd.isna(row[6]):
+                    owner.dob = getTime(row[6])
                 owner.fatherOrHusbandName = getValue(str(row[7]).strip(),str,"Guardian")
                 owner.relationship =  process_relationship(str(row[8]).strip())
                 owner.sameAsPeropertyAddress = getValue(str(row[9]).strip(),str,"Yes")            
@@ -500,10 +503,10 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             address.city = cityname
             address.locality = locality
             address.location = process_location(str(row[20]).strip())
-            address.street = getValue(row[16].strip(),str,"")
+            address.street = getValue(row[16].strip(),str,None)
             address.buildingName = getValue(row[17].strip(),str,"")
             address.doorNo = getValue(str(row[18]).strip(),str,"")
-            address.pincode = getValue(str(row[19]).strip(),str,"")
+            address.pincode = getValue(str(row[19]).strip(),str,None)
             correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
             unit.occupancyType = process_occupancy_type(str(row[9]).strip())
             unit.arv = getValue(row[21],int,0) 
@@ -530,6 +533,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
                 owner.emailId = getValue(str(row[30]).strip(),str,"")
                 owner.gender = process_gender(str(row[31]).strip())
+                if not pd.isna(row[32]):
+                    owner.dob = getTime(row[32])
                 owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
                 owner.relationship =  process_relationship(str(row[34]).strip())
                 owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
@@ -605,6 +610,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 #         property.owners.append(owner)
 
             additionalDetail.isRainwaterHarvesting = False
+            additionalDetail.isPropertyDisputed = process_YesNo(str(row[24]))
+            additionalDetail.isPropertyAuthorized = process_YesNo(str(row[25]))
             property.additional_details= additionalDetail
             property.source = 'LEGACY_RECORD'
             property.channel = 'MIGRATION'
@@ -651,6 +658,14 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
+
+def process_YesNo(value):
+    YesNo_MAP = {
+        "Yes": True,
+        "No": False,
+        "None": None
+    }
+    return YesNo_MAP[value]
 
 def process_location(value):
     location_MAP = {

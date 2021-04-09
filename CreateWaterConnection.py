@@ -3,12 +3,12 @@ from config import config
 import io
 import os 
 import sys
-from common import superuser_login
 from WaterConnection import *
 from PropertyTax import *
 import pandas as pd
 # from CreateProperty import getValue
 import openpyxl
+import collections
 
 def main():
     Flag =False
@@ -22,12 +22,14 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
-        # return
+        if config.INSERT_DATA: 
+            return
     else:
         print('Data validation for water success.')
-    createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
-    wb_water.save(waterFile)        
-    wb_water.close()
+    if config.INSERT_DATA: 
+        createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
+        wb_water.save(waterFile)        
+        wb_water.close()
 
 def validateWaterData(propertySheet, waterFile, logfile, cityname):
     validated = True
@@ -38,6 +40,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     print(reason)
     #logfile.write(reason)
     abas_ids = [] 
+    old_connections = []
     try:
         for index in range(3, propertySheet.max_row +1 ):
             if pd.isna(propertySheet['B{0}'.format(index)].value):
@@ -98,7 +101,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
                     #logfile.write(reason)  
                     write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
-            
+          
             if not pd.isna(row[1]):
                 abasid = row[1]
                 if type(abasid) == int or type(abasid) ==float : 
@@ -111,6 +114,20 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
         except Exception as ex:
             write(logfile,waterFile,water_sheet.title,row[0],str(ex) ,row[1])
             print(config.CITY_NAME," validateWaterData Exception: ", row[0], '   ', ex)
+
+    for index in range(3, water_sheet.max_row +1):
+        try:
+            oldConnectionNo = water_sheet['C{0}'.format(index)].value
+            if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
+                oldConnectionNo = str(int(water_sheet['C{0}'.format(index)].value)) 
+            old_connections.append(oldConnectionNo.strip())
+    duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
+
+    if(len(duplicate_ids) >= 1):
+        validated = False
+        reason = 'Water File data validation failed. ' +'Duplicate old connection no for '+ str(duplicate_ids) +'\n'
+        write(logfile,waterFile,water_sheet.title,None,'Duplicate old connection no for '+ str(duplicate_ids))
+        #logfile.write(reason)   
 
     reason = 'Water file validation ends.\n'
     print(reason)
@@ -136,6 +153,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
                 owner.emailId = getValue(str(row[30]).strip(),str,"")
                 owner.gender = process_gender(str(row[31]).strip())
+                if not pd.isna(row[32]):
+                    owner.dob = getTime(row[32])
                 owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
                 owner.relationship =  process_relationship(str(row[34]).strip())
                 owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
@@ -212,13 +231,15 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.sourceInfo = 'Other'
                 waterConnection.connectionType = process_connection_type(str(row[16]).strip())
                 waterConnection.motorInfo  = process_motor_info(str(row[17]).strip())
-                waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
+                waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
                 waterConnection.authorizedConnection = process_connection_permission(str(row[19]).strip())
                 waterConnection.noOfTaps = getValue(str(row[23]).strip(),int,1)
                 waterConnection.proposedTaps = getValue(str(row[23]).strip(),int,1)
                 if( waterConnection.connectionType == 'Metered'):
                     waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
                     additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
+                if not pd.isna(row[18]):
+                    waterConnection.connectionExecutionDate = getTime(row[18])
                 additionalDetail.locality = ''
                 waterConnection.additionalDetails = additionalDetail
                 processInstance.action = 'ACTIVATE_CONNECTION'
@@ -233,13 +254,14 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 waterConnection.source = 'MUNICIPAL_RECORDS'
                 waterConnection.channel = 'DATA_ENTRY'
                 waterConnection.status = 'ACTIVE'
-                waterConnection.oldApplication = True
+                
             except Exception as ex:
                 print("createWaterJson Exception: ", row[0], '   ', ex)
             auth_token = superuser_login()["access_token"]
             status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
             with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
                 json.dump(res, f, indent=2,  ensure_ascii=False)  
+            
             if(len(res['WaterConnection']) == 0):
                 statusCode, res = waterConnection.upload_water(auth_token, tenantId, waterConnection.oldConnectionNo, root, name)
                 with io.open(os.path.join(root, name,"water_create_res.json"), mode="w", encoding="utf-8") as f:
@@ -352,7 +374,7 @@ def process_motor_info(value):
 
 def process_propertyOwnership(value):
     propertyOwnership_MAP = {
-        "None": "HOR",
+        "None": None,
         "HOR": "HOR",
         "Tenant": "TENANT"
     }

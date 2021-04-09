@@ -5,7 +5,7 @@ from uuid import UUID
 import io
 import os
 import requests
-
+from datetime import date 
 from config import config
 from uploader.parsers.utils import PropertyEncoder, convert_json, underscore_to_camel
 
@@ -104,6 +104,7 @@ class SewerageConnection:
     creationReason: Optional[str]
     applicationStatus: Optional[str]
     oldApplication: Optional[bool]
+    connectionExecutionDate: Optional[date]
     def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None, status: Optional[str]  =None,
                   connectionNo: Optional[str] = None, oldConnectionNo: Optional[str] = None, proposedWaterClosets: Optional[int] = None,
                  proposedToilets: Optional[int] = None, proposedDrainageSize: Optional[int] = None, propertyOwnership: Optional[str]= None,
@@ -116,7 +117,8 @@ class SewerageConnection:
                  processInstance: Optional[ProcessInstance] = None, documents: Optional[List[Document]] = None,
                  additionalDetails: Optional[AdditionalDetail] =None, 
                  property: Optional[Property] = None, source: Optional[str] = None, channel: Optional[str] = None,
-                 creationReason: Optional[str] = None, applicationStatus: Optional[str] = None, oldApplication: Optional[bool] = False  ) -> None:
+                 creationReason: Optional[str] = None, applicationStatus: Optional[str] = None, oldApplication: Optional[bool] = False,
+                 connectionExecutionDate: Optional[date] = None   ) -> None:
         self.tenantId = tenantId
         self.propertyId = propertyId
         self.status = status
@@ -150,6 +152,7 @@ class SewerageConnection:
         self.creationReason = creationReason
         self.applicationStatus = applicationStatus
         self.oldApplication = oldApplication
+        self.connectionExecutionDate = connectionExecutionDate
 
     def get_sewerage_json(self):
         sewerage_encoder = PropertyEncoder().encode(self)
