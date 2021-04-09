@@ -225,6 +225,11 @@ def validateDataForProperty(propertyFile, logfile):
                     reason = 'Property File sheet1 data validation failed for sl no. '+ str(row[0]) + ',  ownership type is empty.\n'
                     write(logfile,propertyFile,sheet1.title,row[0],'ownership type is empty',row[1])
                     #logfile.write(reason)
+                if pd.isna(row[13]):
+                    validated = False
+                    reason = 'Property File sheet1 data validation failed for sl no. '+ str(row[0]) + ',  Locality/ Mohalla is empty.\n'
+                    write(logfile,propertyFile,sheet1.title,row[0],'Locality/ Mohalla is empty',row[1])
+                    #logfile.write(reason)
                 if(str(row[27]) != "Multiple Owners"):
                     if pd.isna(row[28]):
                         validated = False
