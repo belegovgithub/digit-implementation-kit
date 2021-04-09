@@ -552,7 +552,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
+                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,correspondence_address)
                 owner.ownerType =  process_special_category(str(row[37]).strip())
                 
                 property.owners.append(owner)

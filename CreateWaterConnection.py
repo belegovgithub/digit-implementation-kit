@@ -176,7 +176,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
+                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,correspondence_address)
                 owner.ownerType =  process_special_category(str(row[37]).strip())
                 if abas_id not in owner_obj:
                     owner_obj[abas_id] = []
