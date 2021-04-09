@@ -91,17 +91,26 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number is empty.\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,row[0],'mobile number is empty',row[1])
+                elif not pd.isna(row[4]) and (len(str(row[4]).strip().replace(".0", "")) != 10):
+                    validated = False
+                    reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
+                    write(logfile,waterFile,water_sheet.title,None,'Mobile number not correct',row[0])
+                    #logfile.write(reason)
                 if pd.isna(row[5]):
                     validated = False
                     reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ',name is empty.\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,row[0],' name is empty',row[1])
-                elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
+                # elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
+                #     validated = False
+                #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                #     #logfile.write(reason)  
+                #     write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
+                if not pd.isna(row[9]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[9]))):                        
                     validated = False
-                    reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
-                    #logfile.write(reason)  
-                    write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
-          
+                    reason = 'Water File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                    write(logfile,waterFile,water_sheet.title,None,'Guardian Name has invalid characters',row[0])
+                    #logfile.write(reason)
             if not pd.isna(row[1]):
                 abasid = row[1]
                 if type(abasid) == int or type(abasid) ==float : 
@@ -117,16 +126,22 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
 
     for index in range(3, water_sheet.max_row +1):
         try:
+            if pd.isna(water_sheet['B{0}'.format(index)].value):                    
+                break
             oldConnectionNo = water_sheet['C{0}'.format(index)].value
             if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
                 oldConnectionNo = str(int(water_sheet['C{0}'.format(index)].value)) 
             old_connections.append(oldConnectionNo.strip())
+        except Exception as ex:
+            print( config.CITY_NAME,  " validateDataForWater Exception: existing water connection no is empty: ",ex)
+            write(logfile,waterFile,water_sheet.title,row[0],' existing water connection no is empty',row[1])
     duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
 
     if(len(duplicate_ids) >= 1):
         validated = False
-        reason = 'Water File data validation failed. ' +'Duplicate old connection no for '+ str(duplicate_ids) +'\n'
-        write(logfile,waterFile,water_sheet.title,None,'Duplicate old connection no for '+ str(duplicate_ids))
+        reason = 'Water File data validation failed. ' +'Duplicate existing water connection no for '+ str(duplicate_ids) +'\n'
+        # print(reason)
+        write(logfile,waterFile,water_sheet.title,None,'Duplicate existing water connection no for '+ str(duplicate_ids))
         #logfile.write(reason)   
 
     reason = 'Water file validation ends.\n'

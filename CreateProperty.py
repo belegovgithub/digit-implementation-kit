@@ -62,7 +62,7 @@ def main() :
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
                 try : 
-                    if  cityname =='kamptee'    :
+                    if True: # cityname =='kamptee'    :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 
@@ -231,6 +231,11 @@ def validateDataForProperty(propertyFile, logfile):
                         reason = 'Property File sheet1 data validation failed for sl no. '+ str(row[0]) + ', name is empty.\n'
                         write(logfile,propertyFile,sheet1.title,row[0],'name is empty',row[1])
                         #logfile.write(reason)
+                    # elif not pd.isna(row[28]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):                    
+                    #     validated = False
+                    #     reason = 'Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                    #     write(logfile,propertyFile,sheet1.title,row[0],'Name has invalid characters',row[1])
+                    #     #logfile.write(reason)
                     if config.INSERT_DATA  and pd.isna(row[29]):
                         validated = False
                         reason = 'Property File data sheet1 validation failed for sl no. '+ str(row[0]) + ', mobile no. is empty.\n'
@@ -241,12 +246,12 @@ def validateDataForProperty(propertyFile, logfile):
                         reason = 'Property File data sheet1 validation failed, Mobile number not correct for sl no. '+ str(row[0]) +'\n'
                         write(logfile,propertyFile,sheet1.title,row[0],'Mobile number not correct',row[1])
                         #logfile.write(reason)
-                    if not pd.isna(row[28]):
-                        if not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):
-                            validated = False
-                            reason = 'Name has invalid characters for sl no. '+ str(row[0]) +'\n'
-                            write(logfile,propertyFile,sheet1.title,row[0],'Name has invalid characters',row[1])
-                            #logfile.write(reason)
+                    if not pd.isna(row[33]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[33]))):                        
+                        validated = False
+                        reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                        write(logfile,propertyFile,sheet1.title,None,'Guardian Name has invalid characters',row[0])
+                        #logfile.write(reason)
+                    
                 if pd.isna(row[7]):
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ str(row[0]) + ', usage category is empty.\n'
@@ -265,11 +270,7 @@ def validateDataForProperty(propertyFile, logfile):
 
         for index in range(3, sheet1.max_row +1):
             try: 
-                if pd.isna(sheet1['B{0}'.format(index)].value):
-                    validated = False
-                    reason = 'Sl no. column is empty'
-                    write(logfile,propertyFile,sheet1.title,row[0],'Sl no. column is empty')
-                    #logfile.write(reason)
+                if pd.isna(sheet1['B{0}'.format(index)].value):                    
                     break
                 propSheetABASId = sheet1['B{0}'.format(index)].value
                 if type(propSheetABASId) == int or type(propSheetABASId) == float:
@@ -282,6 +283,7 @@ def validateDataForProperty(propertyFile, logfile):
         if(len(duplicate_ids) >= 1):
             validated = False
             reason = 'Property File data validation failed. ' +'Duplicate abas property id for '+ str(duplicate_ids) +'\n'
+            # print(reason)
             write(logfile,propertyFile,sheet1.title,None,'Duplicate ABAS property id for '+ str(duplicate_ids))
             #logfile.write(reason)      
           
@@ -293,7 +295,7 @@ def validateDataForProperty(propertyFile, logfile):
                         reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', mobile no. is empty in multiple owner sheet.\n'
                         write(logfile,propertyFile,sheet2.title,None,'mobile no. is empty',row[0])
                         #logfile.write(reason)
-                    elif(len(str(row[3])) != 10):
+                    elif not pd.isna(row[3]) and (len(str(row[3]).strip().replace(".0", "")) != 10):
                         validated = False
                         reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Mobile number not correct',row[0])
@@ -304,12 +306,16 @@ def validateDataForProperty(propertyFile, logfile):
                         write(logfile,propertyFile,sheet2.title,None,'name is empty',row[0])
                         #logfile.write(reason)
                     
-                    if not pd.isna(row[2]):
-                        if not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):
-                            validated = False
-                            reason = 'Property File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
-                            write(logfile,propertyFile,sheet2.title,None,'Name has invalid characters',row[0])
-                            #logfile.write(reason)
+                    # elif not pd.isna(row[2]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):                        
+                    #     validated = False
+                    #     reason = 'Property File data validation failed, Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                    #     write(logfile,propertyFile,sheet2.title,None,'Name has invalid characters',row[0])
+                    #     #logfile.write(reason)
+                    if not pd.isna(row[7]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[7]))):                        
+                        validated = False
+                        reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                        write(logfile,propertyFile,sheet2.title,None,'Guardian Name has invalid characters',row[0])
+                        #logfile.write(reason)
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
                 write(logfile,propertyFile,sheet2.title,None,str(ex) ,row[0])
