@@ -49,7 +49,7 @@ INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
 
 def main() : 
-    root = r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+    root = r'D:\TLApp\WaterSewerageTemplates-20210412T124658Z-001\WaterSewerageTemplates'
     logfile = open(os.path.join(root,   "errorCBs.txt"), "w")  
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
@@ -62,7 +62,7 @@ def main() :
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
                 try : 
-                    if True: # cityname =='kamptee'    :
+                    if  True  :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 
@@ -132,7 +132,7 @@ def cbMain(cityname):
 
     # Doing for one cb at a time
     #cityname = 'varanasi'
-    root = r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+    root = r'D:\TLApp\WaterSewerageTemplates-20210412T124658Z-001\WaterSewerageTemplates'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -163,7 +163,7 @@ def cbMain(cityname):
         if config.INSERT_DATA: 
             createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
             wb_property.save(propertyFile)        
-            wb_property.close()
+        wb_property.close()
     else:
         print("Property File doesnot exist for ", cityname) 
     
@@ -184,7 +184,13 @@ def cbMain(cityname):
 
     logfile.close()        
     df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-    df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
+    now = datetime.now()
+    date_time = now.strftime("%d-%m-%Y")
+
+    if not os.path.exists(os.path.join(root,date_time)) :
+        os.makedirs(os.path.join(root,date_time))
+    df.to_excel(os.path.join(root, date_time,    name+ " Data Entries Issues.xlsx"), index = None)
+    #df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
     #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
 
 
