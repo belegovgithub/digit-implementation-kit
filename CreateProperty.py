@@ -65,7 +65,7 @@ def main() :
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
                 try : 
-                    if True : #cityname =='ahmedabad'  :
+                    if True : # cityname =='nasirabad'  :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 
@@ -185,17 +185,18 @@ def cbMain(cityname):
     logfile.write('')
     logfile.write("]")        
 
-
+    size = os.path.getsize(os.path.join(root, name, "Logfile.json")) 
     logfile.close()        
-    df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-    now = datetime.now()
-    date_time = now.strftime("%d-%m-%Y")
+    if size > 2 : 
+        df = pd.read_json (os.path.join(root, name, "Logfile.json"))
+        now = datetime.now()
+        date_time = now.strftime("%d-%m-%Y")
 
-    if not os.path.exists(os.path.join(root,date_time)) :
-        os.makedirs(os.path.join(root,date_time))
-    df.to_excel(os.path.join(root, date_time,    name+ " Data Entries Issues.xlsx"), index = None)
-    #df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
-    #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
+        if not os.path.exists(os.path.join(root,date_time)) :
+            os.makedirs(os.path.join(root,date_time))
+        df.to_excel(os.path.join(root, date_time,    name+ " Data Entries Issues.xlsx"), index = None)
+        #df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
+        #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
 
 
 def validateDataForProperty(propertyFile, logfile):
