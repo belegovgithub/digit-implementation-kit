@@ -11,6 +11,7 @@ import collections
 import re
 from CreateWaterConnection import *
 from CreateSewerageConnection import *
+import traceback
 
 # class CreateProprty(Property):
 #     def __init__(self, *args, **kwargs):
@@ -48,8 +49,10 @@ INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
 
-def main() : 
-    root = r'D:\TLApp\WaterSewerageTemplates-20210412T124658Z-001\WaterSewerageTemplates'
+def main() :
+    print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
+    print ("if side is None or  side.style is None:")
+    root = r'D:\Download\WaterSewerageTemplates-20210412T153729Z-001\WaterSewerageTemplates'
     logfile = open(os.path.join(root,   "errorCBs.txt"), "w")  
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
@@ -62,11 +65,12 @@ def main() :
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
                 try : 
-                    if  True  :
+                    if True  : # cityname =='meerut'  :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 
                     print("Error in processing CB ",cityname , ex)
+                    traceback.print_exc()
                     logfile.write(cityname+"\n")
     logfile.close()
 
@@ -132,7 +136,7 @@ def cbMain(cityname):
 
     # Doing for one cb at a time
     #cityname = 'varanasi'
-    root = r'D:\TLApp\WaterSewerageTemplates-20210412T124658Z-001\WaterSewerageTemplates'
+    root = r'D:\Download\WaterSewerageTemplates-20210412T153729Z-001\WaterSewerageTemplates'
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
@@ -147,7 +151,7 @@ def cbMain(cityname):
     if os.path.exists(propertyFile) :  
         validate =  validateDataForProperty(propertyFile, logfile)            
         if(validate == False):                
-            print('Data validation for property Failed, Please check the log file.') 
+            #print('Data validation for property Failed, Please check the log file.') 
             if config.INSERT_DATA: 
                 return
         else:
@@ -204,9 +208,9 @@ def validateDataForProperty(propertyFile, logfile):
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
         abas_ids = []        
         reason = 'Property file validation starts.\n'
-        print(reason)
+        #print(reason)
         # logfile.write(reason)
-        print('no. of rows in Property file sheet 1: ', sheet1.max_row ) 
+        #print('no. of rows in Property file sheet 1: ', sheet1.max_row ) 
         emptyRows=0
         for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True): 
             try : 
@@ -286,7 +290,7 @@ def validateDataForProperty(propertyFile, logfile):
                 propSheetABASId = sheet1['B{0}'.format(index)].value
                 if type(propSheetABASId) == int or type(propSheetABASId) == float:
                     propSheetABASId = str(int(sheet1['B{0}'.format(index)].value)) 
-                abas_ids.append(propSheetABASId.strip())
+                abas_ids.append(str(propSheetABASId).strip())
             except Exception as ex:
                 print( config.CITY_NAME,  " validateDataForProperty Exception: abas id is empty: ",ex)
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
@@ -334,7 +338,7 @@ def validateDataForProperty(propertyFile, logfile):
         print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
          
     reason = 'Property file validation ends.\n'
-    print(reason)
+    #print(reason)
     # logfile.write(reason)
     return validated
 

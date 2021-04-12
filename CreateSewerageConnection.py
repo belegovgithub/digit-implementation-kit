@@ -9,6 +9,7 @@ import pandas as pd
 # from CreateProperty import getValue
 import openpyxl
 import collections
+import traceback
 
 def main():
     Flag =False
@@ -18,10 +19,10 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
     sewerageSheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details')  
-    print('no. of rows in sewerage file: ', sewerageSheet.max_row +1 ) 
+    #print('no. of rows in sewerage file: ', sewerageSheet.max_row +1 ) 
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
-        print('Data validation for sewerage Failed, Please check the log file.') 
+        #print('Data validation for sewerage Failed, Please check the log file.') 
         if config.INSERT_DATA: 
             return
     else:
@@ -37,7 +38,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
     index = 2
     reason = 'sewerage file validation starts.\n'
-    print(reason)
+    #print(reason)
     #logfile.write(reason)
     abas_ids = [] 
     old_connections = []
@@ -52,7 +53,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
             propSheetABASId = propertySheet['B{0}'.format(index)].value
             if type(propSheetABASId) == int or type(propSheetABASId) == float:
                 propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
-            abas_ids.append(propSheetABASId.strip())   
+            abas_ids.append(str(propSheetABASId).strip())   
     except Exception as ex:
         print(config.CITY_NAME," validateSewerageData Exception: ", ex)
     emptyRows =0 
@@ -130,9 +131,10 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
             oldConnectionNo = sewerage_sheet['C{0}'.format(index)].value
             if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
                 oldConnectionNo = str(int(sewerage_sheet['C{0}'.format(index)].value)) 
-            old_connections.append(oldConnectionNo.strip())
+            old_connections.append(str(oldConnectionNo).strip())
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForSewerage Exception: existing sewerage connection no is empty: ",ex)
+            traceback.print_exc()
             write(logfile,sewerageFile,sewerage_sheet.title,row[0],'existing sewerage connection no is empty',row[1])
     duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
 
@@ -143,7 +145,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
         write(logfile,sewerageFile,sewerage_sheet.title,None,'Duplicate existing sewerage connection no for '+ str(duplicate_ids))
         #logfile.write(reason)  
     reason = 'sewerage file validation ends.\n'
-    print(reason)
+    #print(reason)
     #logfile.write(reason) 
     return validated
 

@@ -9,7 +9,8 @@ import pandas as pd
 # from CreateProperty import getValue
 import openpyxl
 import collections
-
+import traceback
+            
 def main():
     Flag =False
     
@@ -18,10 +19,10 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
-    print('no. of rows in water file: ', waterSheet.max_row ) 
+    #print('no. of rows in water file: ', waterSheet.max_row ) 
     validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
     if(validate == False):                
-        print('Data validation for water Failed, Please check the log file.') 
+        #print('Data validation for water Failed, Please check the log file.') 
         if config.INSERT_DATA: 
             return
     else:
@@ -37,7 +38,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
     index = 2
     reason = 'Water file validation starts.\n'
-    print(reason)
+    #print(reason)
     #logfile.write(reason)
     abas_ids = [] 
     old_connections = []
@@ -131,9 +132,10 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
             oldConnectionNo = water_sheet['C{0}'.format(index)].value
             if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
                 oldConnectionNo = str(int(water_sheet['C{0}'.format(index)].value)) 
-            old_connections.append(oldConnectionNo.strip())
+            old_connections.append(str(oldConnectionNo).strip())
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForWater Exception: existing water connection no is empty: ",ex)
+            traceback.print_exc()
             write(logfile,waterFile,water_sheet.title,row[0],' existing water connection no is empty',row[1])
     duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
 
@@ -145,7 +147,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
         #logfile.write(reason)   
 
     reason = 'Water file validation ends.\n'
-    print(reason)
+    #print(reason)
     #logfile.write(reason) 
     return validated
 
