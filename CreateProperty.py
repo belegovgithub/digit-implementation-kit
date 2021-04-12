@@ -65,7 +65,7 @@ def main() :
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
                 try : 
-                    if True  : # cityname =='meerut'  :
+                    if True : #cityname =='ahmedabad'  :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 

@@ -53,7 +53,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
             propSheetABASId = propertySheet['B{0}'.format(index)].value
             if type(propSheetABASId) == int or type(propSheetABASId) == float:
                 propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
-            abas_ids.append(propSheetABASId.strip())     
+            abas_ids.append(str(propSheetABASId).strip())     
     except Exception as ex:
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
  
@@ -116,7 +116,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 abasid = row[1]
                 if type(abasid) == int or type(abasid) ==float : 
                     abasid = str(int (abasid))
-                if abasid.strip() not in abas_ids:                    
+                if str(abasid).strip() not in abas_ids:                    
                     validated = False
                     reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
                     #logfile.write(reason) 

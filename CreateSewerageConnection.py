@@ -116,7 +116,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 abasid = row[1]
                 if type(abasid) == int or type(abasid) ==float : 
                     abasid = str(int (abasid))
-                if abasid.strip() not in abas_ids:
+                if str(abasid).strip() not in abas_ids:
                     validated = False
                     reason = 'there is no abas id available in property data for sewerage connection sl no. '+ str(row[0]) +'\n'
                     #logfile.write(reason) 
