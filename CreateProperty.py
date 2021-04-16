@@ -48,11 +48,11 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-
+FOLDER_PATH  =r'D:\PropertyTax\PropertyData'
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
-    root = r'D:\Download\WaterSewerageTemplates-20210412T153729Z-001\WaterSewerageTemplates'
+    root = FOLDER_PATH
     logfile = open(os.path.join(root,   "errorCBs.txt"), "w")  
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
@@ -65,7 +65,7 @@ def main() :
             if  os.path.exists( os.path.join(root,name)):
                 print("Processing for CB "+cityname.upper())
                 try : 
-                    if True : # cityname =='nasirabad'  :
+                    if  True : # cityname =='wellington'  :
                         config.CITY_NAME = cityname
                         cbMain(cityname)
                 except Exception as ex: 
@@ -135,18 +135,18 @@ def cbMain(cityname):
     #         logfile.close()
 
     # Doing for one cb at a time
-    #cityname = 'varanasi'
-    root = r'D:\Download\WaterSewerageTemplates-20210412T153729Z-001\WaterSewerageTemplates'
+    # cityname = 'wellington'
+    root = FOLDER_PATH
     name = 'CB ' + cityname.lower()
     propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
     sewerageFile = os.path.join(root, name, "Template for Existing Sewerage Connection Detail.xlsx")
     logfile = open(os.path.join(root, name, "Logfile.json"), "w")   
     logfile.write("[ ")         
-    # validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
-    # if(validate == False):                
-    #     print('Data validation Failed for mobile entry, Please check the log file.') 
-    #     return
+    validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
+    if(validate == False):                
+        print('Data validation Failed for mobile entry, Please check the log file.') 
+        return
     
     if os.path.exists(propertyFile) :  
         validate =  validateDataForProperty(propertyFile, logfile)            
@@ -171,16 +171,16 @@ def cbMain(cityname):
     else:
         print("Property File doesnot exist for ", cityname) 
     
-    if os.path.exists(waterFile) : 
-        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+    # if os.path.exists(waterFile) : 
+    #     ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
         
-    else:
-        print("Water File doesnot exist for ", cityname) 
+    # else:
+    #     print("Water File doesnot exist for ", cityname) 
 
-    if os.path.exists(sewerageFile) : 
-        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
-    else:
-        print("Water File doesnot exist for ", cityname) 
+    # if os.path.exists(sewerageFile) : 
+    #     ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
+    # else:
+    #     print("Water File doesnot exist for ", cityname) 
     logfile.seek(logfile.tell() - 1, os.SEEK_SET)
     logfile.write('')
     logfile.write("]")        
@@ -361,8 +361,8 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                 abas_id = sheet1['B{0}'.format(i)].value.strip()
                 for row in sheet1.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
                     owner = {}               
-                    owner['mobileNumber'] = getValue(str(row[29]).strip(),str,"")
-                    owner['ownerType'] = str(row[27]).strip()
+                    owner['mobileNumber'] = getMobileNumber(row[29],str,"")
+                    owner['ownerType'] =  getValue(row[27],str,"") 
                     if abas_id not in owner_obj:
                         owner_obj[abas_id] = []
                     owner_obj[abas_id].append(owner)
@@ -458,7 +458,8 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         else:
             print("Sewerage File doesnot exist for ", cityname) 
     except Exception as ex:
-        print(config.CITY_NAME," enterDefaultMobileNo Exception: ",ex)
+        print(config.CITY_NAME," DefaultMobileNo Exception: ",ex)
+        traceback.print_exc()
 
     return validated
 
@@ -477,27 +478,28 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
                 owner = Owner()
                 Owner.status = 'ACTIVE'
-                owner.name = getValue(str(row[2]).strip(),str,"NAME")
-                owner.mobileNumber = getValue(str(row[3]).strip(),str,"3000000000")
-                owner.emailId = getValue(str(row[4]).strip(),str,"")
-                owner.gender = process_gender(str(row[5]).strip())
+                owner.name = getValue( row[2] ,str,"NAME")
+                owner.mobileNumber =  getMobileNumber( row[3] ,str,"3000000000")
+                owner.emailId = getValue( row[4] ,str,"")
+                owner.gender = process_gender( row[5] )
                 if not pd.isna(row[6]):
                     owner.dob = getTime(row[6])
-                owner.fatherOrHusbandName = getValue(str(row[7]).strip(),str,"Guardian")
+                owner.fatherOrHusbandName = getValue( row[7] ,str,"Guardian")
                 owner.relationship =  process_relationship(str(row[8]).strip())
-                owner.sameAsPeropertyAddress = getValue(str(row[9]).strip(),str,"Yes")            
+                owner.sameAsPeropertyAddress = getValue( row[9] ,str,"Yes")            
                 owner.ownerType =  process_special_category(str(row[11]).strip())
                 if abas_id not in multiple_owner_obj:
                     multiple_owner_obj[abas_id] = []
                 multiple_owner_obj[abas_id].append(owner)
         except Exception as ex:
             print(config.CITY_NAME," createPropertyJson Exception: ",ex)
+            traceback.print_exc()
     index = 2
     for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):       
         try:   
             index = index + 1  
             property = Property()  
-            property.abasPropertyId =  getValue(str(row[1]).strip(),str,None)
+            property.abasPropertyId =  getValue( row[1] ,str,None)
             if pd.isna(property.abasPropertyId):
                 print("empty Abas id in property file for sl no. ", row[0])
                 continue     
@@ -512,7 +514,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             tenantId = 'pb.'+ cityname
             property.tenantId = tenantId
             
-            property.oldPropertyId =  getValue(str(row[2]).strip(),str,None)
+            property.oldPropertyId =  getValue( row[2] ,str,None)
             property.propertyType = process_property_type(str(row[3]).strip())
             property.landArea = getValue(row[4],int,1) 
             property.superBuiltUpArea = getValue(row[5],int,1) 
@@ -525,11 +527,11 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             address.city = cityname
             address.locality = locality
             address.location = process_location(str(row[20]).strip())
-            address.street = getValue(row[16].strip(),str,None)
-            address.buildingName = getValue(row[17].strip(),str,"")
-            address.doorNo = getValue(str(row[18]).strip(),str,"")
-            address.pincode = getValue(str(row[19]).strip(),str,None)
-            correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
+            address.street = getValue(row[16] ,str,None)
+            address.buildingName = getValue(row[17] ,str,"")
+            address.doorNo = getValue(row[18],str,"")
+            address.pincode = getValue(row[19],str,None)
+            correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue( row[13] ,str,"Others"),cityname)
             unit.occupancyType = process_occupancy_type(str(row[9]).strip())
             unit.arv = getValue(row[21],int,0) 
             unit.floorNo = 0
@@ -551,55 +553,55 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             property.ownershipCategory = process_ownership_type(str(row[27]).strip())     
             if(property.ownershipCategory == 'INDIVIDUAL.SINGLEOWNER'):
                 owner.status = 'ACTIVE'            
-                owner.name = getValue(str(row[28]).strip(),str,"NAME")
-                owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
-                owner.emailId = getValue(str(row[30]).strip(),str,"")
-                owner.gender = process_gender(str(row[31]).strip())
+                owner.name = getValue(row[28] ,str,"NAME")
+                owner.mobileNumber = getValue(row[29],str,"3000000000")
+                owner.emailId = getValue(row[30] ,str,"")
+                owner.gender = process_gender( row[31] )
                 if not pd.isna(row[32]):
                     owner.dob = getTime(row[32])
-                owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
+                owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                 owner.relationship =  process_relationship(str(row[34]).strip())
-                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
+                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,correspondence_address)
+                    owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
                 owner.ownerType =  process_special_category(str(row[37]).strip())
                 
                 property.owners.append(owner)
             elif(property.ownershipCategory == 'INSTITUTIONALPRIVATE'):
                 owner.status = 'ACTIVE'
-                owner.name = getValue(str(row[28]).strip(),str,"NAME")
-                owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
-                owner.emailId = getValue(str(row[30]).strip(),str,"")
-                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
-                owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"")
-                institution.name = getValue(str(row[38]).strip(),str,"Institution")
+                owner.name = getValue(row[28],str,"NAME")
+                owner.mobileNumber = getValue(row[29],str,"3000000000")
+                owner.emailId = getValue(row[30],str,"")
+                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                owner.correspondenceAddress = getValue(row[36],str,"")
+                institution.name = getValue(row[38],str,"Institution")
                 institution.type = process_private_institution_type(str(row[39]).strip())
-                institution.designation = getValue(str(row[40]).strip(),str,"Designation")
-                owner.altContactNumber = getValue(str(row[41]).strip(),str,"1000000000")
+                institution.designation = getValue(row[40],str,"Designation")
+                owner.altContactNumber = getValue(row[41],str,"1000000000")
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
+                    owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
                 property.institution = institution
                 property.owners.append(owner)
             elif(property.ownershipCategory == 'INSTITUTIONALGOVERNMENT'):
                 owner.status = 'ACTIVE'
-                owner.name = getValue(str(row[28]).strip(),str,"NAME")
-                owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
-                owner.emailId = getValue(str(row[30]).strip(),str,"")
-                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
-                owner.correspondence_address = getValue(str(row[36]).strip(),str,"")
-                institution.name = getValue(str(row[38]).strip(),str,"Institution")
+                owner.name = getValue(row[28],str,"NAME")
+                owner.mobileNumber = getValue(row[29],str,"3000000000")
+                owner.emailId = getValue(row[30],str,"")
+                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                owner.correspondence_address = getValue(row[36],str,"")
+                institution.name = getValue(row[38],str,"Institution")
                 institution.type = process_govt_institution_type(str(row[39]).strip())
-                institution.designation = getValue(str(row[40]).strip(),str,"Designation")
-                owner.altContactNumber = getValue(str(row[41]).strip(),str,"1000000000")
-                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
+                institution.designation = getValue(row[40],str,"Designation")
+                owner.altContactNumber = getValue(row[41],str,"1000000000")
+                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
+                    owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
                 property.institution = institution
                 property.owners.append(owner)
             elif(property.ownershipCategory == 'INDIVIDUAL.MULTIPLEOWNERS'):
@@ -609,7 +611,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     if(owner.sameAsPeropertyAddress ==  'Yes'):
                         owner.correspondenceAddress = correspondence_address
                     else: 
-                        owner.correspondenceAddress = getValue(str(row[36]).strip(),str,"Correspondence")
+                        owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
                     property.owners.append(owner)
 
                 # occurances = [i for i,x in enumerate(abas_ids_multiple_owner) if x == property.abas_property_id]
@@ -643,8 +645,10 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
         except Exception as ex:
             print(config.CITY_NAME," createPropertyJson Exception: ",ex)
+            traceback.print_exc()
 
         if(len(res['Properties']) == 0):
+            
             statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name,)
             with io.open(os.path.join(root, name,"property_create_res.json"), mode="w", encoding="utf-8") as f:
                 json.dump(res, f, indent=2,  ensure_ascii=False)
@@ -699,20 +703,26 @@ def process_location(value):
     return location_MAP[value]
 
 def process_relationship(value):
+    if value is None : 
+        value ="parent"
+    value = value.strip().lower()
     relationship_MAP = {
-        "Parent": "PARENT",
-        "Spouse": "SPOUSE",
-        "Gurdian": "GUARDIAN",
-        "None": "PARENT"
+        "parent": "PARENT",
+        "spouse": "SPOUSE",
+        "gurdian": "GUARDIAN",
+        "none": "PARENT"
     }
     return relationship_MAP[value]
 
 def process_gender(value):
+    if value is None : 
+        value ="Male"
+    value =str(value).strip().lower()
     gender_MAP = {
-        "Male": "MALE",
-        "Female": "FEMALE",
-        "Transgender": "TRANSGENDER",
-        "None": "MALE"       
+        "male": "MALE",
+        "female": "FEMALE",
+        "transgender": "TRANSGENDER",
+        "none": "MALE"       
     }
     return gender_MAP[value]
 
@@ -776,25 +786,31 @@ def process_sub_usage_type(value):
     return SUB_USAGE_MAP[value]
 
 def process_ownership_type(value):
+    if value is None : 
+        value ="None"
+    value =value.strip().lower()
     Ownsership_MAP = {
-        "None": "INDIVIDUAL.SINGLEOWNER",
-        "Single Owner": "INDIVIDUAL.SINGLEOWNER",
-        "Multiple Owners": "INDIVIDUAL.MULTIPLEOWNERS",
-        "Institutional- Private": "INSTITUTIONALPRIVATE",
-        "Institutional- Government": "INSTITUTIONALGOVERNMENT"
+        "none": "INDIVIDUAL.SINGLEOWNER",
+        "single owner": "INDIVIDUAL.SINGLEOWNER",
+        "multiple owners": "INDIVIDUAL.MULTIPLEOWNERS",
+        "institutional- private": "INSTITUTIONALPRIVATE",
+        "institutional- government": "INSTITUTIONALGOVERNMENT"
     }
     return Ownsership_MAP[value]
 
 def process_special_category(value):
+    if value is None : 
+        value ="None"
+    value =value.strip().lower()
     special_category_MAP = {
-        "Freedom fighter": "FREEDOMFIGHTER",
-        "Widow": "WIDOW",
-        "Handicapped": "HANDICAPPED",
-        "Below Poverty Line": "BPL",
-        "Defense Personnel": "DEFENSE",
-        "Employee/Staff of CB": "STAFF",
-        "None of the above": "NONE",
-        "None":"NONE"
+        "freedom fighter": "FREEDOMFIGHTER",
+        "widow": "WIDOW",
+        "handicapped": "HANDICAPPED",
+        "below poverty line": "BPL",
+        "defense personnel": "DEFENSE",
+        "employee/staff of cb": "STAFF",
+        "none of the above": "NONE",
+        "none":"NONE"
     }
     return special_category_MAP[value]
 
@@ -802,7 +818,19 @@ def getValue(value,dataType,defValue="") :
     if(value == None or value == 'None'): 
         return defValue    
     else : 
-        return dataType(value)
+        if dataType ==str : 
+            return dataType(value).strip()
+        else : 
+            return dataType(value)
+
+def getMobileNumber(value,dataType,defValue="") :
+    if(value == None or value == 'None'): 
+        return defValue    
+    else : 
+        if type(value) == int or type(value) == float:
+                    propSheetABASId = str(int(value)) 
+        return dataType(value).strip()
+        
 
 if __name__ == "__main__":
     main()    
