@@ -1,4 +1,5 @@
 from .local import *
+import pandas as pd
 
 config.ROLE_CODE_MAP = {
   "CITIZEN": "Citizen",
@@ -247,7 +248,19 @@ def load_employee_creation_config() :
     config.HRMS_DEV_ROLES=  "mCollect Employee"#"TL Counter Employee|TL Doc Verifier|TL Field Inspector|TL Approver|mCollect Employee" # SEPERATED BY PIPE
 
 
-
+def getValue(value,dataType,defValue="") :
+    try:
+        if(value == None or value == 'None' or pd.isna(value)): 
+            return defValue    
+        else : 
+            if dataType ==str : 
+                return dataType(value).strip()
+            elif dataType == float:
+                return round(value, 2)
+            else : 
+                return dataType(value)
+    except: 
+        return defValue
 
 
 load_config()

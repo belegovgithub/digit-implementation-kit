@@ -1,5 +1,5 @@
 from common import *
-from config import config
+from config import config, getValue
 import io
 import os 
 import sys
@@ -38,8 +38,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
     index = 2
     reason = 'sewerage file validation starts.\n'
-    #print(reason)
-    #logfile.write(reason)
+    # ValidateCols(sewerageFile, sewerage_sheet, logfile)
     abas_ids = [] 
     old_connections = []
     try:
@@ -154,6 +153,19 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     #logfile.write(reason) 
     return validated
 
+def ValidateCols(sewerageFile, sheet, logfile):
+    proper_column_order = ['Mobile No*', 'Connection Holder Name*', 'Email Id', 'Gender *', 'DOB ', 'Guardian Name *', 'Relationship *', 
+    'Ownership Type *', 'Address *', 'Special Category *', 'Drainage Pipe Size (inch) *', 'No of Water Closets *', 'No of Toilets *', 
+    'Activation Date *', 'Last Billed Date *']
+    column_list = [c.value for c in next(sheet.iter_rows(min_row=2, max_row=2))]
+    validated = True
+    for i in range(4, 19):
+        if(proper_column_order[i].strip() != column_list[i].strip()) :
+            validated = False
+            write(logfile,sewerageFile,sheet.title,None,'Column order / name is not correct',column_list[i])
+            # break
+
+    return validated  
 
 def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name):
     createdCount = 0
@@ -268,21 +280,26 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     json.dump(res, f, indent=2,  ensure_ascii=False)  
                 sewerageconnectionNo = '' 
                 if(statusCode == 200 or statusCode == 201):
-                    for found_index, resProperty in enumerate(res["SewerageConnections"]):
-                        connectionNo = resProperty["connectionNo"]
-                        value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
-                        logfile.write(value)
+                    for found_index, resSewerage in enumerate(res["SewerageConnections"]):
+                        connectionNo = resSewerage["connectionNo"]
+                        # value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
+                        # logfile.write(value)
                         sewerageSheet['T{0}'.format(index)].value = connectionNo
                         reason = 'sewerage connection created for abas id ' + str(property.abasPropertyId)
                         # logfile.write(reason)
                         # print(reason)
                         createdCount = createdCount + 1
+                        break
                 else:
                     reason = 'sewerage not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
                     # logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
+                for found_index, resSewerage in enumerate(res["SewerageConnections"]):
+                    connectionNo = resSewerage["connectionNo"]
+                    break
+                sewerageSheet['T{0}'.format(index)].value = connectionNo
                 reason = 'sewerage connection exist for abas id ' + str(property.abasPropertyId)
                 # logfile.write(reason)
                 # print(reason)
@@ -290,6 +307,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         
         else:
             reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
+            print(reason)
             # logfile.write(reason)
             
 
@@ -382,15 +400,17 @@ def process_special_category(value):
     }
     return special_category_MAP[value]
 
-def getValue(value,dataType,defValue="") :
-    if(value == None or value == 'None' or pd.isna(value)): 
-        return defValue    
-    
-    else : 
-        if dataType ==str : 
-            return dataType(value).strip()
-        else : 
-            return dataType(value)
+# def getValue(value,dataType,defValue="") :
+#     try:
+#         if(value == None or value == 'None' or pd.isna(value)): 
+#             return defValue 
+#         else : 
+#             if dataType ==str : 
+#                 return dataType(value).strip()
+#             else : 
+#                 return dataType(value)
+#     except: 
+#         return defValue
 
 if __name__ == "__main__":
     main()    

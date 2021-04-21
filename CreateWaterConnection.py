@@ -1,12 +1,11 @@
 from common import *
-from config import config
+from config import config, getValue
 import io
 import os 
 import sys
 from WaterConnection import *
 from PropertyTax import *
 import pandas as pd
-# from CreateProperty import getValue
 import openpyxl
 import collections
 import traceback
@@ -35,12 +34,11 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
 def validateWaterData(propertySheet, waterFile, logfile, cityname):
     validated = True
     wb_water = openpyxl.load_workbook(waterFile) 
-    water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
+    water_sheet = wb_water.get_sheet_by_name('Water Connection Details')     
     index = 2
     reason = 'Water file validation starts.\n'
-    # ValidateCols(water_sheet)
-    #print(reason)
-    #logfile.write(reason)
+    # validated = ValidateCols(waterFile, water_sheet, logfile)
+
     abas_ids = [] 
     old_connections = []
     try:
@@ -158,19 +156,20 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     #logfile.write(reason) 
     return validated
 
-def ValidateCols(sheet):
-    proper_column_order = ['Sl No.', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ',
-     'Usage type *', 'CB Name *', 'Street Name*', 'House / Door No*', 'Pin Code*', 'Location', 'ARV', 'RV', 'Financial Year', 
-     'Is Property on Dispute(Yes/No) ', 'Name*', 'Ward No', 'Block No', 'Location', 'Old PropertyCode']
-    # print(proper_column_order)
-    column_list = [c.value for c in next(sheet.iter_rows(min_row=2, max_row=2))]
-    # print(column_list)
+def ValidateCols(waterFile, sheet, logfile):
+    proper_column_order = ['SI.No', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ', 
+    'Existing Water Consumer Number* ( Unique Value on which connection are getting searched in existing system ) ',     
+    'Connection Holder Details', None, None, None, None, None, None, None, None, None, 'Pipe Size (inch)*', 'Water Source Type*', 'Connection Type*', 
+    'Motor Info*', 'Activation Date*', 'Connection Permission*', 'Meter ID', 'Last Meter Reading ', 'Last Billed Date*', 'No.of taps*']
+    column_list = [c.value for c in next(sheet.iter_rows(min_row=1, max_row=2))]
     validated = True
     for i in range(0, 30):
-        if(proper_column_order[i].strip() != column_list[i].strip()) :
-            print(column_list[i])
+        if(i== 3):
+            continue
+        if(proper_column_order[i] != column_list[i]) :
             validated = False
-            break
+            write(logfile,waterFile,sheet.title,None,'Column order / name is not correct',column_list[i])
+            # break
 
     return validated   
 
@@ -307,21 +306,26 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     json.dump(res, f, indent=2,  ensure_ascii=False)  
                 waterconnectionNo = '' 
                 if(statusCode == 200 or statusCode == 201):
-                    for found_index, resProperty in enumerate(res["WaterConnection"]):
-                        connectionNo = resProperty["connectionNo"]
-                        value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
+                    for found_index, resWater in enumerate(res["WaterConnection"]):
+                        connectionNo = resWater["connectionNo"]
+                        # value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
                         # logfile.write(value)
                         waterSheet['Y{0}'.format(index)].value = connectionNo
                         reason = 'water connection created for abas id ' + str(property.abasPropertyId)
-                        logfile.write(reason)
+                        # logfile.write(reason)
                         # print(reason)
                         createdCount = createdCount + 1
+                        break
                 else:
                     reason = 'water not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
                     # logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
+                for found_index, resWater in enumerate(res["WaterConnection"]):
+                    connectionNo = resWater["connectionNo"]
+                    break
+                waterSheet['Y{0}'.format(index)].value = connectionNo                    
                 reason = 'water connection exist for abas id ' + str(property.abasPropertyId)
                 # logfile.write(reason)
                 # print(reason)
@@ -329,6 +333,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         
         else:
             reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
+            print(reason)
             logfile.write(reason)
             
 
@@ -446,15 +451,17 @@ def process_special_category(value):
     }
     return special_category_MAP[value]
 
-def getValue(value,dataType,defValue="") :
-    if(value == None or value == 'None' or pd.isna(value)): 
-        return defValue    
-    
-    else : 
-        if dataType ==str : 
-            return dataType(value).strip()
-        else : 
-            return dataType(value)
+# def getValue(value,dataType,defValue="") :
+#     try:
+#         if(value == None or value == 'None' or pd.isna(value)): 
+#             return defValue 
+#         else : 
+#             if dataType ==str : 
+#                 return dataType(value).strip()
+#             else : 
+#                 return dataType(value)
+#     except: 
+#         return defValue
 
 if __name__ == "__main__":
     main()    

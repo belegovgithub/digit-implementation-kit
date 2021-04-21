@@ -1,5 +1,5 @@
 from common import *
-from config import config
+from config import config, getValue
 import io
 import os 
 import sys
@@ -78,53 +78,6 @@ def cbMain(cityname, successlogfile):
             tenantMapping[module["code"].lower()]=module["code"].lower()[3:]
 
 
-    # Iterate all cbs
-    # for root, dirs, files in os.walk(r"D:\eGov\Data\WS\Template\WaterSewerageTemplates", topdown=True):
-    #     for name in dirs:          
-    #         subfolder = os.path.join(root, name)         
-    #         city = subfolder.replace(r"D:\eGov\Data\WS\Template\WaterSewerageTemplates\CB ","" ).strip().lower()
-    #         city = "pb." + city
-
-    #         if city not in tenantMapping:
-    #             print("Not In city",city)
-    #             continue
-    #         cityname = tenantMapping[city]
-    #         print(cityname)
-    #         propertyFile =os.path.join(root, name,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
-    #         waterFile = os.path.join(root, name,"Template for Existing Water Connection Detail.xlsx")
-    #         sewerageFile = os.path.join(root, name,"Template for Existing Sewerage Connection Detail.xlsx")
-    #         logfile = open(os.path.join(root, name,"Logfile.txt"), "w")            
-    #         # validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
-    #         # if(validate == False):                
-    #         #     print('Data validation Failed for mobile entry, Please check the log file.') 
-    #         #     return
-    #         validate =  validateDataForProperty(propertyFile, logfile)            
-    #         if(validate == False):                
-    #             print('Data validation for property Failed, Please check the log file.') 
-    #             # return
-    #         else:
-    #             print('Data validation for property success.')
-    #         # if os.path.exists(propertyFile) :                  
-    #         #     wb_property = openpyxl.load_workbook(propertyFile) 
-    #         #     sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
-    #         #     sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
-    #         #     localitySheet = wb_property.get_sheet_by_name('Locality')
-    #         #     df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
-    #         #     locality_data = {}
-    #         #     for ind in df.index: 
-    #         #         locality_data[df['Locality Name'][ind]] =  df['Code'][ind]    
-    #         #     createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
-    #         #     wb_property.save(propertyFile)        
-    #         #     wb_property.close()
-    #         # else:
-    #         #     print("Property File doesnot exist for ", cityname) 
-            
-    #         if os.path.exists(waterFile) : 
-    #             ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
-    #         else:
-    #             print("Water File doesnot exist for ", cityname) 
-    #         logfile.close()
-
     # Doing for one cb at a time
     # cityname = 'wellington'
     root = FOLDER_PATH
@@ -149,8 +102,9 @@ def cbMain(cityname, successlogfile):
         else:
             print('Data validation for property success.')                
         wb_property = openpyxl.load_workbook(propertyFile) 
-        sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+        sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')         
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
+        
         localitySheet = wb_property.get_sheet_by_name('Locality')
         df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
         locality_data = {}
@@ -163,16 +117,17 @@ def cbMain(cityname, successlogfile):
     else:
         print("Property File doesnot exist for ", cityname) 
     
-    # if os.path.exists(waterFile) : 
-    #     ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+    if os.path.exists(waterFile) : 
+        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
         
-    # else:
-    #     print("Water File doesnot exist for ", cityname) 
+    else:
+        print("Water File doesnot exist for ", cityname) 
 
-    # if os.path.exists(sewerageFile) : 
-    #     ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
-    # else:
-    #     print("Sewerage File doesnot exist for ", cityname) 
+    if os.path.exists(sewerageFile) : 
+        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
+    else:
+        print("Sewerage File doesnot exist for ", cityname) 
+
     logfile.seek(logfile.tell() - 1, os.SEEK_SET)
     logfile.write('')
     logfile.write("]")        
@@ -207,8 +162,7 @@ def validateDataForProperty(propertyFile, logfile):
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
         abas_ids = []        
         reason = 'Property file validation starts.\n'
-        #print(reason)
-        # logfile.write(reason)
+        # validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
         #print('no. of rows in Property file sheet 1: ', sheet1.max_row ) 
         emptyRows=0
         count =0 
@@ -362,7 +316,38 @@ def validateDataForProperty(propertyFile, logfile):
     # logfile.write(reason)
     return validated
 
-                    
+def ValidateCols(logfile, propertyFile, sheet1, sheet2):
+    proper_column_order1 = ['Sl No.', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ', 
+    'Old Property code*', 'Property Type *', 'Total Land Area (in sq feet)\u2009 *', 'Total constructed Area (in sq feet)*', 
+    'Existing Usage Type', 'Usage type *', 'Sub Usage type *', 'Occupancy Type*', 'Number of Floors*', 'Number of Flats ', 'CB Name *', 
+    'Locality / Mohalla *\u2009\n', 'Ward No.', 'Block No.', 'Street Name', 'Building / Colony Name', 'House / Door No', 'Pin Code', 
+    'Location of the Property *', 'ARV', 'RV', 'Financial Year', 'Is Property on Dispute(Yes/No) ', 'Is Property Authorized(Yes/No) ', 
+    'Is Property  Encroached(Yes/No) ', 'OwnerShip Type*', 'Name/ Authorized Person*', 'Mobile No.*', 'Email Id', 'Gender*', 'DOB', 'Guardian Name*', 
+    'Relationship*', 'Is correspondence address, same As Property Address*', 'Correspondence Address*', 'Special category*', 'Institution Name', 
+    'Institution Type', 'Designation', 'Landline No']
+
+    proper_column_order2 =  ['Existing Property ID*', 'OwnerShip Type*', 'Name*', 'Mobile No.*', 'Email Id', 'Gender*', 'DOB', 'Guardian Name*', 
+    'Relationship*', 'Is correspondence address, same As Property Adderss*', 'Correspondence Address*', 'Special category*']
+    validated = True
+    column_list = [c.value for c in next(sheet1.iter_rows(min_row=2, max_row=2))]
+    
+    for i in range(0, 42):
+        if(proper_column_order1[i].strip() != column_list[i].strip()) :
+            print(column_list[i])
+            validated = False
+            write(logfile,propertyFile,sheet1.title,None,'Column order / name is not correct',column_list[i])
+            # break
+
+    column_list = [c.value for c in next(sheet2.iter_rows(min_row=1, max_row=1))]
+
+    for i in range(0, 12):
+        if(proper_column_order2[i].strip() != column_list[i].strip()) :
+            print(column_list[i])
+            validated = False
+            write(logfile,propertyFile,sheet2.title,None,'Column order / name is not correct',column_list[i])
+            # break
+    
+    return validated                     
 def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile, logfile):
     validated = True
     search_key = 'pb.'+ cityname
@@ -414,7 +399,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                     mobileNumber = mobileNumber + 1
                     value = 'D{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
                     logfile.write(value)
-                    print(value)
+                    # print(value)
                     sheet2['D{0}'.format(index)].value = mobileNumber
             wb_property.save(propertyFile)        
             wb_property.close()
@@ -545,8 +530,12 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             
             property.oldPropertyId =  getValue( row[2] ,str,None)
             property.propertyType = process_property_type(str(row[3]).strip())
-            property.landArea = getValue(row[4],int,1) 
-            property.superBuiltUpArea = getValue(row[5],int,1) 
+            if(row[4] == 0):
+                row[4] = 1
+            if(row[5] == 0):
+                row[5] = 1
+            property.landArea = getValue(row[4],float,1) 
+            property.superBuiltUpArea = getValue(row[5],float,1) 
             property.usageCategory = process_usage_type(str(row[7]).strip())
             property.subUsageCategory = process_sub_usage_type(str(row[8]).strip())   
             if pd.isna(row[13]):
@@ -671,13 +660,13 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             property.source = 'LEGACY_RECORD'
             property.channel = 'MIGRATION'
             property.creationReason = 'DATA_UPLOAD'
-            # print('property ', property.get_property_json())
-            auth_token = superuser_login()["access_token"]
-            status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
         except Exception as ex:
             print(config.CITY_NAME," createPropertyJson Exception: ",ex)
             traceback.print_exc()
-
+        auth_token = superuser_login()["access_token"]
+        status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
+        with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
+            json.dump(res, f, indent=2,  ensure_ascii=False)
         if(len(res['Properties']) == 0):
             
             statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name,)
@@ -687,19 +676,24 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             if(statusCode == 200 or statusCode == 201):
                 for found_index, resProperty in enumerate(res["Properties"]):
                     propertyId = resProperty["propertyId"]
-                    value = 'B{0}'.format(index) + '    ' + str(propertyId) + '\n'
-                    logfile.write(value)
+                    # value = 'B{0}'.format(index) + '    ' + str(propertyId) + '\n'
+                    # logfile.write(value)
                     sheet1['AQ{0}'.format(index)].value = propertyId
                     reason = 'property created for abas id ' + str(property.abasPropertyId)
-                    logfile.write(reason)
+                    # logfile.write(reason)
                     # print(reason)
                     createdCount = createdCount + 1
+                    break
             else:
                 reason = 'property not created status code '+ str(statusCode) + ' for abas id ' + str(property.abasPropertyId) + ' response: ', str(res)  + '\n'
                 # logfile.write(reason)
                 print(reason)
                 notCreatedCount = notCreatedCount + 1
         else:
+            for found_index, resProperty in enumerate(res["Properties"]):
+                propertyId = resProperty["propertyId"]
+                break
+            sheet1['AQ{0}'.format(index)].value = propertyId
             reason = 'property already exist for abas id '+ str(property.abasPropertyId) + '\n'
             # logfile.write(reason)
             # print(reason)
@@ -845,18 +839,22 @@ def process_special_category(value):
     }
     return special_category_MAP[value]
 
-def getValue(value,dataType,defValue="") :
-    if(value == None or value == 'None' or pd.isna(value)): 
-        return defValue    
-    
-    else : 
-        if dataType ==str : 
-            return dataType(value).strip()
-        else : 
-            return dataType(value)
+# def getValue(value,dataType,defValue="") :
+#     try:
+#         if(value == None or value == 'None' or pd.isna(value)): 
+#             return defValue    
+#         else : 
+#             if dataType ==str : 
+#                 return dataType(value).strip()
+#             elif dataType == float:
+#                 return round(value, 2)
+#             else : 
+#                 return dataType(value)
+#     except: 
+#         return defValue
 
 def getMobileNumber(value,dataType,defValue="") :
-    if(value == None or value == 'None'): 
+    if(value == None or value == 'None' or pd.isna(value)): 
         return defValue    
     else : 
         if type(value) == int or type(value) == float:
