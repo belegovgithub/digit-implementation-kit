@@ -79,9 +79,9 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 write(logfile,waterFile,water_sheet.title,row[0],'abas id is empty',row[1])
             if pd.isna(row[2]):
                 validated = False
-                reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
+                reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', existing water connection number is empty.\n'
                 #logfile.write(reason)
-                write(logfile,waterFile,water_sheet.title,row[0],'old connection number is empty',row[1])
+                write(logfile,waterFile,water_sheet.title,row[0],'existing water connection number is empty',row[1])
             if pd.isna(row[3]):
                 validated = False
                 reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'

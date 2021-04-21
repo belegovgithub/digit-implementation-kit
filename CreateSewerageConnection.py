@@ -77,9 +77,9 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 write(logfile,sewerageFile,sewerage_sheet.title,row[0],'abas id is empty',row[1])
             if pd.isna(row[2]):
                 validated = False
-                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', old connection number is empty.\n'
+                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', existing sewerage connection number is empty.\n'
                 #logfile.write(reason)
-                write(logfile,sewerageFile,sewerage_sheet.title,row[0],'old connection number is empty',row[1])
+                write(logfile,sewerageFile,sewerage_sheet.title,row[0],'existing sewerage connection number is empty',row[1])
 
             if pd.isna(row[3]):
                 validated = False
