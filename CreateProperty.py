@@ -13,18 +13,6 @@ from CreateWaterConnection import *
 from CreateSewerageConnection import *
 import traceback
 
-# class CreateProprty(Property):
-#     def __init__(self, *args, **kwargs):
-#         super(CreateProprty, self).__init__()
-#         self.additional_details = {}
-#         self.property_details = [PropertyDetail(owners=[], additional_details={
-#             "inflammable": False,
-#             "heightAbove36Feet": False
-#         })]
-
-
-# def readExcel():
-#     wb = openpyxl.load_workbook(os.path.join(filePath,fileName+".xlsx"))
 
 INDEX_SL_NO = 0
 INDEX_ABAS_PROPERTY_ID = 1
@@ -48,13 +36,14 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'D:\WS_DATA\19042021\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
     root = FOLDER_PATH
-    logfile = open(os.path.join(root,   "errorCBs.txt"), "w")  
+    errorlogfile = open(os.path.join(root, "errorCBs.txt"), "w")  
+    successlogfile = open(os.path.join(root, "CB With ProperData.txt"), "w")
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
@@ -63,21 +52,21 @@ def main() :
             cityname =module["code"].lower()[3:]
             
             name = 'CB ' + cityname.lower()
-            if  os.path.exists( os.path.join(root,name)):
-                
+            if  os.path.exists( os.path.join(root,name)):                
                 try : 
                     if  True : # cityname =='clementtown' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
-                        cbMain(cityname)
+                        cbMain(cityname, successlogfile)
                 except Exception as ex: 
                     print("Error in processing CB ",cityname , ex)
                     traceback.print_exc()
-                    logfile.write(cityname+"\n")
-    logfile.close()
+                    errorlogfile.write(cityname+"\n")
+    errorlogfile.close()
+    successlogfile.close()
 
 
-def cbMain(cityname):
+def cbMain(cityname, successlogfile):
     Flag =False
     tenantMapping={}
     count = 0
@@ -154,7 +143,7 @@ def cbMain(cityname):
     if os.path.exists(propertyFile) :  
         validate =  validateDataForProperty(propertyFile, logfile)            
         if(validate == False):                
-            #print('Data validation for property Failed, Please check the log file.') 
+            print('Data validation for property Failed, Please check the log file.') 
             if config.INSERT_DATA: 
                 return
         else:
@@ -174,16 +163,16 @@ def cbMain(cityname):
     else:
         print("Property File doesnot exist for ", cityname) 
     
-    if os.path.exists(waterFile) : 
-        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+    # if os.path.exists(waterFile) : 
+    #     ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
         
-    else:
-        print("Water File doesnot exist for ", cityname) 
+    # else:
+    #     print("Water File doesnot exist for ", cityname) 
 
-    if os.path.exists(sewerageFile) : 
-        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
-    else:
-        print("Water File doesnot exist for ", cityname) 
+    # if os.path.exists(sewerageFile) : 
+    #     ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
+    # else:
+    #     print("Sewerage File doesnot exist for ", cityname) 
     logfile.seek(logfile.tell() - 1, os.SEEK_SET)
     logfile.write('')
     logfile.write("]")        
@@ -195,21 +184,15 @@ def cbMain(cityname):
         date_time = now.strftime("%d-%m-%Y") 
         if size > 2 : 
             df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-            
-            
-
-            if not os.path.exists(os.path.join(root,date_time)) :
-                os.makedirs(os.path.join(root,date_time))
-            df.to_excel(os.path.join(root, date_time,    name+ " Data Entries Issues.xlsx"), index = None)
+            if not os.path.exists(os.path.join(root,date_time + '-Data_Entries_Issues')) :
+                os.makedirs(os.path.join(root,date_time + '-Data_Entries_Issues'))
+            df.to_excel(os.path.join(root, date_time + '-Data_Entries_Issues',    name+ " Data Entries Issues.xlsx"), index = None)
             #df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
             #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
         else : 
-            filePath = os.path.join(root, date_time,    "CB With ProperData.txt") 
-            f= open(filePath,"a+")
-            f.write("\n")
-            f.write(cityname)
-            f.write("\n")
-            f.close()
+            successlogfile.write("\n")
+            successlogfile.write(cityname)
+            successlogfile.write("\n")            
     except Exception as ex: 
         print("Error in parsing json file",ex)
 
@@ -286,6 +269,11 @@ def validateDataForProperty(propertyFile, logfile):
                     #     reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
                     #     write(logfile,propertyFile,sheet1.title,None,'Guardian Name has invalid characters',row[0])
                     #     #logfile.write(reason)
+                    if len(getValue(row[30], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[30]))) :                     
+                        validated = False
+                        reason = 'Property File data validation failed, Email id is not proper for abas id '+ str(row[1]) +'\n'
+                        write(logfile,propertyFile,sheet1.title,row[0],'Email id is not proper',row[1])
+                        #logfile.write(reason)
                     
                 if pd.isna(row[7]):
                     validated = False
@@ -358,6 +346,11 @@ def validateDataForProperty(propertyFile, logfile):
                     #     reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
                     #     write(logfile,propertyFile,sheet2.title,None,'Guardian Name has invalid characters',row[0])
                     #     #logfile.write(reason)
+                    if not pd.isna(row[4]) and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[4]))):                        
+                        validated = False
+                        reason = 'Property File data validation failed, Email id is not proper for abas id '+ str(row[1]) +'\n'
+                        write(logfile,propertyFile,sheet2.title,None,'Email id is not proper',row[0])
+                        #logfile.write(reason)
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
                 write(logfile,propertyFile,sheet2.title,None,str(ex) ,row[0])
@@ -853,8 +846,9 @@ def process_special_category(value):
     return special_category_MAP[value]
 
 def getValue(value,dataType,defValue="") :
-    if(value == None or value == 'None'): 
+    if(value == None or value == 'None' or pd.isna(value)): 
         return defValue    
+    
     else : 
         if dataType ==str : 
             return dataType(value).strip()

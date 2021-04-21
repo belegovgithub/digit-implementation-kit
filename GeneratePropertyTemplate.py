@@ -62,7 +62,7 @@ def main():
             cityname = tenantMapping[city]
 
             if os.path.exists(cbFile) :  
-                template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property1/CB " + cityname) 
+                template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
                 # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                 dfLocality = getLocalityData(cityname)
                 workbook1 = openpyxl.load_workbook(cbFile)   

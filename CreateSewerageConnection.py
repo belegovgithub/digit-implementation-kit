@@ -22,7 +22,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     #print('no. of rows in sewerage file: ', sewerageSheet.max_row +1 ) 
     validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
     if(validate == False):                
-        #print('Data validation for sewerage Failed, Please check the log file.') 
+        print('Data validation for sewerage Failed, Please check the log file.') 
         if config.INSERT_DATA: 
             return
     else:
@@ -94,7 +94,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'mobile number is empty',row[1])
                 elif not pd.isna(row[4]) and (len(str(row[4]).strip().replace(".0", "")) != 10):
                         validated = False
-                        reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
+                        reason = 'Sewerage File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
                         write(logfile,sewerageFile,sewerage_sheet.title,None,'Mobile number not correct',row[0])
                         #logfile.write(reason)
                 if pd.isna(row[5]):
@@ -107,10 +107,15 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
                 #     #logfile.write(reason)  
                 #     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Name has invalid characters',row[1])
-                if not pd.isna(row[9]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[9]))):                        
+                # if not pd.isna(row[9]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[9]))):                        
+                #     validated = False
+                #     reason = 'Sewerage File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
+                #     write(logfile,sewerageFile,sewerage_sheet.title,None,'Guardian Name has invalid characters',row[0])
+                #     #logfile.write(reason)
+                if len(getValue(row[6], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[6]))) :                      
                     validated = False
-                    reason = 'Sewerage File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
-                    write(logfile,sewerageFile,sewerage_sheet.title,None,'Guardian Name has invalid characters',row[0])
+                    reason = 'Sewerage File data validation failed, Email id is not proper for abas id '+ str(row[1]) +'\n'
+                    write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Email id is not proper',row[1])
                     #logfile.write(reason)
             if not pd.isna(row[1]):
                 abasid = row[1]
@@ -317,20 +322,26 @@ def get_propertyaddress(doorNo, buildingName,locality,cityname):
 
 
 def process_relationship(value):
+    if value is None : 
+        value ="parent"
+    value = value.strip().lower()
     relationship_MAP = {
-        "Parent": "PARENT",
-        "Spouse": "SPOUSE",
-        "Gurdian": "GUARDIAN",
-        "None": "PARENT"
+        "parent": "PARENT",
+        "spouse": "SPOUSE",
+        "gurdian": "GUARDIAN",
+        "none": "PARENT"
     }
     return relationship_MAP[value]
 
 def process_gender(value):
+    if value is None : 
+        value ="Male"
+    value =str(value).strip().lower()
     gender_MAP = {
-        "Male": "MALE",
-        "Female": "FEMALE",
-        "Transgender": "TRANSGENDER",
-        "None": "MALE"       
+        "male": "MALE",
+        "female": "FEMALE",
+        "transgender": "TRANSGENDER",
+        "none": "MALE"       
     }
     return gender_MAP[value]
 
@@ -372,10 +383,14 @@ def process_special_category(value):
     return special_category_MAP[value]
 
 def getValue(value,dataType,defValue="") :
-    if(value == None or value == 'None'): 
+    if(value == None or value == 'None' or pd.isna(value)): 
         return defValue    
+    
     else : 
-        return dataType(value)
+        if dataType ==str : 
+            return dataType(value).strip()
+        else : 
+            return dataType(value)
 
 if __name__ == "__main__":
     main()    
