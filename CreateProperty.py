@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue
+from config import config, getValue, getMobileNumber
 import io
 import os 
 import sys
@@ -278,8 +278,8 @@ def validateDataForProperty(propertyFile, logfile):
                         validated = False
                         reason = 'Property File data validation failed for abas id  '+ str(row[0]) + ', mobile no. is empty in multiple owner sheet.\n'
                         write(logfile,propertyFile,sheet2.title,None,'mobile no. is empty',row[0])
-                        #logfile.write(reason)
-                    elif not pd.isna(row[3]) and (len(str(row[3]).strip().replace(".0", "")) != 10):
+                        #logfile.write(reason) 
+                    elif not pd.isna(row[3]) and ( len(getMobileNumber(row[3],str,"")) != 10):
                         validated = False
                         reason = 'Property File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Mobile number not correct',row[0])
@@ -398,7 +398,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                 if pd.isna(row[3]):
                     mobileNumber = mobileNumber + 1
                     value = 'D{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-                    logfile.write(value)
+                    # logfile.write(value)
                     # print(value)
                     sheet2['D{0}'.format(index)].value = mobileNumber
             wb_property.save(propertyFile)        
@@ -406,37 +406,37 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         else:
             print("Property File doesnot exist for ", cityname)  
 
-        # if os.path.exists(waterFile) :
-        #     wb_water = openpyxl.load_workbook(waterFile) 
-        #     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
-        #     index = 2
-        #     for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-        #         index = index + 1
-        #         if pd.isna(row[0]):
-        #             continue
-        #         if(str(row[3]).strip() == 'No'):
-        #             if pd.isna(row[4]):
-        #                 mobileNumber = mobileNumber + 1
-        #                 value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-        #                 logfile.write(value)
-        #                 water_sheet['E{0}'.format(index)].value = mobileNumber
+        if os.path.exists(waterFile) :
+            wb_water = openpyxl.load_workbook(waterFile) 
+            water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
+            index = 2
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+                index = index + 1
+                if pd.isna(row[0]):
+                    continue
+                if(str(row[3]).strip() == 'No'):
+                    if pd.isna(row[4]):
+                        mobileNumber = mobileNumber + 1
+                        value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+                        logfile.write(value)
+                        water_sheet['E{0}'.format(index)].value = mobileNumber
                 
-        #     wb_water.save(waterFile)        
-        #     wb_water.close()
-        #     wb_water = openpyxl.load_workbook(waterFile) 
-        #     water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
-        #     for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-        #         if pd.isna(row[0]):
-        #             continue
-        #         if(str(row[3]).strip() == 'Yes'):
-        #             for obj in owner_obj[str(row[1]).strip()]:
-        #                 if(len(obj['mobileNumber']) == 0):
-        #                     validated = False
-        #                     reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
-        #                     print(reason)
-        #                     logfile.write(reason)
-        # else:
-        #     print("Water File doesnot exist for ", cityname)  
+            wb_water.save(waterFile)        
+            wb_water.close()
+            wb_water = openpyxl.load_workbook(waterFile) 
+            water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+                if pd.isna(row[0]):
+                    continue
+                if(str(row[3]).strip() == 'Yes'):
+                    for obj in owner_obj[str(row[1]).strip()]:
+                        if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+                            validated = False
+                            reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
+                            print(reason)
+                            logfile.write(reason)
+        else:
+            print("Water File doesnot exist for ", cityname)  
 
         # if os.path.exists(sewerageFile) :
         #     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
@@ -462,7 +462,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         #             continue
         #         if(str(row[3]).strip() == 'Yes'):
         #             for obj in owner_obj[str(row[1]).strip()]:
-        #                 if(len(obj['mobileNumber']) == 0):
+        #                 if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
         #                     validated = False
         #                     reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
         #                     logfile.write(reason)
@@ -861,13 +861,7 @@ def process_special_category(value):
 #     except: 
 #         return defValue
 
-def getMobileNumber(value,dataType,defValue="") :
-    if(value == None or value == 'None' or pd.isna(value)): 
-        return defValue    
-    else : 
-        if type(value) == int or type(value) == float:
-            value = str(int(value)) 
-        return dataType(value).strip()
+
         
 
 if __name__ == "__main__":

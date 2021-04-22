@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue
+from config import config, getValue, getMobileNumber
 import io
 import os 
 import sys
@@ -91,7 +91,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', mobile number is empty.\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,row[0],'mobile number is empty',row[1])
-                elif not pd.isna(row[4]) and (len(str(row[4]).strip().replace(".0", "")) != 10):
+                elif not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
                     validated = False
                     reason = 'Water File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
                     write(logfile,waterFile,water_sheet.title,None,'Mobile number not correct',row[0])
@@ -219,7 +219,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
             print("empty Abas id in water file for sl no. ", row[0])
-            break
+            continue
         waterConnection = WaterConnection()
         connectionHolder = ConnectionHolder()
         processInstance = ProcessInstance()
@@ -365,7 +365,7 @@ def getTime(dateObj,defValue=None) :
         return milliseconds
     except Exception as ex:
         print("Error in time conversion ",dateObj,ex)
-    return None
+        return None
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
@@ -456,18 +456,6 @@ def process_special_category(value):
         "None":"NONE"
     }
     return special_category_MAP[value]
-
-# def getValue(value,dataType,defValue="") :
-#     try:
-#         if(value == None or value == 'None' or pd.isna(value)): 
-#             return defValue 
-#         else : 
-#             if dataType ==str : 
-#                 return dataType(value).strip()
-#             else : 
-#                 return dataType(value)
-#     except: 
-#         return defValue
 
 if __name__ == "__main__":
     main()    

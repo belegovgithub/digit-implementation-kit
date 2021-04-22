@@ -65,7 +65,7 @@ config.ROLE_CODE_MAP = {
 
 
 def load_config():
-    config.INSERT_DATA =True
+    config.INSERT_DATA =False
     config.isUpdateallowed = False
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
@@ -261,6 +261,14 @@ def getValue(value,dataType,defValue="") :
                 return dataType(value)
     except: 
         return defValue
+        
+def getMobileNumber(value,dataType,defValue="") :
+    if(value == None or value == 'None' or pd.isna(value)): 
+        return defValue    
+    else : 
+        if type(value) == int or type(value) == float:
+            value = str(int(value)) 
+        return dataType(value).strip()
 
 
 load_config()
