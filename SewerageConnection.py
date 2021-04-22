@@ -168,14 +168,14 @@ class SewerageConnection:
                 self.get_sewerage_json()            
         }
         # print(json.dumps(request_data, indent=2)) 
-        with io.open(os.path.join(root, name,"sewerage_create_req.json"), mode="w", encoding="utf-8") as f:
-            json.dump(request_data, f, indent=2,  ensure_ascii=False) 
+        # with io.open(os.path.join(root, name,"sewerage_create_req.json"), mode="w", encoding="utf-8") as f:
+        #     json.dump(request_data, f, indent=2,  ensure_ascii=False) 
         
         response = requests.post(
             urljoin(config.HOST, "/sw-services/swc/_create"),
             json=request_data)
 
-        return response.status_code, response.json()        
+        return request_data, response.status_code, response.json()        
 
     def search_sewerage_connection(self,auth_token, tenantId, oldConnectionNo):
         url = urljoin(config.HOST, '/sw-services/swc/_search')        

@@ -163,10 +163,11 @@ def ValidateCols(waterFile, sheet, logfile):
     'Motor Info*', 'Activation Date*', 'Connection Permission*', 'Meter ID', 'Last Meter Reading ', 'Last Billed Date*', 'No.of taps*']
     column_list = [c.value for c in next(sheet.iter_rows(min_row=1, max_row=2))]
     validated = True
-    for i in range(0, 30):
+    for i in range(0, 23):
         if(i== 3):
             continue
         if(proper_column_order[i] != column_list[i]) :
+            print('Water file', column_list[i])
             validated = False
             write(logfile,waterFile,sheet.title,None,'Column order / name is not correct',column_list[i])
             # break
@@ -219,91 +220,93 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         if pd.isna(abasPropertyId):
             print("empty Abas id in water file for sl no. ", row[0])
             break
+        waterConnection = WaterConnection()
+        connectionHolder = ConnectionHolder()
+        processInstance = ProcessInstance()
+        additionalDetail = AdditionalDetail()
+        waterConnection.connectionHolders = []
+        waterConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
+
+        status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
+        # with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
+        #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         
-        status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
-        with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
-            json.dump(res, f, indent=2,  ensure_ascii=False) 
-        propertyId = ''
-        if(len(res['Properties']) >= 1):
-            for found_index, resProperty in enumerate(res["Properties"]):
-                propertyId = resProperty["propertyId"]
-                break
-            waterConnection = WaterConnection()
-            connectionHolder = ConnectionHolder()
-            processInstance = ProcessInstance()
-            additionalDetail = AdditionalDetail()
-            waterConnection.connectionHolders = []
-            try:  
-                if(str(row[3]).strip() == 'Yes'):
-                    waterConnection.connectionHolders = None
-                    # owner = owner_obj[abasPropertyId]
-                    # connectionHolder.name = owner.name
-                    # connectionHolder.mobileNumber = owner.mobileNumber
-                    # connectionHolder.fatherOrHusbandName = owner.fatherOrHusbandName
-                    # connectionHolder.emailId = owner.emailId
-                    # connectionHolder.correspondenceAddress = owner.correspondenceAddress
-                    # connectionHolder.relationship = owner.relationship
-                    # connectionHolder.ownerType = owner.ownerType
-                    # connectionHolder.gender = owner.gender
-                    # connectionHolder.sameAsPropertyAddress = True
-                else:
-                    connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
-                    connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
-                    connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
-                    connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
-                    connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
-                    connectionHolder.relationship = process_relationship(str(row[10]).strip())
-                    connectionHolder.ownerType = process_special_category(str(row[13]).strip())
-                    connectionHolder.gender = process_gender(str(row[7]).strip())
-                    connectionHolder.sameAsPropertyAddress = False
-                    waterConnection.connectionHolders.append(connectionHolder)
+        if(len(res['WaterConnection']) == 0):        
+            status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
+            # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
+            #     json.dump(res, f, indent=2,  ensure_ascii=False) 
+            propertyId = ''
+            if(len(res['Properties']) >= 1):
+                for found_index, resProperty in enumerate(res["Properties"]):
+                    propertyId = resProperty["propertyId"]
+                    break
                 
-                waterConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
-                waterConnection.pipeSize = getValue(str(row[14]).strip(),float,0.25)
-                waterConnection.proposedPipeSize = getValue(str(row[14]).strip(),float,0.25)
-                waterConnection.waterSource = process_water_source(str(row[15]).strip())
-                if(waterConnection.waterSource != 'OTHERS'):
-                    waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
-                else:
-                    waterConnection.waterSubSource = ''
-                    waterConnection.sourceInfo = 'Other'
-                waterConnection.connectionType = process_connection_type(str(row[16]).strip())
-                waterConnection.motorInfo  = process_motor_info(str(row[17]).strip())
-                waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
-                waterConnection.authorizedConnection = process_connection_permission(str(row[19]).strip())
-                waterConnection.noOfTaps = getValue(str(row[23]).strip(),int,1)
-                waterConnection.proposedTaps = getValue(str(row[23]).strip(),int,1)
-                if( waterConnection.connectionType == 'Metered'):
-                    waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
-                    additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
-                if not pd.isna(row[18]):
-                    waterConnection.connectionExecutionDate = getTime(row[18])
-                additionalDetail.locality = ''
-                waterConnection.additionalDetails = additionalDetail
-                processInstance.action = 'ACTIVATE_CONNECTION'
-                waterConnection.tenantId = tenantId
-                waterConnection.propertyId = propertyId
-                waterConnection.processInstance = processInstance
-                waterConnection.water = True
-                waterConnection.sewerage = False
-                waterConnection.service = 'Water'
-                waterConnection.applicationType = 'NEW_WATER_CONNECTION'
-                waterConnection.applicationStatus = 'CONNECTION_ACTIVATED'
-                waterConnection.source = 'MUNICIPAL_RECORDS'
-                waterConnection.channel = 'DATA_ENTRY'
-                waterConnection.status = 'ACTIVE'
-                
-            except Exception as ex:
-                print("createWaterJson Exception: ", row[0], '   ', ex)
-            auth_token = superuser_login()["access_token"]
-            status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
-            with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
-                json.dump(res, f, indent=2,  ensure_ascii=False)  
-            
-            if(len(res['WaterConnection']) == 0):
-                statusCode, res = waterConnection.upload_water(auth_token, tenantId, waterConnection.oldConnectionNo, root, name)
-                with io.open(os.path.join(root, name,"water_create_res.json"), mode="w", encoding="utf-8") as f:
-                    json.dump(res, f, indent=2,  ensure_ascii=False)  
+                try:  
+                    if(str(row[3]).strip() == 'Yes'):
+                        waterConnection.connectionHolders = None
+                        # owner = owner_obj[abasPropertyId]
+                        # connectionHolder.name = owner.name
+                        # connectionHolder.mobileNumber = owner.mobileNumber
+                        # connectionHolder.fatherOrHusbandName = owner.fatherOrHusbandName
+                        # connectionHolder.emailId = owner.emailId
+                        # connectionHolder.correspondenceAddress = owner.correspondenceAddress
+                        # connectionHolder.relationship = owner.relationship
+                        # connectionHolder.ownerType = owner.ownerType
+                        # connectionHolder.gender = owner.gender
+                        # connectionHolder.sameAsPropertyAddress = True
+                    else:
+                        connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
+                        connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
+                        connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
+                        connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
+                        connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
+                        connectionHolder.relationship = process_relationship(str(row[10]).strip())
+                        connectionHolder.ownerType = process_special_category(str(row[13]).strip())
+                        connectionHolder.gender = process_gender(str(row[7]).strip())
+                        connectionHolder.sameAsPropertyAddress = False
+                        waterConnection.connectionHolders.append(connectionHolder)
+                    
+                    
+                    waterConnection.pipeSize = getValue(str(row[14]).strip(),float,0.25)
+                    waterConnection.proposedPipeSize = getValue(str(row[14]).strip(),float,0.25)
+                    waterConnection.waterSource = process_water_source(str(row[15]).strip())
+                    if(waterConnection.waterSource != 'OTHERS'):
+                        waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
+                    else:
+                        waterConnection.waterSubSource = ''
+                        waterConnection.sourceInfo = 'Other'
+                    waterConnection.connectionType = process_connection_type(str(row[16]).strip())
+                    waterConnection.motorInfo  = process_motor_info(str(row[17]).strip())
+                    waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
+                    waterConnection.authorizedConnection = process_connection_permission(str(row[19]).strip())
+                    waterConnection.noOfTaps = getValue(str(row[23]).strip(),int,1)
+                    waterConnection.proposedTaps = getValue(str(row[23]).strip(),int,1)
+                    if( waterConnection.connectionType == 'Metered'):
+                        waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
+                        additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
+                    if not pd.isna(row[18]):
+                        waterConnection.connectionExecutionDate = getTime(row[18])
+                    additionalDetail.locality = ''
+                    waterConnection.additionalDetails = additionalDetail
+                    processInstance.action = 'ACTIVATE_CONNECTION'
+                    waterConnection.tenantId = tenantId
+                    waterConnection.propertyId = propertyId
+                    waterConnection.processInstance = processInstance
+                    waterConnection.water = True
+                    waterConnection.sewerage = False
+                    waterConnection.service = 'Water'
+                    waterConnection.applicationType = 'NEW_WATER_CONNECTION'
+                    waterConnection.applicationStatus = 'CONNECTION_ACTIVATED'
+                    waterConnection.source = 'MUNICIPAL_RECORDS'
+                    waterConnection.channel = 'DATA_ENTRY'
+                    waterConnection.status = 'ACTIVE'
+                    
+                except Exception as ex:
+                    print("createWaterJson Exception: ", row[0], '   ', ex)
+
+                req_data, statusCode, res = waterConnection.upload_water(auth_token, tenantId, waterConnection.oldConnectionNo, root, name)
+                # with io.open(os.path.join(root, name,"water_create_res.json"), mode="w", encoding="utf-8") as f:
+                #     json.dump(res, f, indent=2,  ensure_ascii=False)  
                 waterconnectionNo = '' 
                 if(statusCode == 200 or statusCode == 201):
                     for found_index, resWater in enumerate(res["WaterConnection"]):
@@ -311,30 +314,33 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         # value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
                         # logfile.write(value)
                         waterSheet['Y{0}'.format(index)].value = connectionNo
-                        reason = 'water connection created for abas id ' + str(property.abasPropertyId)
+                        reason = 'water connection created for existing connection no. ' + str(waterConnection.oldConnectionNo)
                         # logfile.write(reason)
                         # print(reason)
                         createdCount = createdCount + 1
                         break
                 else:
-                    reason = 'water not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
+                    with io.open(os.path.join(root, name, str(waterConnection.oldConnectionNo) + "_water_create_req.json"), mode="w", encoding="utf-8") as f:
+                        json.dump(req_data, f, indent=2,  ensure_ascii=False)
+                    with io.open(os.path.join(root, name, str(waterConnection.oldConnectionNo) + "_water_create_res.json"), mode="w", encoding="utf-8") as f:
+                        json.dump(res, f, indent=2,  ensure_ascii=False)
+                    reason = 'water not created status code '+ str(statusCode)+ ' for existing connection no. ' + str(waterConnection.oldConnectionNo) + ' response: '+ str(res) + '\n'
                     # logfile.write(reason)
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
-                for found_index, resWater in enumerate(res["WaterConnection"]):
-                    connectionNo = resWater["connectionNo"]
-                    break
-                waterSheet['Y{0}'.format(index)].value = connectionNo                    
-                reason = 'water connection exist for abas id ' + str(property.abasPropertyId)
+                reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
+                print(reason)
                 # logfile.write(reason)
-                # print(reason)
-                searchedCount = searchedCount + 1
-                        
         else:
-            reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
-            print(reason)
-            logfile.write(reason)
+            for found_index, resWater in enumerate(res["WaterConnection"]):
+                connectionNo = resWater["connectionNo"]
+                break
+            waterSheet['Y{0}'.format(index)].value = connectionNo                    
+            reason = 'water connection exist for existing connection no. ' + str(waterConnection.oldConnectionNo)
+            # logfile.write(reason)
+            # print(reason)
+            searchedCount = searchedCount + 1
             
 
     reason = 'Water created count: '+ str(createdCount)

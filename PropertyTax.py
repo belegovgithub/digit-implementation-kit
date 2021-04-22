@@ -211,13 +211,13 @@ class Property:
                 self.get_property_json()            
         }
         # print(json.dumps(request_data, indent=2))
-        with io.open(os.path.join(root, name,"property_create_req.json"), mode="w", encoding="utf-8") as f:
-            json.dump(request_data, f, indent=2,  ensure_ascii=False)
+        # with io.open(os.path.join(root, name, str(abasPropertyId) + "_property_create_req.json"), mode="w", encoding="utf-8") as f:
+        #     json.dump(request_data, f, indent=2,  ensure_ascii=False)
         response = requests.post(
             urljoin(config.HOST, "/property-services/property/_create"),
             json=request_data)
 
-        return response.status_code, response.json()
+        return request_data, response.status_code, response.json()
 
     def search_abas_property(self,auth_token, tenantId, abasPropertyId):
         url = urljoin(config.HOST, '/property-services/property/_search')        

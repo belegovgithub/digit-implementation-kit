@@ -126,7 +126,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     #logfile.write(reason) 
                     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'ABAS id not available in property data',row[1])
         except Exception as ex:
-            # print(config.CITY_NAME," validateSewerageData Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME," validateSewerageData Exception: ", row[0], '   ', ex)
             write(logfile,sewerageFile,sewerage_sheet.title,row[0],str(ex) ,row[1])
     for index in range(3, sewerage_sheet.max_row +1):
         try:
@@ -161,6 +161,7 @@ def ValidateCols(sewerageFile, sheet, logfile):
     validated = True
     for i in range(4, 19):
         if(proper_column_order[i].strip() != column_list[i].strip()) :
+            print('Sewerage file', column_list[i])
             validated = False
             write(logfile,sewerageFile,sheet.title,None,'Column order / name is not correct',column_list[i])
             # break
@@ -200,84 +201,85 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
             print(config.CITY_NAME," createSewerageJson Exception: ", row[0], '   ', ex)
     index = 2
     for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row +1 , values_only=True):
-        try:  
-            index = index + 1
-            abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
-            property = Property() 
-            auth_token = superuser_login()["access_token"]
-            tenantId = 'pb.'+ cityname
-            property.tenantId = tenantId
-            if pd.isna(abasPropertyId):
-                print("empty Abas id in sewerage file for sl no. ", row[0])
-                break
-            
+         
+        index = index + 1
+        abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
+        property = Property() 
+        auth_token = superuser_login()["access_token"]
+        tenantId = 'pb.'+ cityname
+        property.tenantId = tenantId
+        if pd.isna(abasPropertyId):
+            print("empty Abas id in sewerage file for sl no. ", row[0])
+            break
+        sewerageConnection = SewerageConnection()
+        connectionHolder = ConnectionHolder()
+        processInstance = ProcessInstance()
+        additionalDetail = AdditionalDetail()
+        sewerageConnection.connectionHolders = []
+        sewerageConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
+        status, res = sewerageConnection.search_sewerage_connection(auth_token, tenantId, sewerageConnection.oldConnectionNo)               
+        # with io.open(os.path.join(root, name,"sewerage_search_res.json"), mode="w", encoding="utf-8") as f:
+        #     json.dump(res, f, indent=2,  ensure_ascii=False)  
+        if(len(res['SewerageConnections']) == 0):
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
-            with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
-                json.dump(res, f, indent=2,  ensure_ascii=False) 
+            # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
+            #     json.dump(res, f, indent=2,  ensure_ascii=False) 
             propertyId = ''
             if(len(res['Properties']) >= 1):
                 for found_index, resProperty in enumerate(res["Properties"]):
                     propertyId = resProperty["propertyId"]
                     break
-                sewerageConnection = SewerageConnection()
-                connectionHolder = ConnectionHolder()
-                processInstance = ProcessInstance()
-                additionalDetail = AdditionalDetail()
-                sewerageConnection.connectionHolders = []
-                if(str(row[3]).strip() == 'Yes'):
-                    sewerageConnection.connectionHolders = None
-                else:
-                    connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
-                    connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
-                    connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
-                    connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
-                    connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
-                    connectionHolder.relationship = process_relationship(str(row[10]).strip())
-                    connectionHolder.ownerType = process_special_category(str(row[13]).strip())
-                    connectionHolder.gender = process_gender(str(row[7]).strip())
-                    connectionHolder.sameAsPropertyAddress = False
-                    sewerageConnection.connectionHolders.append(connectionHolder)
-                
-                sewerageConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
-                sewerageConnection.drainageSize = getValue(str(row[14]).strip(),float,0.25)
-                sewerageConnection.proposedDrainageSize = getValue(str(row[14]).strip(),float,0.25)
-                if(sewerageConnection.waterSource != 'OTHERS'):
-                    sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
-                else:
-                    sewerageConnection.waterSubSource = ''
-                    sewerageConnection.sourceInfo = 'Other'
-                sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
-                sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
-                sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
-                sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
-                sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
-                if not pd.isna(row[17]):
-                    waterConnection.connectionExecutionDate = getTime(row[17])
-                additionalDetail.locality = ''
-                sewerageConnection.additionalDetails = additionalDetail
-                processInstance.action = 'ACTIVATE_CONNECTION'
-                sewerageConnection.tenantId = tenantId
-                sewerageConnection.propertyId = propertyId
-                sewerageConnection.processInstance = processInstance
-                sewerageConnection.water = False
-                sewerageConnection.sewerage = True
-                sewerageConnection.service = 'Sewerage'
-                sewerageConnection.applicationType = 'NEW_SEWERAGE_CONNECTION'
-                sewerageConnection.applicationStatus = 'CONNECTION_ACTIVATED'
-                sewerageConnection.source = 'MUNICIPAL_RECORDS'
-                sewerageConnection.channel = 'DATA_ENTRY'
-                sewerageConnection.status = 'ACTIVE'
-        except Exception as ex:
-            print("createSewerageJson Exception: ", row[0], '   ', ex)
+                try: 
+                    if(str(row[3]).strip() == 'Yes'):
+                        sewerageConnection.connectionHolders = None
+                    else:
+                        connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
+                        connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
+                        connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
+                        connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
+                        connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
+                        connectionHolder.relationship = process_relationship(str(row[10]).strip())
+                        connectionHolder.ownerType = process_special_category(str(row[13]).strip())
+                        connectionHolder.gender = process_gender(str(row[7]).strip())
+                        connectionHolder.sameAsPropertyAddress = False
+                        sewerageConnection.connectionHolders.append(connectionHolder)
+                    
+                    
+                    sewerageConnection.drainageSize = getValue(str(row[14]).strip(),float,0.25)
+                    sewerageConnection.proposedDrainageSize = getValue(str(row[14]).strip(),float,0.25)
+                    if(sewerageConnection.waterSource != 'OTHERS'):
+                        sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
+                    else:
+                        sewerageConnection.waterSubSource = ''
+                        sewerageConnection.sourceInfo = 'Other'
+                    sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
+                    sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
+                    sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
+                    sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
+                    sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
+                    if not pd.isna(row[17]):
+                        waterConnection.connectionExecutionDate = getTime(row[17])
+                    additionalDetail.locality = ''
+                    sewerageConnection.additionalDetails = additionalDetail
+                    processInstance.action = 'ACTIVATE_CONNECTION'
+                    sewerageConnection.tenantId = tenantId
+                    sewerageConnection.propertyId = propertyId
+                    sewerageConnection.processInstance = processInstance
+                    sewerageConnection.water = False
+                    sewerageConnection.sewerage = True
+                    sewerageConnection.service = 'Sewerage'
+                    sewerageConnection.applicationType = 'NEW_SEWERAGE_CONNECTION'
+                    sewerageConnection.applicationStatus = 'CONNECTION_ACTIVATED'
+                    sewerageConnection.source = 'MUNICIPAL_RECORDS'
+                    sewerageConnection.channel = 'DATA_ENTRY'
+                    sewerageConnection.status = 'ACTIVE'
+                except Exception as ex:
+                    print("createSewerageJson Exception: ", row[0], '   ', ex)
 
-            auth_token = superuser_login()["access_token"]
-            status, res = sewerageConnection.search_sewerage_connection(auth_token, tenantId, sewerageConnection.oldConnectionNo)               
-            with io.open(os.path.join(root, name,"sewerage_search_res.json"), mode="w", encoding="utf-8") as f:
-                json.dump(res, f, indent=2,  ensure_ascii=False)  
-            if(len(res['SewerageConnections']) == 0):
-                statusCode, res = sewerageConnection.upload_sewerage(auth_token, tenantId, sewerageConnection.oldConnectionNo, root, name)
-                with io.open(os.path.join(root, name,"sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
-                    json.dump(res, f, indent=2,  ensure_ascii=False)  
+                
+                req_data, statusCode, res = sewerageConnection.upload_sewerage(auth_token, tenantId, sewerageConnection.oldConnectionNo, root, name)
+                # with io.open(os.path.join(root, name,"sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
+                #     json.dump(res, f, indent=2,  ensure_ascii=False)  
                 sewerageconnectionNo = '' 
                 if(statusCode == 200 or statusCode == 201):
                     for found_index, resSewerage in enumerate(res["SewerageConnections"]):
@@ -285,30 +287,33 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         # value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
                         # logfile.write(value)
                         sewerageSheet['T{0}'.format(index)].value = connectionNo
-                        reason = 'sewerage connection created for abas id ' + str(property.abasPropertyId)
+                        reason = 'sewerage connection created for existing connection no. ' + str(sewerageConnection.oldConnectionNo)
                         # logfile.write(reason)
                         # print(reason)
                         createdCount = createdCount + 1
                         break
                 else:
-                    reason = 'sewerage not created status code '+ str(statusCode)+ ' for abas id ' + str(property.abasPropertyId) + ' response: '+ str(res) + '\n'
+                    with io.open(os.path.join(root, name, str(sewerageConnection.oldConnectionNo) + "_sewerage_create_req.json"), mode="w", encoding="utf-8") as f:
+                        json.dump(req_data, f, indent=2,  ensure_ascii=False)
+                    with io.open(os.path.join(root, name, str(sewerageConnection.oldConnectionNo) + "_sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
+                        json.dump(res, f, indent=2,  ensure_ascii=False)
+                    reason = 'sewerage not created status code '+ str(statusCode)+ ' for existing connection no. ' + str(sewerageConnection.oldConnectionNo) + ' response: '+ str(res) + '\n'
                     # logfile.write(reason)
                     print(reason)
-                    notCreatedCount = notCreatedCount + 1
+                    notCreatedCount = notCreatedCount + 1                      
             else:
-                for found_index, resSewerage in enumerate(res["SewerageConnections"]):
-                    connectionNo = resSewerage["connectionNo"]
-                    break
-                sewerageSheet['T{0}'.format(index)].value = connectionNo
-                reason = 'sewerage connection exist for abas id ' + str(property.abasPropertyId)
+                reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
+                print(reason)
                 # logfile.write(reason)
-                # print(reason)
-                searchedCount = searchedCount + 1
-                        
         else:
-            reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
-            print(reason)
+            for found_index, resSewerage in enumerate(res["SewerageConnections"]):
+                connectionNo = resSewerage["connectionNo"]
+                break
+            sewerageSheet['T{0}'.format(index)].value = connectionNo
+            reason = 'sewerage connection exist for existing connection no. ' + str(sewerageConnection.oldConnectionNo)
             # logfile.write(reason)
+            # print(reason)
+            searchedCount = searchedCount + 1
             
 
     reason = 'sewerage created count: '+ str(createdCount)

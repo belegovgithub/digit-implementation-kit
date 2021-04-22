@@ -36,7 +36,7 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Filled data from client'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -333,16 +333,16 @@ def ValidateCols(logfile, propertyFile, sheet1, sheet2):
     
     for i in range(0, 42):
         if(proper_column_order1[i].strip() != column_list[i].strip()) :
-            print(column_list[i])
+            print('Property file', column_list[i])
             validated = False
             write(logfile,propertyFile,sheet1.title,None,'Column order / name is not correct',column_list[i])
             # break
 
     column_list = [c.value for c in next(sheet2.iter_rows(min_row=1, max_row=1))]
-
+    # print('\n')
     for i in range(0, 12):
         if(proper_column_order2[i].strip() != column_list[i].strip()) :
-            print(column_list[i])
+            print('Property file', column_list[i])
             validated = False
             write(logfile,propertyFile,sheet2.title,None,'Column order / name is not correct',column_list[i])
             # break
@@ -469,6 +469,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
 
         # else:
         #     print("Sewerage File doesnot exist for ", cityname) 
+        print("Last mobile number added: ", mobileNumber)
     except Exception as ex:
         print(config.CITY_NAME," DefaultMobileNo Exception: ",ex)
         traceback.print_exc()
@@ -509,8 +510,9 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             print(config.CITY_NAME," createPropertyJson Exception: ",ex)
             traceback.print_exc()
     index = 2
-    for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):       
-        try:   
+    for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True): 
+            
+           
             index = index + 1  
             property = Property()  
             property.abasPropertyId =  getValue( row[1] ,str,None)
@@ -528,176 +530,182 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             tenantId = 'pb.'+ cityname
             property.tenantId = tenantId
             
-            property.oldPropertyId =  getValue( row[2] ,str,None)
-            property.propertyType = process_property_type(str(row[3]).strip())
-            if(row[4] == 0):
-                row[4] = 1
-            if(row[5] == 0):
-                row[5] = 1
-            property.landArea = getValue(row[4],float,1) 
-            property.superBuiltUpArea = getValue(row[5],float,1) 
-            property.usageCategory = process_usage_type(str(row[7]).strip())
-            property.subUsageCategory = process_sub_usage_type(str(row[8]).strip())   
-            if pd.isna(row[13]):
-                locality.code = "LOCAL_OTHERS"   
-            else:    
-                locality.code = locality_data[row[13].strip()]
-            address.city = cityname
-            address.locality = locality
-            address.location = process_location(str(row[20]).strip())
-            address.street = getValue(row[16] ,str,None)
-            address.buildingName = getValue(row[17] ,str,"")
-            address.doorNo = getValue(row[18],str,"")
-            address.pincode = getValue(row[19],str,None)
-            correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue( row[13] ,str,"Others"),cityname)
-            unit.occupancyType = process_occupancy_type(str(row[9]).strip())
-            unit.arv = getValue(row[21],int,0) 
-            unit.floorNo = 0
-            if(len(property.subUsageCategory) == 0):
-                unit.usageCategory = property.usageCategory
-            else:                
-                unit.usageCategory = property.subUsageCategory
-            constructionDetail.builtUpArea = getValue(row[5],int,1) 
-            unit.construction_detail = constructionDetail        
-            property.address = address
-            property.units = []
-            property.units.append(unit)
-            property.owners = []
-            # converter = lambda  x,y  : x  if x is not pd.isna else y
-            property.noOfFloors = getValue(row[10],int,1) 
-            property.noOfFlats = getValue(row[11],int,0) 
-            financial_year = getValue(row[23],str,"2020-2021").replace("-20", "-")
-            property.financialYear = financial_year
-            property.ownershipCategory = process_ownership_type(str(row[27]).strip())     
-            if(property.ownershipCategory == 'INDIVIDUAL.SINGLEOWNER'):
-                owner.status = 'ACTIVE'            
-                owner.name = getValue(row[28] ,str,"NAME")
-                owner.mobileNumber = getValue(row[29],str,"3000000000")
-                owner.emailId = getValue(row[30] ,str,"")
-                owner.gender = process_gender( row[31] )
-                if not pd.isna(row[32]):
-                    owner.dob = getTime(row[32])
-                owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
-                owner.relationship =  process_relationship(str(row[34]).strip())
-                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                if(owner.sameAsPeropertyAddress ==  'Yes'):
-                    owner.correspondenceAddress = correspondence_address
-                else: 
-                    owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
-                owner.ownerType =  process_special_category(str(row[37]).strip())
-                
-                property.owners.append(owner)
-            elif(property.ownershipCategory == 'INSTITUTIONALPRIVATE'):
-                owner.status = 'ACTIVE'
-                owner.name = getValue(row[28],str,"NAME")
-                owner.mobileNumber = getValue(row[29],str,"3000000000")
-                owner.emailId = getValue(row[30],str,"")
-                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                owner.correspondenceAddress = getValue(row[36],str,"")
-                institution.name = getValue(row[38],str,"Institution")
-                institution.type = process_private_institution_type(str(row[39]).strip())
-                institution.designation = getValue(row[40],str,"Designation")
-                owner.altContactNumber = getValue(row[41],str,"1000000000")
-                if(owner.sameAsPeropertyAddress ==  'Yes'):
-                    owner.correspondenceAddress = correspondence_address
-                else: 
-                    owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
-                owner.ownerType =  process_special_category(str(row[37]).strip())    
-                property.institution = institution
-                property.owners.append(owner)
-            elif(property.ownershipCategory == 'INSTITUTIONALGOVERNMENT'):
-                owner.status = 'ACTIVE'
-                owner.name = getValue(row[28],str,"NAME")
-                owner.mobileNumber = getValue(row[29],str,"3000000000")
-                owner.emailId = getValue(row[30],str,"")
-                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                owner.correspondence_address = getValue(row[36],str,"")
-                institution.name = getValue(row[38],str,"Institution")
-                institution.type = process_govt_institution_type(str(row[39]).strip())
-                institution.designation = getValue(row[40],str,"Designation")
-                owner.altContactNumber = getValue(row[41],str,"1000000000")
-                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                if(owner.sameAsPeropertyAddress ==  'Yes'):
-                    owner.correspondenceAddress = correspondence_address
-                else: 
-                    owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
-                owner.ownerType =  process_special_category(str(row[37]).strip())    
-                property.institution = institution
-                property.owners.append(owner)
-            elif(property.ownershipCategory == 'INDIVIDUAL.MULTIPLEOWNERS'):
-                for owner_obj in multiple_owner_obj[property.abasPropertyId]:
-                    owner = owner_obj
-                    owner.status = 'ACTIVE'  
-                    if(owner.sameAsPeropertyAddress ==  'Yes'):
-                        owner.correspondenceAddress = correspondence_address
-                    else: 
-                        owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
-                    property.owners.append(owner)
-
-                # occurances = [i for i,x in enumerate(abas_ids_multiple_owner) if x == property.abas_property_id]
-                # for i in occurances:                
-                #     for row in sheet2.iter_rows(min_row=i+2, max_col=12, max_row=i+2,values_only=True):                    
-                #         owner = Owner()
-                #         owner.status = 'ACTIVE'
-                #         owner.name = getValue(str(row[2]).strip(),str,"NAME")
-                #         owner.mobileNumber = getValue(str(row[3]).strip(),str,"3000000001")
-                #         owner.emailId = getValue(str(row[4]).strip(),str,"")
-                #         owner.gender = process_gender(str(row[5]).strip())
-                #         owner.fatherOrHusbandName = getValue(str(row[7]).strip(),str,"Guardian")
-                #         owner.relationship =  process_relationship(str(row[8]).strip())
-                #         owner.sameAsPeropertyAddress = getValue(str(row[9]).strip(),str,"Yes")
-                #         if(owner.sameAsPeropertyAddress ==  'Yes'):
-                #             owner.correspondenceAddress = correspondence_address
-                #         else: 
-                #             owner.correspondenceAddress = getValue(str(row[10]).strip(),str,"Correspondence")
-                #         owner.ownerType =  process_special_category(str(row[11]).strip())
-                #         property.owners.append(owner)
-
-            additionalDetail.isRainwaterHarvesting = False
-            additionalDetail.isPropertyDisputed = process_YesNo(str(row[24]))
-            additionalDetail.isPropertyAuthorized = process_YesNo(str(row[25]))
-            property.additional_details= additionalDetail
-            property.source = 'LEGACY_RECORD'
-            property.channel = 'MIGRATION'
-            property.creationReason = 'DATA_UPLOAD'
-        except Exception as ex:
-            print(config.CITY_NAME," createPropertyJson Exception: ",ex)
-            traceback.print_exc()
-        auth_token = superuser_login()["access_token"]
-        status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
-        with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
-            json.dump(res, f, indent=2,  ensure_ascii=False)
-        if(len(res['Properties']) == 0):
-            
-            statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name,)
-            with io.open(os.path.join(root, name,"property_create_res.json"), mode="w", encoding="utf-8") as f:
+            auth_token = superuser_login()["access_token"]
+            status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
+            with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
                 json.dump(res, f, indent=2,  ensure_ascii=False)
-            propertyId = ''
-            if(statusCode == 200 or statusCode == 201):
+            if(len(res['Properties']) == 0):  
+                try:
+                    property.oldPropertyId =  getValue( row[2] ,str,None)
+                    property.propertyType = process_property_type(str(row[3]).strip())            
+                    property.landArea = getValue(row[4],float,1) 
+                    property.superBuiltUpArea = getValue(row[5],float,1) 
+                    if(int(property.landArea) == 0):
+                        property.landArea = getValue(1,float,1)
+                    if(int(property.superBuiltUpArea) == 0):
+                        property.superBuiltUpArea = getValue(1,float,1)
+                    property.usageCategory = process_usage_type(str(row[7]).strip())
+                    property.subUsageCategory = process_sub_usage_type(str(row[8]).strip())   
+                    if pd.isna(row[13]):
+                        locality.code = "LOCAL_OTHERS"   
+                    else:    
+                        locality.code = locality_data[row[13].strip()]
+                    address.city = cityname
+                    address.locality = locality
+                    address.location = process_location(str(row[20]).strip())
+                    address.street = getValue(row[16] ,str,None)
+                    address.buildingName = getValue(row[17] ,str,"")
+                    address.doorNo = getValue(row[18],str,"")
+                    address.pincode = getValue(row[19],str,None)
+                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue( row[13] ,str,"Others"),cityname)
+                    unit.occupancyType = process_occupancy_type(str(row[9]).strip())
+                    unit.arv = getValue(row[21],int,0) 
+                    unit.floorNo = 0
+                    if(len(property.subUsageCategory) == 0):
+                        unit.usageCategory = property.usageCategory
+                    else:                
+                        unit.usageCategory = property.subUsageCategory
+                    constructionDetail.builtUpArea = getValue(row[5],int,1) 
+                    unit.construction_detail = constructionDetail        
+                    property.address = address
+                    property.units = []
+                    property.units.append(unit)
+                    property.owners = []
+                    # converter = lambda  x,y  : x  if x is not pd.isna else y
+                    property.noOfFloors = getValue(row[10],int,1) 
+                    property.noOfFlats = getValue(row[11],int,0) 
+                    financial_year = getValue(row[23],str,"2020-2021").replace("-20", "-")
+                    property.financialYear = financial_year
+                    property.ownershipCategory = process_ownership_type(str(row[27]).strip())     
+                    if(property.ownershipCategory == 'INDIVIDUAL.SINGLEOWNER'):
+                        owner.status = 'ACTIVE'            
+                        owner.name = getValue(row[28] ,str,"NAME")
+                        owner.mobileNumber = getValue(row[29],str,"3000000000")
+                        owner.emailId = getValue(row[30] ,str,"")
+                        owner.gender = process_gender( row[31] )
+                        if not pd.isna(row[32]):
+                            owner.dob = getTime(row[32])
+                        owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
+                        owner.relationship =  process_relationship(str(row[34]).strip())
+                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                        if(owner.sameAsPeropertyAddress ==  'Yes'):
+                            owner.correspondenceAddress = correspondence_address
+                        else: 
+                            owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
+                        owner.ownerType =  process_special_category(str(row[37]).strip())
+                        
+                        property.owners.append(owner)
+                    elif(property.ownershipCategory == 'INSTITUTIONALPRIVATE'):
+                        owner.status = 'ACTIVE'
+                        owner.name = getValue(row[28],str,"NAME")
+                        owner.mobileNumber = getValue(row[29],str,"3000000000")
+                        owner.emailId = getValue(row[30],str,"")
+                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                        owner.correspondenceAddress = getValue(row[36],str,"")
+                        institution.name = getValue(row[38],str,"Institution")
+                        institution.type = process_private_institution_type(str(row[39]).strip())
+                        institution.designation = getValue(row[40],str,"Designation")
+                        owner.altContactNumber = getValue(row[41],str,"1000000000")
+                        if(owner.sameAsPeropertyAddress ==  'Yes'):
+                            owner.correspondenceAddress = correspondence_address
+                        else: 
+                            owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
+                        owner.ownerType =  process_special_category(str(row[37]).strip())    
+                        property.institution = institution
+                        property.owners.append(owner)
+                    elif(property.ownershipCategory == 'INSTITUTIONALGOVERNMENT'):
+                        owner.status = 'ACTIVE'
+                        owner.name = getValue(row[28],str,"NAME")
+                        owner.mobileNumber = getValue(row[29],str,"3000000000")
+                        owner.emailId = getValue(row[30],str,"")
+                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                        owner.correspondence_address = getValue(row[36],str,"")
+                        institution.name = getValue(row[38],str,"Institution")
+                        institution.type = process_govt_institution_type(str(row[39]).strip())
+                        institution.designation = getValue(row[40],str,"Designation")
+                        owner.altContactNumber = getValue(row[41],str,"1000000000")
+                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                        if(owner.sameAsPeropertyAddress ==  'Yes'):
+                            owner.correspondenceAddress = correspondence_address
+                        else: 
+                            owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
+                        owner.ownerType =  process_special_category(str(row[37]).strip())    
+                        property.institution = institution
+                        property.owners.append(owner)
+                    elif(property.ownershipCategory == 'INDIVIDUAL.MULTIPLEOWNERS'):
+                        for owner_obj in multiple_owner_obj[property.abasPropertyId]:
+                            owner = owner_obj
+                            owner.status = 'ACTIVE'  
+                            if(owner.sameAsPeropertyAddress ==  'Yes'):
+                                owner.correspondenceAddress = correspondence_address
+                            else: 
+                                owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
+                            property.owners.append(owner)
+
+                        # occurances = [i for i,x in enumerate(abas_ids_multiple_owner) if x == property.abas_property_id]
+                        # for i in occurances:                
+                        #     for row in sheet2.iter_rows(min_row=i+2, max_col=12, max_row=i+2,values_only=True):                    
+                        #         owner = Owner()
+                        #         owner.status = 'ACTIVE'
+                        #         owner.name = getValue(str(row[2]).strip(),str,"NAME")
+                        #         owner.mobileNumber = getValue(str(row[3]).strip(),str,"3000000001")
+                        #         owner.emailId = getValue(str(row[4]).strip(),str,"")
+                        #         owner.gender = process_gender(str(row[5]).strip())
+                        #         owner.fatherOrHusbandName = getValue(str(row[7]).strip(),str,"Guardian")
+                        #         owner.relationship =  process_relationship(str(row[8]).strip())
+                        #         owner.sameAsPeropertyAddress = getValue(str(row[9]).strip(),str,"Yes")
+                        #         if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        #             owner.correspondenceAddress = correspondence_address
+                        #         else: 
+                        #             owner.correspondenceAddress = getValue(str(row[10]).strip(),str,"Correspondence")
+                        #         owner.ownerType =  process_special_category(str(row[11]).strip())
+                        #         property.owners.append(owner)
+
+                    additionalDetail.isRainwaterHarvesting = False
+                    additionalDetail.isPropertyDisputed = process_YesNo(str(row[24]))
+                    additionalDetail.isPropertyAuthorized = process_YesNo(str(row[25]))
+                    property.additional_details= additionalDetail
+                    property.source = 'LEGACY_RECORD'
+                    property.channel = 'MIGRATION'
+                    property.creationReason = 'DATA_UPLOAD'
+                except Exception as ex:
+                    print(config.CITY_NAME," createPropertyJson Exception: ",ex)
+                    traceback.print_exc()
+                # print('property ', property.get_property_json())            
+                
+                req_data,statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name)
+                # with io.open(os.path.join(root, name,"property_create_res.json"), mode="w", encoding="utf-8") as f:
+                #     json.dump(res, f, indent=2,  ensure_ascii=False)
+                propertyId = ''
+                if(statusCode == 200 or statusCode == 201):
+                    for found_index, resProperty in enumerate(res["Properties"]):
+                        propertyId = resProperty["propertyId"]
+                        # value = 'B{0}'.format(index) + '    ' + str(propertyId) + '\n'
+                        # logfile.write(value)
+                        sheet1['AQ{0}'.format(index)].value = propertyId
+                        reason = 'property created for abas id ' + str(property.abasPropertyId)
+                        # logfile.write(reason)
+                        # print(reason)
+                        createdCount = createdCount + 1
+                        break
+                else:
+                    with io.open(os.path.join(root, name, str(property.abasPropertyId) + "_property_create_req.json"), mode="w", encoding="utf-8") as f:
+                        json.dump(req_data, f, indent=2,  ensure_ascii=False)
+                    with io.open(os.path.join(root, name, str(property.abasPropertyId) + "_property_create_res.json"), mode="w", encoding="utf-8") as f:
+                        json.dump(res, f, indent=2,  ensure_ascii=False)
+                    reason = 'property not created status code '+ str(statusCode) + ' for abas id ' + str(property.abasPropertyId) + ' response: ', str(res)  + '\n'
+                    # logfile.write(reason)
+                    print(reason)
+                    notCreatedCount = notCreatedCount + 1
+            else:
                 for found_index, resProperty in enumerate(res["Properties"]):
                     propertyId = resProperty["propertyId"]
-                    # value = 'B{0}'.format(index) + '    ' + str(propertyId) + '\n'
-                    # logfile.write(value)
-                    sheet1['AQ{0}'.format(index)].value = propertyId
-                    reason = 'property created for abas id ' + str(property.abasPropertyId)
-                    # logfile.write(reason)
-                    # print(reason)
-                    createdCount = createdCount + 1
                     break
-            else:
-                reason = 'property not created status code '+ str(statusCode) + ' for abas id ' + str(property.abasPropertyId) + ' response: ', str(res)  + '\n'
+                sheet1['AQ{0}'.format(index)].value = propertyId
+                reason = 'property already exist for abas id '+ str(property.abasPropertyId) + '\n'
                 # logfile.write(reason)
-                print(reason)
-                notCreatedCount = notCreatedCount + 1
-        else:
-            for found_index, resProperty in enumerate(res["Properties"]):
-                propertyId = resProperty["propertyId"]
-                break
-            sheet1['AQ{0}'.format(index)].value = propertyId
-            reason = 'property already exist for abas id '+ str(property.abasPropertyId) + '\n'
-            # logfile.write(reason)
-            # print(reason)
-            searchedCount = searchedCount + 1
+                # print(reason)
+                searchedCount = searchedCount + 1
 
     reason = 'property created count: '+ str(createdCount)
     print(reason)
