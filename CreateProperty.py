@@ -54,7 +54,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if  True : # cityname =='clementtown' : #'roorkee'  :
+                    if  cityname =='roorkee' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -406,37 +406,37 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         else:
             print("Property File doesnot exist for ", cityname)  
 
-        if os.path.exists(waterFile) :
-            wb_water = openpyxl.load_workbook(waterFile) 
-            water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
-            index = 2
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-                index = index + 1
-                if pd.isna(row[0]):
-                    continue
-                if(str(row[3]).strip() == 'No'):
-                    if pd.isna(row[4]):
-                        mobileNumber = mobileNumber + 1
-                        value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-                        logfile.write(value)
-                        water_sheet['E{0}'.format(index)].value = mobileNumber
+        # if os.path.exists(waterFile) :
+        #     wb_water = openpyxl.load_workbook(waterFile) 
+        #     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
+        #     index = 2
+        #     for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+        #         index = index + 1
+        #         if pd.isna(row[0]):
+        #             continue
+        #         if(str(row[3]).strip() == 'No'):
+        #             if pd.isna(row[4]):
+        #                 mobileNumber = mobileNumber + 1
+        #                 value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+        #                 logfile.write(value)
+        #                 water_sheet['E{0}'.format(index)].value = mobileNumber
                 
-            wb_water.save(waterFile)        
-            wb_water.close()
-            wb_water = openpyxl.load_workbook(waterFile) 
-            water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-                if pd.isna(row[0]):
-                    continue
-                if(str(row[3]).strip() == 'Yes'):
-                    for obj in owner_obj[str(row[1]).strip()]:
-                        if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-                            validated = False
-                            reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
-                            print(reason)
-                            logfile.write(reason)
-        else:
-            print("Water File doesnot exist for ", cityname)  
+        #     wb_water.save(waterFile)        
+        #     wb_water.close()
+        #     wb_water = openpyxl.load_workbook(waterFile) 
+        #     water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
+        #     for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+        #         if pd.isna(row[0]):
+        #             continue
+        #         if(str(row[3]).strip() == 'Yes'):
+        #             for obj in owner_obj[str(row[1]).strip()]:
+        #                 if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+        #                     validated = False
+        #                     reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
+        #                     print(reason)
+        #                     logfile.write(reason)
+        # else:
+        #     print("Water File doesnot exist for ", cityname)  
 
         # if os.path.exists(sewerageFile) :
         #     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
@@ -545,7 +545,11 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     if(int(property.superBuiltUpArea) == 0):
                         property.superBuiltUpArea = getValue(1,float,1)
                     property.usageCategory = process_usage_type(str(row[7]).strip())
-                    property.subUsageCategory = process_sub_usage_type(str(row[8]).strip())   
+                    if not (property.usageCategory == "RESIDENTIAL" or property.usageCategory == "MIXED" or property.usageCategory == "SLUM"
+                            or property.usageCategory == "NONRESIDENTIAL.NONRESIDENTIAL") :
+                        property.subUsageCategory = process_sub_usage_type(str(row[8]).strip())  
+                    else:
+                        property.subUsageCategory = ''
                     if pd.isna(row[13]):
                         locality.code = "LOCAL_OTHERS"   
                     else:    
