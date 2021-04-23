@@ -29,7 +29,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     if config.INSERT_DATA: 
         createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
         wb_water.save(waterFile)        
-        wb_water.close()
+    wb_water.close()
 
 def validateWaterData(propertySheet, waterFile, logfile, cityname):
     validated = True
@@ -60,62 +60,62 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row ,values_only=True):
         index = index + 1
         try:        
-            if emptyRows > 10 :
-                break
+            # if emptyRows > 10 :
+            #     break
             if pd.isna(row[1]):
                 emptyRows = emptyRows +1
                 continue
             if pd.isna(row[0]):
                 validated = False
                 reason = 'Sl no. column is empty\n'
-                write(logfile,waterFile,water_sheet.title,row[0],'Sl no. column is empty',row[1])
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Sl no. column is empty',getValue(row[1], str, ''))
                 #logfile.write(reason)
-            if pd.isna(row[1]):
+            if pd.isna(row[1]): #len(getValue(row[1], str, '')) == 0:
                 validated = False
-                reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
+                reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', abas id is empty.\n'
                 #logfile.write(reason) 
-                write(logfile,waterFile,water_sheet.title,row[0],'abas id is empty',row[1])
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'abas id is empty',getValue(row[1], str, ''))
             if pd.isna(row[2]):
                 validated = False
-                reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', existing water connection number is empty.\n'
+                reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', existing water connection number is empty.\n'
                 #logfile.write(reason)
-                write(logfile,waterFile,water_sheet.title,row[0],'existing water connection number is empty',row[1])
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'existing water connection number is empty',getValue(row[1], str, ''))
             if pd.isna(row[3]):
                 validated = False
-                reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
+                reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
                 #logfile.write(reason)
-                write(logfile,waterFile,water_sheet.title,row[0],'same as property address cell is empty',row[1])
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
             if(str(row[3]).strip() == 'No'):
                 if pd.isna(row[4]) :
                     validated = False
-                    reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ', mobile number is empty.\n'
+                    reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
                     #logfile.write(reason) 
-                    write(logfile,waterFile,water_sheet.title,row[0],'mobile number is empty',row[1])
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
                 elif not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
                     validated = False
-                    reason = 'Water File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
-                    write(logfile,waterFile,water_sheet.title,None,'Mobile number not correct',row[0])
+                    reason = 'Water File data validation failed, Mobile number not correct for abas id '+ getValue(row[1], str, '') +'\n'
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Mobile number not correct',getValue(row[1], str, ''))
                     #logfile.write(reason)
                 if pd.isna(row[5]):
                     validated = False
-                    reason = 'Water File data validation failed for sl no. '+ str(row[0]) + ',name is empty.\n'
+                    reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ',name is empty.\n'
                     #logfile.write(reason) 
-                    write(logfile,waterFile,water_sheet.title,row[0],' name is empty',row[1])
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
                 # elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
-                #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ getValue(row[0], int, '') +'\n'
                 #     #logfile.write(reason)  
-                #     write(logfile,waterFile,water_sheet.title,row[0],'Name has invalid characters',row[1])
+                #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Name has invalid characters',getValue(row[1], str, ''))
                 # if not pd.isna(row[9]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[9]))):                        
                 #     validated = False
-                #     reason = 'Water File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
-                #     write(logfile,waterFile,water_sheet.title,None,'Guardian Name has invalid characters',row[0])
+                #     reason = 'Water File data validation failed, Guardian Name has invalid characters for abas id '+ sgetValue(row[1], str, '') +'\n'
+                #     write(logfile,waterFile,water_sheet.title,None,'Guardian Name has invalid characters',getValue(row[1], str, ''))
                 #     #logfile.write(reason)
 
                 if len(getValue(row[6], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[6]))) :                      
                     validated = False
-                    reason = 'Water File data validation failed, Email id is not proper for abas id '+ str(row[1]) +'\n'
-                    write(logfile,waterFile,water_sheet.title,row[0],'Email id is not proper',row[1])
+                    reason = 'Water File data validation failed, Email id is not proper for abas id '+ getValue(row[1], str, '') +'\n'
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
                     #logfile.write(reason)
             if not pd.isna(row[1]):
                 abasid = row[1]
@@ -123,12 +123,12 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     abasid = str(int (abasid))
                 if str(abasid).strip() not in abas_ids:                    
                     validated = False
-                    reason = 'there is no abas id available in property data for water connection sl no. '+ str(row[0]) +'\n'
+                    reason = 'there is no abas id available in property data for water connection sl no. '+ getValue(row[0], str, '') +'\n'
                     #logfile.write(reason) 
-                    write(logfile,waterFile,water_sheet.title,row[0],'ABAS id not available in property data',row[1])
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'ABAS id not available in property data',getValue(row[1], str, ''))
         except Exception as ex:
-            write(logfile,waterFile,water_sheet.title,row[0],str(ex) ,row[1])
-            print(config.CITY_NAME," validateWaterData Exception: ", row[0], '   ', ex)
+            # write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
+            print(config.CITY_NAME," validateWaterData Exception: ", getValue(row[0], int, ''), '  ', ex)
 
     for index in range(3, water_sheet.max_row +1):
         try:
@@ -141,7 +141,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForWater Exception: existing water connection no is empty: ",ex)
             traceback.print_exc()
-            write(logfile,waterFile,water_sheet.title,row[0],' existing water connection no is empty',row[1])
+            # write(logfile,waterFile,water_sheet.title,row[0],' existing water connection no is empty',getValue(row[1], str, ''))
     duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
 
     if(len(duplicate_ids) >= 1):
@@ -185,22 +185,22 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
                 owner = Owner()
                 address = Address()
-                address.buildingName = getValue(row[17].strip(),str,"")
-                address.doorNo = getValue(str(row[18]).strip(),str,"")
-                correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
-                owner.name = getValue(str(row[28]).strip(),str,"NAME")
-                owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
-                owner.emailId = getValue(str(row[30]).strip(),str,"")
-                owner.gender = process_gender(str(row[31]).strip())
+                address.buildingName = getValue(row[17],str,"")
+                address.doorNo = getValue(row[18],str,"")
+                correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(row[13],str,"Others"),cityname)
+                owner.name = getValue(row[28],str,"NAME")
+                owner.mobileNumber = getValue(row[29],str,"3000000000")
+                owner.emailId = getValue(row[30],str,"")
+                owner.gender = process_gender(row[31])
                 if not pd.isna(row[32]):
                     owner.dob = getTime(row[32])
-                owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
-                owner.relationship =  process_relationship(str(row[34]).strip())
-                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
+                owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
+                owner.relationship =  process_relationship(row[34])
+                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,correspondence_address)
+                    owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
                 owner.ownerType =  process_special_category(str(row[37]).strip())
                 if abas_id not in owner_obj:
                     owner_obj[abas_id] = []
@@ -212,7 +212,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row , values_only=True):
         
         index = index + 1
-        abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
+        abasPropertyId =  getValue(row[1],str,None)  
         property = Property() 
         auth_token = superuser_login()["access_token"]
         tenantId = 'pb.'+ cityname
@@ -225,7 +225,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         processInstance = ProcessInstance()
         additionalDetail = AdditionalDetail()
         waterConnection.connectionHolders = []
-        waterConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
+        waterConnection.oldConnectionNo = getValue(row[2],str,None)
 
         status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
         # with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
@@ -255,20 +255,20 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         # connectionHolder.gender = owner.gender
                         # connectionHolder.sameAsPropertyAddress = True
                     else:
-                        connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
-                        connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
-                        connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
-                        connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
-                        connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
-                        connectionHolder.relationship = process_relationship(str(row[10]).strip())
+                        connectionHolder.name = getValue(row[5],str,"NAME")
+                        connectionHolder.mobileNumber = getValue(row[4],str,"3000000000")
+                        connectionHolder.fatherOrHusbandName = getValue(row[9],str,"Guardian")
+                        connectionHolder.emailId = getValue(row[6],str,"")
+                        connectionHolder.correspondenceAddress = getValue(row[12],str,"Correspondence")
+                        connectionHolder.relationship = process_relationship(row[10])
                         connectionHolder.ownerType = process_special_category(str(row[13]).strip())
-                        connectionHolder.gender = process_gender(str(row[7]).strip())
+                        connectionHolder.gender = process_gender(row[7])
                         connectionHolder.sameAsPropertyAddress = False
                         waterConnection.connectionHolders.append(connectionHolder)
                     
                     
-                    waterConnection.pipeSize = getValue(str(row[14]).strip(),float,0.25)
-                    waterConnection.proposedPipeSize = getValue(str(row[14]).strip(),float,0.25)
+                    waterConnection.pipeSize = getValue(row[14],float,0.25)
+                    waterConnection.proposedPipeSize = getValue(row[14],float,0.25)
                     waterConnection.waterSource = process_water_source(str(row[15]).strip())
                     if(waterConnection.waterSource != 'OTHERS'):
                         waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
@@ -277,13 +277,13 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         waterConnection.sourceInfo = 'Other'
                     waterConnection.connectionType = process_connection_type(str(row[16]).strip())
                     waterConnection.motorInfo  = process_motor_info(str(row[17]).strip())
-                    waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
+                    waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
                     waterConnection.authorizedConnection = process_connection_permission(str(row[19]).strip())
-                    waterConnection.noOfTaps = getValue(str(row[23]).strip(),int,1)
-                    waterConnection.proposedTaps = getValue(str(row[23]).strip(),int,1)
+                    waterConnection.noOfTaps = getValue(row[23],int,1)
+                    waterConnection.proposedTaps = getValue(row[23],int,1)
                     if( waterConnection.connectionType == 'Metered'):
                         waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
-                        additionalDetail.initialMeterReading = getValue(str(row[21]).strip(),int,None)
+                        additionalDetail.initialMeterReading = getValue(row[21],int,None)
                     if not pd.isna(row[18]):
                         waterConnection.connectionExecutionDate = getTime(row[18])
                     additionalDetail.locality = ''

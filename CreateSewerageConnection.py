@@ -30,7 +30,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     if config.INSERT_DATA: 
         createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
         wb_sewerage.save(sewerageFile)        
-        wb_sewerage.close()
+    wb_sewerage.close()
 
 def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     validated = True
@@ -59,8 +59,8 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row +1 ,values_only=True):        
         index = index + 1
         try:
-            if emptyRows > 10 :
-                break
+            # if emptyRows > 10 :
+            #     break
             if pd.isna(row[1]):
                 emptyRows = emptyRows +1
                 continue
@@ -68,66 +68,66 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 validated = False
                 reason = 'Sewerage File data validation failed, Sl no. column is empty\n'
                 #logfile.write(reason)
-                write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Sl no. column is empty',row[1])
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Sl no. column is empty',getValue(row[1], str, ''))
             if pd.isna(row[1]):
                 validated = False
-                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', abas id is empty.\n'
+                reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', abas id is empty.\n'
                 #logfile.write(reason) 
-                write(logfile,sewerageFile,sewerage_sheet.title,row[0],'abas id is empty',row[1])
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'abas id is empty',getValue(row[1], str, ''))
             if pd.isna(row[2]):
                 validated = False
-                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', existing sewerage connection number is empty.\n'
+                reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', existing sewerage connection number is empty.\n'
                 #logfile.write(reason)
-                write(logfile,sewerageFile,sewerage_sheet.title,row[0],'existing sewerage connection number is empty',row[1])
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'existing sewerage connection number is empty',getValue(row[1], str, ''))
 
             if pd.isna(row[3]):
                 validated = False
-                reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', same as property address cell is empty.\n'
+                reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
                 #logfile.write(reason)
-                write(logfile,sewerageFile,sewerage_sheet.title,row[0],'same as property address cell is empty',row[1])
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
             if(str(row[3]).strip() == 'No'):
                 if pd.isna(row[4]) :
                     validated = False
-                    reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ', mobile number is empty.\n'
+                    reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
                     #logfile.write(reason) 
-                    write(logfile,sewerageFile,sewerage_sheet.title,row[0],'mobile number is empty',row[1])
+                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
                 elif not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
                         validated = False
-                        reason = 'Sewerage File data validation failed, Mobile number not correct for abas id '+ str(row[0]) +'\n'
-                        write(logfile,sewerageFile,sewerage_sheet.title,None,'Mobile number not correct',row[0])
+                        reason = 'Sewerage File data validation failed, Mobile number not correct for abas id '+ str(getValue(row[0], int, '')) +'\n'
+                        write(logfile,sewerageFile,sewerage_sheet.title,None,'Mobile number not correct',getValue(row[0], int, ''))
                         #logfile.write(reason)
                 if pd.isna(row[5]):
                     validated = False
-                    reason = 'Sewerage File data validation failed for sl no. '+ str(row[0]) + ',name is empty.\n'
+                    reason = 'Sewerage File data validation failed for sl no. '+ str(getValue(row[0], int, '')) + ',name is empty.\n'
                     #logfile.write(reason) 
-                    write(logfile,sewerageFile,sewerage_sheet.title,row[0],' name is empty',row[1])
+                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
                 # elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
-                #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ str(row[0]) +'\n'
+                #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ getValue(row[0], str, '') +'\n'
                 #     #logfile.write(reason)  
-                #     write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Name has invalid characters',row[1])
+                #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Name has invalid characters',getValue(row[1], str, ''))
                 # if not pd.isna(row[9]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[9]))):                        
                 #     validated = False
-                #     reason = 'Sewerage File data validation failed, Guardian Name has invalid characters for abas id '+ str(row[0]) +'\n'
-                #     write(logfile,sewerageFile,sewerage_sheet.title,None,'Guardian Name has invalid characters',row[0])
+                #     reason = 'Sewerage File data validation failed, Guardian Name has invalid characters for abas id '+ getValue(row[0], str, '') +'\n'
+                #     write(logfile,sewerageFile,sewerage_sheet.title,None,'Guardian Name has invalid characters',getValue(row[0], int, ''))
                 #     #logfile.write(reason)
                 if len(getValue(row[6], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[6]))) :                      
                     validated = False
-                    reason = 'Sewerage File data validation failed, Email id is not proper for abas id '+ str(row[1]) +'\n'
-                    write(logfile,sewerageFile,sewerage_sheet.title,row[0],'Email id is not proper',row[1])
+                    reason = 'Sewerage File data validation failed, Email id is not proper for abas id '+ str(getValue(row[1], str, '')) +'\n'
+                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
                     #logfile.write(reason)
             if not pd.isna(row[1]):
-                abasid = row[1]
+                abasid = getValue(row[1], str, '')
                 if type(abasid) == int or type(abasid) ==float : 
                     abasid = str(int (abasid))
                 if str(abasid).strip() not in abas_ids:
                     validated = False
-                    reason = 'there is no abas id available in property data for sewerage connection sl no. '+ str(row[0]) +'\n'
+                    reason = 'there is no abas id available in property data for sewerage connection sl no. '+ getValue(row[0], str, '') +'\n'
                     #logfile.write(reason) 
-                    write(logfile,sewerageFile,sewerage_sheet.title,row[0],'ABAS id not available in property data',row[1])
+                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'ABAS id not available in property data',getValue(row[1], str, ''))
         except Exception as ex:
-            print(config.CITY_NAME," validateSewerageData Exception: ", row[0], '   ', ex)
-            write(logfile,sewerageFile,sewerage_sheet.title,row[0],str(ex) ,row[1])
+            print(config.CITY_NAME," validateSewerageData Exception: ", getValue(row[0], int, ''), '   ', ex)
+            # write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
     for index in range(3, sewerage_sheet.max_row +1):
         try:
             if pd.isna(sewerage_sheet['B{0}'.format(index)].value):                    
@@ -139,7 +139,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForSewerage Exception: existing sewerage connection no is empty: ",ex)
             traceback.print_exc()
-            write(logfile,sewerageFile,sewerage_sheet.title,row[0],'existing sewerage connection no is empty',row[1])
+            write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'existing sewerage connection no is empty',getValue(row[1], str, ''))
     duplicate_ids = [item for item, count in collections.Counter(old_connections).items() if count > 1]
 
     if(len(duplicate_ids) >= 1):
@@ -180,25 +180,25 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                 owner = Owner()
                 address = Address()
                 address.buildingName = getValue(row[17].strip(),str,"")
-                address.doorNo = getValue(str(row[18]).strip(),str,"")
+                address.doorNo = getValue(row[18],str,"")
                 correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
-                owner.name = getValue(str(row[28]).strip(),str,"NAME")
-                owner.mobileNumber = getValue(str(row[29]).strip(),str,"3000000000")
-                owner.emailId = getValue(str(row[30]).strip(),str,"")
-                owner.gender = process_gender(str(row[31]).strip())
-                owner.fatherOrHusbandName = getValue(str(row[33]).strip(),str,"Guardian")
-                owner.relationship =  process_relationship(str(row[34]).strip())
+                owner.name = getValue(row[28],str,"NAME")
+                owner.mobileNumber = getValue(row[29],str,"3000000000")
+                owner.emailId = getValue(row[30],str,"")
+                owner.gender = process_gender(row[31])
+                owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
+                owner.relationship =  process_relationship(row[34])
                 owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
                 if(owner.sameAsPeropertyAddress ==  'Yes'):
                     owner.correspondenceAddress = correspondence_address
                 else: 
-                    owner.correspondenceAddress = getValue(str(row[36]).strip(),str,correspondence_address)
+                    owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
                 owner.ownerType =  process_special_category(str(row[37]).strip())
                 if abas_id not in owner_obj:
                     owner_obj[abas_id] = []
                 owner_obj[abas_id].append(owner)
         except Exception as ex:
-            print(config.CITY_NAME," createSewerageJson Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME," createSewerageJson Exception: ", getValue(row[0], int, ''), '   ', ex)
     index = 2
     for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row +1 , values_only=True):
          
@@ -209,14 +209,14 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
-            print("empty Abas id in sewerage file for sl no. ", row[0])
+            print("empty Abas id in sewerage file for sl no. ", getValue(row[0], int, ''))
             continue
         sewerageConnection = SewerageConnection()
         connectionHolder = ConnectionHolder()
         processInstance = ProcessInstance()
         additionalDetail = AdditionalDetail()
         sewerageConnection.connectionHolders = []
-        sewerageConnection.oldConnectionNo = getValue(str(row[2]).strip(),str,None)
+        sewerageConnection.oldConnectionNo = getValue(row[2],str,None)
         status, res = sewerageConnection.search_sewerage_connection(auth_token, tenantId, sewerageConnection.oldConnectionNo)               
         # with io.open(os.path.join(root, name,"sewerage_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
@@ -233,30 +233,30 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     if(str(row[3]).strip() == 'Yes'):
                         sewerageConnection.connectionHolders = None
                     else:
-                        connectionHolder.name = getValue(str(row[5]).strip(),str,"NAME")
-                        connectionHolder.mobileNumber = getValue(str(row[4]).strip(),str,"3000000000")
-                        connectionHolder.fatherOrHusbandName = getValue(str(row[9]).strip(),str,"Guardian")
-                        connectionHolder.emailId = getValue(str(row[6]).strip(),str,"")
-                        connectionHolder.correspondenceAddress = getValue(str(row[12]).strip(),str,"Correspondence")
-                        connectionHolder.relationship = process_relationship(str(row[10]).strip())
+                        connectionHolder.name = getValue(row[5],str,"NAME")
+                        connectionHolder.mobileNumber = getValue(row[4],str,"3000000000")
+                        connectionHolder.fatherOrHusbandName = getValue(row[9],str,"Guardian")
+                        connectionHolder.emailId = getValue(row[6],str,"")
+                        connectionHolder.correspondenceAddress = getValue(row[12],str,"Correspondence")
+                        connectionHolder.relationship = process_relationship(row[10])
                         connectionHolder.ownerType = process_special_category(str(row[13]).strip())
-                        connectionHolder.gender = process_gender(str(row[7]).strip())
+                        connectionHolder.gender = process_gender(row[7])
                         connectionHolder.sameAsPropertyAddress = False
                         sewerageConnection.connectionHolders.append(connectionHolder)
                     
                     
-                    sewerageConnection.drainageSize = getValue(str(row[14]).strip(),float,0.25)
-                    sewerageConnection.proposedDrainageSize = getValue(str(row[14]).strip(),float,0.25)
+                    sewerageConnection.drainageSize = getValue(row[14],float,0.25)
+                    sewerageConnection.proposedDrainageSize = getValue(row[14],float,0.25)
                     if(sewerageConnection.waterSource != 'OTHERS'):
                         sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
                     else:
                         sewerageConnection.waterSubSource = ''
                         sewerageConnection.sourceInfo = 'Other'
                     sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
-                    sewerageConnection.noOfWaterClosets = getValue(str(row[15]).strip(),int,1)
-                    sewerageConnection.proposedWaterClosets = getValue(str(row[15]).strip(),int,1)
-                    sewerageConnection.noOfToilets = getValue(str(row[16]).strip(),int,1)
-                    sewerageConnection.proposedToilets = getValue(str(row[16]).strip(),int,1)
+                    sewerageConnection.noOfWaterClosets = getValue(row[15],int,1)
+                    sewerageConnection.proposedWaterClosets = getValue(row[15],int,1)
+                    sewerageConnection.noOfToilets = getValue(row[16],int,1)
+                    sewerageConnection.proposedToilets = getValue(row[16],int,1)
                     if not pd.isna(row[17]):
                         waterConnection.connectionExecutionDate = getTime(row[17])
                     additionalDetail.locality = ''
@@ -274,7 +274,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     sewerageConnection.channel = 'DATA_ENTRY'
                     sewerageConnection.status = 'ACTIVE'
                 except Exception as ex:
-                    print("createSewerageJson Exception: ", row[0], '   ', ex)
+                    print("createSewerageJson Exception: ", getValue(row[0], int, ''), '   ', ex)
 
                 
                 req_data, statusCode, res = sewerageConnection.upload_sewerage(auth_token, tenantId, sewerageConnection.oldConnectionNo, root, name)
