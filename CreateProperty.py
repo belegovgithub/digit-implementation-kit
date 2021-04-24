@@ -368,9 +368,9 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         reason = 'Property File data validation failed, Email id is not proper for abas id '+ str(getValue(row[0], str, '')) +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Email id is not proper',getValue(row[0], str, ''))
                         #logfile.write(reason)
-                    if not pd.isna(row[6]) and pd.isna(getTime(row[6])):
-                        validated = False
-                        write(logfile,propertyFile,sheet2.title,None,'Date is not correct for DOB',getValue(row[0], str, ''))
+                    # if not pd.isna(row[6]) and pd.isna(getTime(row[6])):
+                    #     validated = False
+                    #     write(logfile,propertyFile,sheet2.title,None,'Date is not correct for DOB',getValue(row[0], str, ''))
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], str, ''), '  ',ex)
                 # write(logfile,propertyFile,sheet2.title,None,str(ex) ,getValue(row[0], str, ''))
