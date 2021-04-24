@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue, getMobileNumber
+from config import config, getValue, getMobileNumber, getTime
 import io
 import os 
 import sys
@@ -57,12 +57,12 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
  
     emptyRows =0 
-    for row in water_sheet.iter_rows(min_row=3, max_col=22, max_row=water_sheet.max_row ,values_only=True):
+    for row in water_sheet.iter_rows(min_row=3, max_col=24, max_row=water_sheet.max_row ,values_only=True):
         index = index + 1
         try:        
             # if emptyRows > 10 :
             #     break
-            if pd.isna(row[1]):
+            if pd.isna(row[1]) and pd.isna(row[2]):
                 emptyRows = emptyRows +1
                 continue
             if pd.isna(row[0]):
@@ -85,6 +85,34 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
                 #logfile.write(reason)
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
+            if getValue(row[16], str, '') == "Metered":
+                if pd.isna(row[20]):
+                    validated = False
+                    reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', Meter Id is empty.\n'
+                    #logfile.write(reason)
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Meter Id is empty',getValue(row[1], str, ''))
+                if pd.isna(row[21]):
+                    validated = False
+                    reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', last meter reading is empty.\n'
+                    #logfile.write(reason)
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last meter reading is empty',getValue(row[1], str, ''))
+                elif not bool(re.match("^[0-9]+$",str(row[21]))) :                      
+                    validated = False
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Last meter reading must be a numeric value.',getValue(row[1], str, ''))
+                    #logfile.write(reason)
+            #     if pd.isna(row[22]):
+            #         validated = False
+            #         write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
+            #     elif pd.isna(getTime(row[22])):
+            #         validated = False
+            #         write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Date is not correct for last billed date',getValue(row[1], str, ''))
+            # if pd.isna(row[18]):
+            #         validated = False
+            #         write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'activation date is empty',getValue(row[1], str, ''))
+            # elif pd.isna(getTime(row[18])):
+            #     validated = False
+            #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Date is not correct for activation date',getValue(row[1], str, ''))
+
             if(str(row[3]).strip() == 'No'):
                 if pd.isna(row[4]) :
                     validated = False
@@ -282,7 +310,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.noOfTaps = getValue(row[23],int,1)
                     waterConnection.proposedTaps = getValue(row[23],int,1)
                     if( waterConnection.connectionType == 'Metered'):
-                        waterConnection.meterId = getValue(str(row[20]).strip(),str,None)
+                        waterConnection.meterId = getValue(row[20],str,None)
                         additionalDetail.initialMeterReading = getValue(row[21],int,None)
                     if not pd.isna(row[18]):
                         waterConnection.connectionExecutionDate = getTime(row[18])
@@ -349,23 +377,6 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     print(reason)
     reason = 'Water searched count: '+ str(searchedCount)
     print(reason)
-
-
-def getTime(dateObj,defValue=None) :
-    try : 
-        if not isinstance(dateObj, datetime) and type(dateObj) is str: 
-            dateStr =dateObj.strip() 
-            if "/" in dateStr : 
-                dateObj=datetime.strptime(dateStr, '%d/%m/%Y') 
-            elif "." in dateStr : 
-                dateObj=datetime.strptime(dateStr, '%d.%m.%Y') 
-            else : 
-                dateObj=datetime.strptime(dateStr, '%d-%m-%Y') 
-        milliseconds = int((dateObj - datetime(1970, 1, 1)).total_seconds())*1000
-        return milliseconds
-    except Exception as ex:
-        print("Error in time conversion ",dateObj,ex)
-        return None
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname

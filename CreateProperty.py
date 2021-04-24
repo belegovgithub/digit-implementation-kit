@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue, getMobileNumber
+from config import config, getValue, getMobileNumber, getTime
 import io
 import os 
 import sys
@@ -54,7 +54,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='mhow' : #'roorkee'  :
+                    if True: # cityname =='nainital' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -93,8 +93,9 @@ def cbMain(cityname, successlogfile):
             print('Data validation Failed for mobile entry, Please check the log file.') 
             return
     
-    if os.path.exists(propertyFile) :  
-        validate =  validateDataForProperty(propertyFile, logfile)            
+    if os.path.exists(propertyFile) : 
+        localityDict = getLocalityData(cityname) 
+        validate =  validateDataForProperty(propertyFile, logfile,localityDict)
         if(validate == False):                
             print('Data validation for property Failed, Please check the log file.') 
             if config.INSERT_DATA: 
@@ -152,7 +153,7 @@ def cbMain(cityname, successlogfile):
         print("Error in parsing json file",ex)
 
 
-def validateDataForProperty(propertyFile, logfile):
+def validateDataForProperty(propertyFile, logfile,localityDict):
     validated = True
     reason = ''
 
@@ -179,9 +180,9 @@ def validateDataForProperty(propertyFile, logfile):
             try : 
                 # if emptyRows > 10 :
                 #     break
-                # if pd.isna(row[1]):
-                #     emptyRows =emptyRows +1
-                #     continue
+                if pd.isna(row[1]) and pd.isna(row[2]):
+                    emptyRows =emptyRows +1
+                    continue
                 if pd.isna(row[0]):
                     validated = False
                     reason = 'Sl no. column is empty'
@@ -198,11 +199,15 @@ def validateDataForProperty(propertyFile, logfile):
                     reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ',  ownership type is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'ownership type is empty',getValue(row[1], str, ''))
                     #logfile.write(reason)
-                if pd.isna(row[13]):
+                locality =getValue(row[13],str,"")
+                if len ( locality) ==0:
                     validated = False
                     reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ',  Locality/ Mohalla is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Locality/ Mohalla is empty',getValue(row[1], str, ''))
                     #logfile.write(reason)
+                elif locality.lower() not in localityDict :
+                    validated = False
+                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(locality) +' Locality/ Mohalla does not exist in system ',getValue(row[1], str, ''))
                 if(str(row[27]) != "Multiple Owners"):
                     if pd.isna(row[28]):
                         validated = False
@@ -244,16 +249,61 @@ def validateDataForProperty(propertyFile, logfile):
 
                 if pd.isna(row[7]):
                     validated = False
-                    reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage category is empty.\n'
-                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'usage category is empty',getValue(row[1], str, ''))
+                    reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is empty.\n'
+                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'usage type is empty',getValue(row[1], str, ''))
                     #logfile.write(reason)
-                elif(str(row[7]).strip() == 'Commercial ( Nonresidential )' or str(row[7]).strip() == 'Institutional ( Nonresidential )'
-                        or str(row[7]).strip() == 'Industrial ( Nonresidential )' or str(row[7]).strip() == 'Others ( Nonresidential )'):
+                elif not (getValue(row[7], str, "") == 'Commercial ( Nonresidential )' or getValue(row[7], str, "") == 'Institutional ( Nonresidential )'
+                        or getValue(row[7], str, "") == 'Industrial ( Nonresidential )' or getValue(row[7], str, '') == 'Others ( Nonresidential )' 
+                        or getValue(row[7], str, "") == 'Mixed' or getValue(row[7], str, "") == 'Nonresidential ( Nonresidential )'
+                        or getValue(row[7], str, "") == 'Residential' or getValue(row[7], str, '') == 'SLUM'):
+                    validated = False
+                    reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is not correct.\n'
+                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'usage type is not correct',getValue(row[1], str, ''))
+                    #logfile.write(reason)    
+                elif(getValue(row[7], str, "") == 'Commercial ( Nonresidential )' or getValue(row[7], str, "") == 'Institutional ( Nonresidential )'
+                        or getValue(row[7], str, "") == 'Industrial ( Nonresidential )' or getValue(row[7], str, '') == 'Others ( Nonresidential )'):
                     if pd.isna(row[8]):
                         validated = False
-                        reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', sub usage category is empty.\n'
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category is empty',getValue(row[1], str, ''))
+                        reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', sub usage type is empty.\n'
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage type is empty',getValue(row[1], str, ''))
                         #logfile.write(reason)
+                elif(getValue(row[7], str, "") == 'Commercial ( Nonresidential )'):
+                    if not (getValue(row[8], str, '')  == 'Animal Dairy(Below 10 Cattle)' or getValue(row[8], str, '')  == 'Animal Dairy(Above 10 Cattle)' 
+                            or getValue(row[8], str, '')  == 'Bank' or getValue(row[8], str, '')  == 'Dhobi' or getValue(row[8], str, '')  == 'Dyers' 
+                            or getValue(row[8], str, '')  == 'Movie Theatre' or getValue(row[8], str, '')  == 'Multiplex' or getValue(row[8], str, '')  == 'Marriage Palace' 
+                            or getValue(row[8], str, '')  == 'Ac Restaurant' or getValue(row[8], str, '')  == 'Non Ac Restaurant' or getValue(row[8], str, '')  == 'Bhojanalaya/Tea Shop/Halwai Shop' 
+                            or getValue(row[8], str, '')  == 'Hotels' or getValue(row[8], str, '')  == 'Pathlab' or getValue(row[8], str, '')  == 'Private Dispensary' 
+                            or getValue(row[8], str, '')  == 'Private Hospital' or getValue(row[8], str, '')  == 'Office Space(Less Than 10 Persons)' 
+                            or getValue(row[8], str, '')  == 'Office Space(More Than 10 Persons)' or getValue(row[8], str, '')  == 'Other Commercial Usage' 
+                            or getValue(row[8], str, '')  == 'Petrol Pump' or getValue(row[8], str, '')  == 'Grocery Store' or getValue(row[8], str, '')  == 'Malls' 
+                            or getValue(row[8], str, '')  == 'Pharmacy' or getValue(row[8], str, '')  == 'Showroom' or getValue(row[8], str, '')  == 'Service Centre' 
+                            or getValue(row[8], str, '')  == 'Statutory Organisation') :
+                        validated = False                        
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Commercial ( Nonresidential )',getValue(row[1], str, ''))
+                elif(getValue(row[7], str, "") == 'Industrial ( Nonresidential )'):
+                    if not (getValue(row[8], str, '')  == 'Manufacturing Facility(Less Than 10 Persons)' or getValue(row[8], str, '')  == 'Manufacturing Facility(More Than 10 Persons)' 
+                            or getValue(row[8], str, '')  == 'Other Industrial Usage' or getValue(row[8], str, '')  == 'Godown/Warehouse'):
+                        validated = False
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Industrial ( Nonresidential )',getValue(row[1], str, ''))
+                elif(getValue(row[7], str, "") == 'Institutional ( Nonresidential )'):
+                    if not (getValue(row[8], str, '')  == 'College' or getValue(row[8], str, '')  == 'Other Private Educational Institute' 
+                            or getValue(row[8], str, '')  == 'Polytechnic' or getValue(row[8], str, '')  == 'School' or getValue(row[8], str, '')  == 'Training Institute' 
+                            or getValue(row[8], str, '')  == 'Govt. Aided Educational Institute' or getValue(row[8], str, '')  == 'Historical Building' 
+                            or getValue(row[8], str, '')  == 'Stray Animal Care Center' or getValue(row[8], str, '')  == 'Home For The Disabled / Destitute' 
+                            or getValue(row[8], str, '')  == 'Old Age Homes' or getValue(row[8], str, '')  == 'Orphanage' or getValue(row[8], str, '')  == 'Others' 
+                            or getValue(row[8], str, '')  == 'Community Hall' or getValue(row[8], str, '')  == 'Govt. Hospital & Dispensary' 
+                            or getValue(row[8], str, '')  == 'Public Libraries' or getValue(row[8], str, '')  == 'Golf Club' or getValue(row[8], str, '')  == 'Social Club' 
+                            or getValue(row[8], str, '')  == 'Sports Stadium' or getValue(row[8], str, '')  == 'Religious'):
+                        validated = False
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Institutional ( Nonresidential )',getValue(row[1], str, ''))
+                elif(getValue(row[7], str, "") == 'Others ( Nonresidential )'):
+                    if not (getValue(row[8], str, '')  == 'Cremation/ Burial Ground') :
+                        validated = False
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Others ( Nonresidential )',getValue(row[1], str, ''))
+                # if not pd.isna(row[32]) and pd.isna(getTime(row[32])):
+                #     validated = False
+                #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Date is not correct for DOB',getValue(row[1], str, ''))
+
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], int, ''), '  ',ex)
                 # write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
@@ -318,6 +368,9 @@ def validateDataForProperty(propertyFile, logfile):
                         reason = 'Property File data validation failed, Email id is not proper for abas id '+ str(getValue(row[0], str, '')) +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Email id is not proper',getValue(row[0], str, ''))
                         #logfile.write(reason)
+                    if not pd.isna(row[6]) and pd.isna(getTime(row[6])):
+                        validated = False
+                        write(logfile,propertyFile,sheet2.title,None,'Date is not correct for DOB',getValue(row[0], str, ''))
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], str, ''), '  ',ex)
                 # write(logfile,propertyFile,sheet2.title,None,str(ex) ,getValue(row[0], str, ''))
@@ -866,19 +919,20 @@ def process_special_category(value):
     }
     return special_category_MAP[value]
 
-# def getValue(value,dataType,defValue="") :
-#     try:
-#         if(value == None or value == 'None' or pd.isna(value)): 
-#             return defValue    
-#         else : 
-#             if dataType ==str : 
-#                 return dataType(value).strip()
-#             elif dataType == float:
-#                 return round(value, 2)
-#             else : 
-#                 return dataType(value)
-#     except: 
-#         return defValue
+def getLocalityData(cityname):
+    data = []
+    boundary_path = os.path.join(config.MDMS_LOCATION ,  cityname , "egov-location")
+    localityDict =dict()
+    if os.path.isfile(os.path.join(boundary_path , "boundary-data.json")):
+        with open(os.path.join(boundary_path , "boundary-data.json")) as f:
+            existing_boundary_data = json.load(f)
+    found = False
+    for tenantboundary in existing_boundary_data["TenantBoundary"]:                
+        for tenant_boundary in tenantboundary["boundary"]["children"]:
+            for t1 in tenant_boundary["children"]:
+                for t2 in t1["children"]:
+                    localityDict[t2["name"].lower()] =t2["code"]
+    return localityDict
 
 
         

@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue, getMobileNumber
+from config import config, getValue, getMobileNumber, getTime
 import io
 import os 
 import sys
@@ -61,7 +61,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
         try:
             # if emptyRows > 10 :
             #     break
-            if pd.isna(row[1]):
+            if pd.isna(row[1]) and pd.isna(row[2]):
                 emptyRows = emptyRows +1
                 continue
             if pd.isna(row[0]):
@@ -103,19 +103,26 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
                 # elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
-                #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ getValue(row[0], str, '') +'\n'
-                #     #logfile.write(reason)  
                 #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Name has invalid characters',getValue(row[1], str, ''))
                 # if not pd.isna(row[9]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[9]))):                        
                 #     validated = False
-                #     reason = 'Sewerage File data validation failed, Guardian Name has invalid characters for abas id '+ getValue(row[0], str, '') +'\n'
                 #     write(logfile,sewerageFile,sewerage_sheet.title,None,'Guardian Name has invalid characters',getValue(row[0], int, ''))
-                #     #logfile.write(reason)
                 if len(getValue(row[6], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[6]))) :                      
                     validated = False
-                    reason = 'Sewerage File data validation failed, Email id is not proper for abas id '+ str(getValue(row[1], str, '')) +'\n'
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
-                    #logfile.write(reason)
+            # if pd.isna(row[18]):
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
+            # elif pd.isna(getTime(row[18])):
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Date is not correct for last billed date',getValue(row[1], str, ''))
+            # if pd.isna(row[17]):
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'activation date is empty',getValue(row[1], str, ''))
+            # elif pd.isna(getTime(row[17])):
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Date is not correct for activation date',getValue(row[1], str, ''))    
+
             if not pd.isna(row[1]):
                 abasid = getValue(row[1], str, '')
                 if type(abasid) == int or type(abasid) ==float : 
@@ -200,7 +207,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
         except Exception as ex:
             print(config.CITY_NAME," createSewerageJson Exception: ", getValue(row[0], int, ''), '   ', ex)
     index = 2
-    for row in sewerageSheet.iter_rows(min_row=3, max_col=19, max_row=sewerageSheet.max_row +1 , values_only=True):
+    for row in sewerageSheet.iter_rows(min_row=3, max_col=22, max_row=sewerageSheet.max_row +1 , values_only=True):
          
         index = index + 1
         abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
@@ -323,22 +330,6 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     reason = 'sewerage searched count: '+ str(searchedCount)
     print(reason)
 
-
-def getTime(dateObj,defValue=None) :
-    try : 
-        if not isinstance(dateObj, datetime) and type(dateObj) is str: 
-            dateStr =dateObj.strip() 
-            if "/" in dateStr : 
-                dateObj=datetime.strptime(dateStr, '%d/%m/%Y') 
-            elif "." in dateStr : 
-                dateObj=datetime.strptime(dateStr, '%d.%m.%Y') 
-            else : 
-                dateObj=datetime.strptime(dateStr, '%d-%m-%Y') 
-        milliseconds = int((dateObj - datetime(1970, 1, 1)).total_seconds())*1000
-        return milliseconds
-    except Exception as ex:
-        print("Error in time conversion ",dateObj,ex)
-        return None
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname

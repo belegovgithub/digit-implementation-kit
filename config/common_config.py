@@ -3,6 +3,7 @@ import pandas as pd
 import io
 import os 
 import sys
+from datetime import datetime, timedelta,date
 
 config.ROLE_CODE_MAP = {
   "CITIZEN": "Citizen",
@@ -273,20 +274,20 @@ def getMobileNumber(value,dataType,defValue="") :
             value = str(int(value)) 
         return dataType(value).strip()
 
-# def getTime(dateObj,defValue=None) :
-#     try : 
-#         if not isinstance(dateObj, datetime) and type(dateObj) is str: 
-#             dateStr =dateObj.strip() 
-#             if "/" in dateStr : 
-#                 dateObj=datetime.strptime(dateStr, '%d/%m/%Y') 
-#             elif "." in dateStr : 
-#                 dateObj=datetime.strptime(dateStr, '%d.%m.%Y') 
-#             else : 
-#                 dateObj=datetime.strptime(dateStr, '%d-%m-%Y') 
-#         milliseconds = int((dateObj - datetime(1970, 1, 1)).total_seconds())*1000
-#         return milliseconds
-#     except Exception as ex:
-#         print("Error in time conversion ",dateObj,ex)
-#         return None
+def getTime(dateObj,defValue=None) :
+    try : 
+        if not isinstance(dateObj, datetime) and type(dateObj) is str: 
+            dateStr =dateObj.strip() 
+            if "/" in dateStr : 
+                dateObj=datetime.strptime(dateStr, '%d/%m/%Y') 
+            elif "." in dateStr : 
+                dateObj=datetime.strptime(dateStr, '%d.%m.%Y') 
+            else : 
+                dateObj=datetime.strptime(dateStr, '%d-%m-%Y') 
+        milliseconds = int((dateObj - datetime(1970, 1, 1)).total_seconds())*1000
+        return milliseconds
+    except Exception as ex:
+        print("Error in time conversion ",dateObj,ex)
+    return defValue
 
 load_config()
