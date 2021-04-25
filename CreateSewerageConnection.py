@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue, getMobileNumber, getTime
+from config import config, getValue, getMobileNumber, getTime, isna
 import io
 import os 
 import sys
@@ -38,7 +38,11 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
     index = 2
     reason = 'sewerage file validation starts.\n'
-    # ValidateCols(sewerageFile, sewerage_sheet, logfile)
+    validated = ValidateCols(sewerageFile, sewerage_sheet, logfile)
+    if not validated :
+        print("Column Mismatch, sheets needs to be corrected")
+        config["error_in_excel"].append(cityname +" have issue in Sewerage sheet")
+        return validated
     abas_ids = [] 
     old_connections = []
     try:
@@ -101,6 +105,10 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                     reason = 'Sewerage File data validation failed for sl no. '+ str(getValue(row[0], int, '')) + ',name is empty.\n'
                     #logfile.write(reason) 
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
+                if not isna(row[8]) and getTime(row[8]) is None : 
+                    validated = False
+                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[8])+'  Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+
                 # elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
                 #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Name has invalid characters',getValue(row[1], str, ''))
@@ -110,18 +118,18 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 if len(getValue(row[6], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[6]))) :                      
                     validated = False
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
-            # if pd.isna(row[18]):
-            #     validated = False
-            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
-            # elif pd.isna(getTime(row[18])):
-            #     validated = False
-            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Date is not correct for last billed date',getValue(row[1], str, ''))
-            # if pd.isna(row[17]):
-            #     validated = False
-            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'activation date is empty',getValue(row[1], str, ''))
-            # elif pd.isna(getTime(row[17])):
-            #     validated = False
-            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Date is not correct for activation date',getValue(row[1], str, ''))    
+            if pd.isna(row[18]):
+                validated = False
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
+            elif pd.isna(getTime(row[18])):
+                validated = False
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+            if pd.isna(row[17]):
+                validated = False
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Activation date is empty',getValue(row[1], str, ''))
+            elif pd.isna(getTime(row[17])):
+                validated = False
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[17]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
 
             if not pd.isna(row[1]):
                 abasid = getValue(row[1], str, '')
@@ -161,20 +169,31 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     return validated
 
 def ValidateCols(sewerageFile, sheet, logfile):
-    proper_column_order = ['Mobile No*', 'Connection Holder Name*', 'Email Id', 'Gender *', 'DOB ', 'Guardian Name *', 'Relationship *', 
-    'Ownership Type *', 'Address *', 'Special Category *', 'Drainage Pipe Size (inch) *', 'No of Water Closets *', 'No of Toilets *', 
-    'Activation Date *', 'Last Billed Date *']
+    proper_column_order = [None, None, None, "\n\nSelect 'Yes' if connection holder details are same as Property Owner and ownership type is single owner. In case of 'No' Fill the column E to N *", 
+    'Mobile No*', 'Connection Holder Name*', 'Email Id', 'Gender *', 'DOB ', 'Guardian Name *',
+     'Relationship *', 'Ownership Type *', 'Address *', 'Special Category *', 'Drainage Pipe Size (inch) *', 'No of Water Closets *', 'No of Toilets *', 'Activation Date *', 'Last Billed Date *']
     column_list = [c.value for c in next(sheet.iter_rows(min_row=2, max_row=2))]
+
     validated = True
+    ## Approach 1 : check for individual column 
     for i in range(4, 19):
         if(proper_column_order[i].strip() != column_list[i].strip()) :
             print('Sewerage file', column_list[i])
             validated = False
             write(logfile,sewerageFile,sheet.title,None,'Column order / name is not correct',column_list[i])
             # break
-
-    return validated  
-
+    ## Approach 2 -- Directly check difference in column
+    
+    missingColumnHeader = list(set(proper_column_order)-set(column_list))
+    extraColumnHeader = list(set(column_list)-set(proper_column_order))
+    if len (missingColumnHeader) > 0 : 
+        write(logfile,sewerageFile,sheet.title,None,' Some Columns are Missing In Sheet')
+        validated=False
+    if len (extraColumnHeader) > 0 :
+        write(logfile,sewerageFile,sheet.title,None,'Extra Columns exist in Sheet')
+        validated=False
+    return validated 
+    
 def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name):
     createdCount = 0
     searchedCount = 0

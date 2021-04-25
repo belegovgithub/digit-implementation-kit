@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue, getMobileNumber, getTime
+from config import config, getValue, getMobileNumber, getTime, isna
 import io
 import os 
 import sys
@@ -37,7 +37,11 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details')     
     index = 2
     reason = 'Water file validation starts.\n'
-    # validated = ValidateCols(waterFile, water_sheet, logfile)
+    validated = ValidateCols(waterFile, water_sheet, logfile)
+    if not validated :
+        print("Column Mismatch, sheets needs to be corrected")
+        config["error_in_excel"].append(cityname +" have issue in water sheet")
+        return validated
 
     abas_ids = [] 
     old_connections = []
@@ -100,18 +104,18 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     validated = False
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Last meter reading must be a numeric value.',getValue(row[1], str, ''))
                     #logfile.write(reason)
-            #     if pd.isna(row[22]):
-            #         validated = False
-            #         write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
-            #     elif pd.isna(getTime(row[22])):
-            #         validated = False
-            #         write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Date is not correct for last billed date',getValue(row[1], str, ''))
-            # if pd.isna(row[18]):
-            #         validated = False
-            #         write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'activation date is empty',getValue(row[1], str, ''))
-            # elif pd.isna(getTime(row[18])):
-            #     validated = False
-            #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Date is not correct for activation date',getValue(row[1], str, ''))
+                if pd.isna(row[22]):
+                    validated = False
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
+                elif pd.isna(getTime(row[22])):
+                    validated = False
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[22]) +' Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+            if isna(row[18]):
+                    validated = False
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Activation date is empty',getValue(row[1], str, ''))
+            elif getTime(row[18]) is None:
+                validated = False
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
 
             if(str(row[3]).strip() == 'No'):
                 if pd.isna(row[4]) :
@@ -129,6 +133,10 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ',name is empty.\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
+                if not isna(row[8]) and getTime(row[8]) is None : 
+                    validated = False
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[8])+'  Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+
                 # elif not pd.isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
                 #     reason = 'Sewerage File data validation failed, Name has invalid characters for sl no. '+ getValue(row[0], int, '') +'\n'
@@ -185,12 +193,14 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     return validated
 
 def ValidateCols(waterFile, sheet, logfile):
-    proper_column_order = ['SI.No', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ', 
-    'Existing Water Consumer Number* ( Unique Value on which connection are getting searched in existing system ) ',     
-    'Connection Holder Details', None, None, None, None, None, None, None, None, None, 'Pipe Size (inch)*', 'Water Source Type*', 'Connection Type*', 
-    'Motor Info*', 'Activation Date*', 'Connection Permission*', 'Meter ID', 'Last Meter Reading ', 'Last Billed Date*', 'No.of taps*']
+    proper_column_order =['SI.No', 'Existing Property ID* ( Unique Value on which property are getting searched in existing system ) ',
+     'Existing Water Consumer Number* ( Unique Value on which connection are getting searched in existing system ) ',
+      "\n\nSelect 'Yes' if connection holder details are same as Property Owner and ownership type is single owner. In case of 'No' Fill the column E to N *",
+       'Connection Holder Details', None, None, None, None, None, None, None, None, None, 'Pipe Size (inch)*', 'Water Source Type*', 'Connection Type*', 'Motor Info*', 'Activation Date*', 'Connection Permission*', 'Meter ID', 'Last Meter Reading ', 'Last Billed Date*', 'No.of taps*']
+    
     column_list = [c.value for c in next(sheet.iter_rows(min_row=1, max_row=2))]
     validated = True
+    ## Approach 1 : check for individual column 
     for i in range(0, 23):
         if(i== 3):
             continue
@@ -199,10 +209,21 @@ def ValidateCols(waterFile, sheet, logfile):
             validated = False
             write(logfile,waterFile,sheet.title,None,'Column order / name is not correct',column_list[i])
             # break
+    
 
+    ## Approach 2 -- Directly check difference in column
+    missingColumnHeader = list(set(proper_column_order)-set(column_list))
+    extraColumnHeader = list(set(column_list)-set(proper_column_order))
+    if len (missingColumnHeader) > 0 : 
+        write(logfile,waterFile,sheet.title,None,' Some Columns are Missing In Sheet')
+        validated=False
+    if len (extraColumnHeader) > 0 :
+        write(logfile,waterFile,sheet.title,None,'Extra Columns exist in Sheet')
+        validated=False
     return validated   
 
 def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
+    print("createWaterJson",cityname)
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
@@ -234,6 +255,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     owner_obj[abas_id] = []
                 owner_obj[abas_id].append(owner)
         except Exception as ex:
+            traceback.print_exc()
             print(config.CITY_NAME," createWaterJson Exception: ", row[0], '   ', ex)
 
     index = 2
@@ -241,6 +263,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         
         index = index + 1
         abasPropertyId =  getValue(row[1],str,None)  
+        print("water sheet ",abasPropertyId)
         property = Property() 
         auth_token = superuser_login()["access_token"]
         tenantId = 'pb.'+ cityname
@@ -255,8 +278,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         waterConnection.connectionHolders = []
         waterConnection.oldConnectionNo = getValue(row[2],str,None)
 
-        status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
-        # with io.open(os.path.join(root, name,"water_search_res.json"), mode="w", encoding="utf-8") as f:
+        # status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
+        # with io.open(os.path.join(root, name,waterConnection.oldConnectionNo+"water_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         
         if(len(res['WaterConnection']) == 0):        
@@ -397,7 +420,11 @@ def process_water_source(value):
         'Others':'OTHERS',
         'None': 'OTHERS'
     }
-    return water_source_MAP[value]
+    for key in water_source_MAP :
+        if key.lower() == value : 
+            return water_source_MAP[key]    
+
+    return water_source_MAP['None']
 
 def process_relationship(value):
     if value is None : 

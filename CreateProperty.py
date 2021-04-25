@@ -1,5 +1,5 @@
 from common import *
-from config import config, getValue, getMobileNumber, getTime
+from config import config, getValue, getMobileNumber, getTime,isna
 import io
 import os 
 import sys
@@ -13,7 +13,8 @@ from CreateWaterConnection import *
 from CreateSewerageConnection import *
 import traceback
 
-
+now = datetime.now()
+date_time = now.strftime("%d-%m-%Y") 
 INDEX_SL_NO = 0
 INDEX_ABAS_PROPERTY_ID = 1
 INDEX_OLD_PROPERTY_ID = 2
@@ -36,7 +37,7 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\PDIC7\Downloads\water_sewarage\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -44,17 +45,23 @@ def main() :
     root = FOLDER_PATH
     errorlogfile = open(os.path.join(root, "errorCBs.txt"), "w")  
     successlogfile = open(os.path.join(root, "CB With ProperData.txt"), "w")
+    config.error_in_excel=[]
+    config.DATA_ENTRY_ISSUES_FOLDER =os.path.join(root,date_time + '-Data_Entries_Issues')
+    if not os.path.exists(config.DATA_ENTRY_ISSUES_FOLDER) :
+        os.makedirs(config.DATA_ENTRY_ISSUES_FOLDER)
+    if not os.path.exists(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR")) :
+        os.makedirs(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR"))
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
             if module["city"]["ulbGrade"]=="ST":
                 continue
             cityname =module["code"].lower()[3:]
-            
+            config.errormsg=[]
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True: # cityname =='nainital' : #'roorkee'  :
+                    if cityname =='testing' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -62,8 +69,21 @@ def main() :
                     print("Error in processing CB ",cityname , ex)
                     traceback.print_exc()
                     errorlogfile.write(cityname+"\n")
+            if len(config.errormsg ) > 0 : 
+                dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+                for element in config.errormsg:
+                    dateerror.write(element + "\n") 
+                dateerror.close()
     errorlogfile.close()
     successlogfile.close()
+    if len(config.error_in_excel) > 0 : 
+        cbHaveExcelIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_EXCEL_ISSUE.txt"), "w")  
+        for element in config.error_in_excel:
+                    cbHaveExcelIssue.write(element + "\n") 
+        cbHaveExcelIssue.close()
+
+ 
+    
 
 
 def cbMain(cityname, successlogfile):
@@ -136,13 +156,11 @@ def cbMain(cityname, successlogfile):
     size = os.path.getsize(os.path.join(root, name, "Logfile.json")) 
     logfile.close() 
     try :       
-        now = datetime.now()
-        date_time = now.strftime("%d-%m-%Y") 
+        
         if size > 2 : 
             df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-            if not os.path.exists(os.path.join(root,date_time + '-Data_Entries_Issues')) :
-                os.makedirs(os.path.join(root,date_time + '-Data_Entries_Issues'))
-            df.to_excel(os.path.join(root, date_time + '-Data_Entries_Issues',    name+ " Data Entries Issues.xlsx"), index = None)
+            
+            df.to_excel(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER ,    name+ " Data Entries Issues.xlsx"), index = None)
             #df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
             #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
         else : 
@@ -178,6 +196,7 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
         count =0 
         for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True): 
             try : 
+                
                 # if emptyRows > 10 :
                 #     break
                 if pd.isna(row[1]) and pd.isna(row[2]):
@@ -208,6 +227,10 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                 elif locality.lower() not in localityDict :
                     validated = False
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(locality) +' Locality/ Mohalla does not exist in system ',getValue(row[1], str, ''))
+                if not isna(row[32]) and getTime(row[32]) is None : 
+                    validated = False
+                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(row[32]) +' Invalid date format, Please add in dd/mm/yyyy- 24/04/2021 ',getValue(row[1], str, ''))
+
                 if(str(row[27]) != "Multiple Owners"):
                     if pd.isna(row[28]):
                         validated = False
@@ -368,6 +391,10 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         reason = 'Property File data validation failed, Email id is not proper for abas id '+ str(getValue(row[0], str, '')) +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Email id is not proper',getValue(row[0], str, ''))
                         #logfile.write(reason)
+                    if not isna(row[6]) and getTime(row[6]) is None : 
+                        validated = False
+                        write(logfile,propertyFile,sheet2.title,None, str(row[6]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[0], str, ''))
+
                     # if not pd.isna(row[6]) and pd.isna(getTime(row[6])):
                     #     validated = False
                     #     write(logfile,propertyFile,sheet2.title,None,'Date is not correct for DOB',getValue(row[0], str, ''))

@@ -274,8 +274,21 @@ def getMobileNumber(value,dataType,defValue="") :
             value = str(int(value)) 
         return dataType(value).strip()
 
+
+navalues =['','na','none','n.a.','na','dob']
+def isna(value) :
+    if value == None  or pd.isna(value) : 
+        return True 
+    elif isinstance(value, str) :
+        value =value.strip().lower()
+        if value in navalues : 
+            return True 
+    return False
+
 def getTime(dateObj,defValue=None) :
     try : 
+        if isna(dateObj): 
+            return defValue    
         if not isinstance(dateObj, datetime) and type(dateObj) is str: 
             dateStr =dateObj.strip() 
             if "/" in dateStr : 
@@ -287,7 +300,8 @@ def getTime(dateObj,defValue=None) :
         milliseconds = int((dateObj - datetime(1970, 1, 1)).total_seconds())*1000
         return milliseconds
     except Exception as ex:
-        print("Error in time conversion ",dateObj,ex)
+        config["errormsg"].append(str(dateObj))
+        #print("Error in time conversion ",dateObj,ex)
     return defValue
 
 load_config()
