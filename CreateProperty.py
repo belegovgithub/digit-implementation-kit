@@ -37,7 +37,7 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\PDIC7\Downloads\WaterSewerageTemplates-20210427T071128Z-001\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -267,61 +267,30 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         reason = 'Property File data validation failed, abas id for multiple ownership is not available in Property Ownership Details sheet  '+ getValue(row[1], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas id for multiple ownership is not available in Property Ownership Details sheet ',getValue(row[1], str, ''))
                         #logfile.write(reason)
-
+                propUsgType=getValue(row[7], str, "")
                 if pd.isna(row[7]):
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'usage type is empty',getValue(row[1], str, ''))
-                    #logfile.write(reason)
-                elif not (getValue(row[7], str, "") == 'Commercial ( Nonresidential )' or getValue(row[7], str, "") == 'Institutional ( Nonresidential )'
-                        or getValue(row[7], str, "") == 'Industrial ( Nonresidential )' or getValue(row[7], str, '') == 'Others ( Nonresidential )' 
-                        or getValue(row[7], str, "") == 'Mixed' or getValue(row[7], str, "") == 'Nonresidential ( Nonresidential )'
-                        or getValue(row[7], str, "") == 'Residential' or getValue(row[7], str, '') == 'SLUM'):
+                    #logfile.write(reason)                    
+                elif process_usage_type(propUsgType,True) is None:
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is not correct.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[7], str, ''),'usage type is not correct',"'" + getValue(row[1], str, '') + "'")
                     #logfile.write(reason)    
-                elif(getValue(row[7], str, "") == 'Commercial ( Nonresidential )' or getValue(row[7], str, "") == 'Institutional ( Nonresidential )'
-                        or getValue(row[7], str, "") == 'Industrial ( Nonresidential )' or getValue(row[7], str, '') == 'Others ( Nonresidential )'):
+                elif propUsgType.find("(") != -1 :
+                    subUsageValue =getValue(row[8], str, '')
                     if pd.isna(row[8]):
                         validated = False
                         reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', sub usage type is empty.\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage type is empty',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                elif(getValue(row[7], str, "") == 'Commercial ( Nonresidential )'):
-                    if not (getValue(row[8], str, '')  == 'Animal Dairy(Below 10 Cattle)' or getValue(row[8], str, '')  == 'Animal Dairy(Above 10 Cattle)' 
-                            or getValue(row[8], str, '')  == 'Bank' or getValue(row[8], str, '')  == 'Dhobi' or getValue(row[8], str, '')  == 'Dyers' 
-                            or getValue(row[8], str, '')  == 'Movie Theatre' or getValue(row[8], str, '')  == 'Multiplex' or getValue(row[8], str, '')  == 'Marriage Palace' 
-                            or getValue(row[8], str, '')  == 'Ac Restaurant' or getValue(row[8], str, '')  == 'Non Ac Restaurant' or getValue(row[8], str, '')  == 'Bhojanalaya/Tea Shop/Halwai Shop' 
-                            or getValue(row[8], str, '')  == 'Hotels' or getValue(row[8], str, '')  == 'Pathlab' or getValue(row[8], str, '')  == 'Private Dispensary' 
-                            or getValue(row[8], str, '')  == 'Private Hospital' or getValue(row[8], str, '')  == 'Office Space(Less Than 10 Persons)' 
-                            or getValue(row[8], str, '')  == 'Office Space(More Than 10 Persons)' or getValue(row[8], str, '')  == 'Other Commercial Usage' 
-                            or getValue(row[8], str, '')  == 'Petrol Pump' or getValue(row[8], str, '')  == 'Grocery Store' or getValue(row[8], str, '')  == 'Malls' 
-                            or getValue(row[8], str, '')  == 'Pharmacy' or getValue(row[8], str, '')  == 'Showroom' or getValue(row[8], str, '')  == 'Service Centre' 
-                            or getValue(row[8], str, '')  == 'Statutory Organisation') :
-                        validated = False                        
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Commercial ( Nonresidential )',getValue(row[1], str, ''))
-                elif(getValue(row[7], str, "") == 'Industrial ( Nonresidential )'):
-                    if not (getValue(row[8], str, '')  == 'Manufacturing Facility(Less Than 10 Persons)' or getValue(row[8], str, '')  == 'Manufacturing Facility(More Than 10 Persons)' 
-                            or getValue(row[8], str, '')  == 'Other Industrial Usage' or getValue(row[8], str, '')  == 'Godown/Warehouse'):
-                        validated = False
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Industrial ( Nonresidential )',getValue(row[1], str, ''))
-                elif(getValue(row[7], str, "") == 'Institutional ( Nonresidential )'):
-                    if not (getValue(row[8], str, '')  == 'College' or getValue(row[8], str, '')  == 'Other Private Educational Institute' 
-                            or getValue(row[8], str, '')  == 'Polytechnic' or getValue(row[8], str, '')  == 'School' or getValue(row[8], str, '')  == 'Training Institute' 
-                            or getValue(row[8], str, '')  == 'Govt. Aided Educational Institute' or getValue(row[8], str, '')  == 'Historical Building' 
-                            or getValue(row[8], str, '')  == 'Stray Animal Care Center' or getValue(row[8], str, '')  == 'Home For The Disabled / Destitute' 
-                            or getValue(row[8], str, '')  == 'Old Age Homes' or getValue(row[8], str, '')  == 'Orphanage' or getValue(row[8], str, '')  == 'Others' 
-                            or getValue(row[8], str, '')  == 'Community Hall' or getValue(row[8], str, '')  == 'Govt. Hospital & Dispensary' 
-                            or getValue(row[8], str, '')  == 'Public Libraries' or getValue(row[8], str, '')  == 'Golf Club' or getValue(row[8], str, '')  == 'Social Club' 
-                            or getValue(row[8], str, '')  == 'Sports Stadium' or getValue(row[8], str, '')  == 'Religious'):
-                        validated = False
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Institutional ( Nonresidential )',getValue(row[1], str, ''))
-                elif(getValue(row[7], str, "") == 'Others ( Nonresidential )'):
-                    if not (getValue(row[8], str, '')  == 'Cremation/ Burial Ground') :
-                        validated = False
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Others ( Nonresidential )',getValue(row[1], str, ''))
-                
+                    elif subUsageValue.lower().strip() not in  USAGE_SUB_USAGE_MAP[process_usage_type(propUsgType,True)] :
+                            validated = False            
+                            print("useage type ",subUsageValue.lower().strip())    
+                            print(USAGE_SUB_USAGE_MAP[process_usage_type(propUsgType,True)])        
+                            write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage "'+str(subUsageValue)+'" not correct as per usage type '+propUsgType,getValue(row[1], str, ''))
+                            #raise Exception("dddd")
 
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], int, ''), '  ',ex)
@@ -890,8 +859,12 @@ def process_occupancy_type(value):
     }
     return OC_MAP[value]
 
-def process_usage_type(value):
-    USAGE_MAP = {
+
+ 
+        
+
+## As its static data so need to load it again
+USAGE_MAP = {
         "Residential": "RESIDENTIAL",
         "Nonresidential ( Nonresidential )": "NONRESIDENTIAL.NONRESIDENTIAL",
         "Commercial ( Nonresidential )": "NONRESIDENTIAL.COMMERCIAL",
@@ -902,12 +875,37 @@ def process_usage_type(value):
         "Slum": "SLUM",
         "None": "RESIDENTIAL"
     }
-    return USAGE_MAP[value]
+USAGE_MAP = { k.strip().lower():USAGE_MAP[k] for k in USAGE_MAP}
 
-def process_sub_usage_type(value):  
-    SUB_USAGE_MAP = {
+def process_usage_type(value, isValidation =False):
+    value =value.strip().lower()
+    if isValidation : 
+        if value in USAGE_MAP : 
+            return USAGE_MAP[value.strip().lower()] 
+        return None
+    return USAGE_MAP[value]
+SUB_USAGE_MAP = {
         'None':'' ,'Animal Dairy(Below 10 Cattle)':'NONRESIDENTIAL.COMMERCIAL.ANIMALDAIRYLESS' , 'Animal Dairy(Above 10 Cattle)':'NONRESIDENTIAL.COMMERCIAL.ANIMALDAIRYMORE' , 'Bank':'NONRESIDENTIAL.COMMERCIAL.BANK' , 'Dhobi':'NONRESIDENTIAL.COMMERCIAL.DHOBI' , 'Dyers':'NONRESIDENTIAL.COMMERCIAL.DYERS' , 'Movie Theatre':'NONRESIDENTIAL.COMMERCIAL.ENTERTAINMENT.MOVIETHEATRE' , 'Multiplex':'NONRESIDENTIAL.COMMERCIAL.ENTERTAINMENT.MULTIPLEX' , 'Marriage Palace':'NONRESIDENTIAL.COMMERCIAL.EVENTSPACE.MARRIAGEPALACE' , 'Ac Restaurant':'NONRESIDENTIAL.COMMERCIAL.FOODJOINTS.ACRESTAURANT' , 'Non Ac Restaurant':'NONRESIDENTIAL.COMMERCIAL.FOODJOINTS.NONACRESTAURANT' , 'Bhojanalaya/Tea Shop/Halwai Shop':'NONRESIDENTIAL.COMMERCIAL.FOODJOINTS.TEA' , 'Hotels':'NONRESIDENTIAL.COMMERCIAL.HOTELS' , 'Pathlab':'NONRESIDENTIAL.COMMERCIAL.MEDICALFACILITY.PATHLAB' , 'Private Dispensary':'NONRESIDENTIAL.COMMERCIAL.MEDICALFACILITY.PVTDISPENSARY' , 'Private Hospital':'NONRESIDENTIAL.COMMERCIAL.MEDICALFACILITY.PVTHOSPITAL' , 'Office Space(Less Than 10 Persons)':'NONRESIDENTIAL.COMMERCIAL.OFFICESPACELESS' , 'Office Space(More Than 10 Persons)':'NONRESIDENTIAL.COMMERCIAL.OFFICESPACEMORE' , 'Other Commercial Usage':'NONRESIDENTIAL.COMMERCIAL.OTHERCOMMERCIALSUBMINOR.OTHERCOMMERCIAL' , 'Petrol Pump':'NONRESIDENTIAL.COMMERCIAL.PETROLPUMP' , 'Grocery Store':'NONRESIDENTIAL.COMMERCIAL.RETAIL.GROCERY' , 'Malls':'NONRESIDENTIAL.COMMERCIAL.RETAIL.MALLS' , 'Pharmacy':'NONRESIDENTIAL.COMMERCIAL.RETAIL.PHARMACY' , 'Showroom':'NONRESIDENTIAL.COMMERCIAL.RETAIL.SHOWROOM' , 'Service Centre':'NONRESIDENTIAL.COMMERCIAL.SERVICECENTER' , 'Statutory Organisation':'NONRESIDENTIAL.COMMERCIAL.STATUTORY.STATUTORYORGANISATION' , 'Manufacturing Facility(Less Than 10 Persons)':'NONRESIDENTIAL.INDUSTRIAL.MANUFACTURINGFACILITY.MANUFACTURINGFACILITYLESS' , 'Manufacturing Facility(More Than 10 Persons)':'NONRESIDENTIAL.INDUSTRIAL.MANUFACTURINGFACILITY.MANUFACTURINGFACILITYMORE' , 'Other Industrial Usage':'NONRESIDENTIAL.INDUSTRIAL.OTHERINDUSTRIALSUBMINOR.OTHERINDUSTRIAL' , 'Godown/Warehouse':'NONRESIDENTIAL.INDUSTRIAL.WAREHOUSE.WAREHOUSE' , 'College':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.COLLEGES' , 'Other Private Educational Institute':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.OTHEREDUCATIONAL' , 'Polytechnic':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.POLYTECHNICS' , 'School':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.SCHOOL' , 'Training Institute':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONAL.TRAININGINSTITUTES' , 'Govt. Aided Educational Institute':'NONRESIDENTIAL.INSTITUTIONAL.EDUCATIONALGOVAIDED.GOVAIDEDEDUCATIONAL' , 'Historical Building':'NONRESIDENTIAL.INSTITUTIONAL.HISTORICAL.HISTORICAL' , 'Stray Animal Care Center':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.ANIMALCARE' , 'Home For The Disabled / Destitute':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.DISABLEDHOME' , 'Old Age Homes':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.OLDAGEHOMES' , 'Orphanage':'NONRESIDENTIAL.INSTITUTIONAL.HOMESFORSPECIALCARE.ORPHANAGE' , 'Others':'NONRESIDENTIAL.INSTITUTIONAL.OTHERINSTITUTIONALSUBMINOR.OTHERINSTITUTIONAL' , 'Community Hall':'NONRESIDENTIAL.INSTITUTIONAL.PUBLICFACILITY.COMMUNITYHALL' , 'Govt. Hospital & Dispensary':'NONRESIDENTIAL.INSTITUTIONAL.PUBLICFACILITY.GOVTHOSPITAL' , 'Public Libraries':'NONRESIDENTIAL.INSTITUTIONAL.PUBLICFACILITY.LIBRARIES' , 'Golf Club':'NONRESIDENTIAL.INSTITUTIONAL.RECREATIONAL.GOLFCLUB' , 'Social Club':'NONRESIDENTIAL.INSTITUTIONAL.RECREATIONAL.SOCIALCLUB' , 'Sports Stadium':'NONRESIDENTIAL.INSTITUTIONAL.RECREATIONAL.SPORTSSTADIUM' , 'Religious':'NONRESIDENTIAL.INSTITUTIONAL.RELIGIOUSINSTITUITION.RELIGIOUS' , 'Cremation/ Burial Ground':'NONRESIDENTIAL.OTHERS.PUBLICFACILITY.CREMATIONBURIAL'
-    }
+}
+SUB_USAGE_MAP = { k.strip().lower():SUB_USAGE_MAP[k] for k in SUB_USAGE_MAP}
+
+USAGE_SUB_USAGE_MAP =dict()
+for ele in USAGE_MAP :
+    if USAGE_MAP[ele] not in USAGE_SUB_USAGE_MAP  : 
+        USAGE_SUB_USAGE_MAP[USAGE_MAP[ele]]=list()
+for sub_usg_key in SUB_USAGE_MAP : 
+    sub_usg_val =SUB_USAGE_MAP[sub_usg_key]
+    for ele in USAGE_SUB_USAGE_MAP :
+        if sub_usg_val.startswith(ele) :
+            USAGE_SUB_USAGE_MAP[ele].append(sub_usg_key.strip().lower())
+
+ 
+
+
+
+
+def process_sub_usage_type(value,  isValidation =False ):  
+    value =value.strip().lower()
     return SUB_USAGE_MAP[value]
 
 def process_ownership_type(value):
@@ -958,7 +956,10 @@ def getLocalityData(cityname):
         
 
 if __name__ == "__main__":
-    main()    
+    # print(process_usage_type("Slum",True))
+    main()
+    
+    
               
 
 
