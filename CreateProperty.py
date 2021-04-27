@@ -37,7 +37,7 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\PDIC7\Downloads\WaterSewerageTemplates-20210427T071128Z-001\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -61,7 +61,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='dehradun' : #'roorkee'  :
+                    if True: # cityname =='ahmednagar' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -287,8 +287,8 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         #logfile.write(reason)
                     elif subUsageValue.lower().strip() not in  USAGE_SUB_USAGE_MAP[process_usage_type(propUsgType,True)] :
                             validated = False            
-                            print("useage type ",subUsageValue.lower().strip())    
-                            print(USAGE_SUB_USAGE_MAP[process_usage_type(propUsgType,True)])        
+                            # print("useage type ",subUsageValue.lower().strip())    
+                            # print(USAGE_SUB_USAGE_MAP[process_usage_type(propUsgType,True)])        
                             write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage "'+str(subUsageValue)+'" not correct as per usage type '+propUsgType,getValue(row[1], str, ''))
                             #raise Exception("dddd")
 
