@@ -40,7 +40,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     validated = ValidateCols(waterFile, water_sheet, logfile)
     if not validated :
         print("Column Mismatch, sheets needs to be corrected")
-        config["error_in_excel"].append(cityname +" have issue in water sheet")
+        config["error_in_excel"].append(cityname +" have column issue in water sheet")
         return validated
 
     abas_ids = [] 
@@ -109,7 +109,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
                 elif pd.isna(getTime(row[22])):
                     validated = False
-                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[22]) +' Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[22]) +' Invalid last billed date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
             if isna(row[18]):
                     validated = False
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Activation date is empty',getValue(row[1], str, ''))
@@ -199,6 +199,8 @@ def ValidateCols(waterFile, sheet, logfile):
        'Connection Holder Details', None, None, None, None, None, None, None, None, None, 'Pipe Size (inch)*', 'Water Source Type*', 'Connection Type*', 'Motor Info*', 'Activation Date*', 'Connection Permission*', 'Meter ID', 'Last Meter Reading ', 'Last Billed Date*', 'No.of taps*']
     
     column_list = [c.value for c in next(sheet.iter_rows(min_row=1, max_row=2))]
+    # print(len(proper_column_order))
+    # print(len(column_list))
     validated = True
     ## Approach 1 : check for individual column 
     for i in range(0, 23):

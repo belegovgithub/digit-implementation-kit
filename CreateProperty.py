@@ -37,7 +37,7 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\PDIC7\Downloads\water_sewarage\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -61,7 +61,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='testing' : #'roorkee'  :
+                    if cityname =='dehradun' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -81,9 +81,6 @@ def main() :
         for element in config.error_in_excel:
                     cbHaveExcelIssue.write(element + "\n") 
         cbHaveExcelIssue.close()
-
- 
-    
 
 
 def cbMain(cityname, successlogfile):
@@ -183,8 +180,8 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
         abas_ids_sheet2 = []        
         reason = 'Property file validation starts.\n'
         # validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
-        #print('no. of rows in Property file sheet 1: ', sheet1.max_row ) 
-        for index in range(3, sheet1.max_row +1): 
+        # print('no. of rows in Property file sheet 1: ', sheet2.max_row ) 
+        for index in range(3, sheet2.max_row +1): 
             if pd.isna(sheet2['A{0}'.format(index)].value):                    
                 break
             propSheetABASId = sheet2['A{0}'.format(index)].value
@@ -227,10 +224,7 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                 elif locality.lower() not in localityDict :
                     validated = False
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(locality) +' Locality/ Mohalla does not exist in system ',getValue(row[1], str, ''))
-                if not isna(row[32]) and getTime(row[32]) is None : 
-                    validated = False
-                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(row[32]) +' Invalid date format, Please add in dd/mm/yyyy- 24/04/2021 ',getValue(row[1], str, ''))
-
+                
                 if(str(row[27]) != "Multiple Owners"):
                     if pd.isna(row[28]):
                         validated = False
@@ -263,6 +257,10 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         reason = 'Property File data validation failed, Email id is not proper for abas id '+ getValue(row[1], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
                         #logfile.write(reason)
+                    if not pd.isna(row[32]) and getTime(row[32]) is None:
+                        validated = False
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
+                
                 elif(str(row[27]) == "Multiple Owners"):
                     if getValue(row[1], str, "") not in abas_ids_sheet2:
                         validated = False
@@ -281,7 +279,7 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         or getValue(row[7], str, "") == 'Residential' or getValue(row[7], str, '') == 'SLUM'):
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is not correct.\n'
-                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'usage type is not correct',getValue(row[1], str, ''))
+                    write(logfile,propertyFile,sheet1.title,getValue(row[7], str, ''),'usage type is not correct',"'" + getValue(row[1], str, '') + "'")
                     #logfile.write(reason)    
                 elif(getValue(row[7], str, "") == 'Commercial ( Nonresidential )' or getValue(row[7], str, "") == 'Institutional ( Nonresidential )'
                         or getValue(row[7], str, "") == 'Industrial ( Nonresidential )' or getValue(row[7], str, '') == 'Others ( Nonresidential )'):
@@ -323,9 +321,7 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                     if not (getValue(row[8], str, '')  == 'Cremation/ Burial Ground') :
                         validated = False
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage category not correct as per usage type Others ( Nonresidential )',getValue(row[1], str, ''))
-                # if not pd.isna(row[32]) and pd.isna(getTime(row[32])):
-                #     validated = False
-                #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Date is not correct for DOB',getValue(row[1], str, ''))
+                
 
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], int, ''), '  ',ex)
@@ -394,10 +390,7 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                     if not isna(row[6]) and getTime(row[6]) is None : 
                         validated = False
                         write(logfile,propertyFile,sheet2.title,None, str(row[6]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[0], str, ''))
-
-                    # if not pd.isna(row[6]) and pd.isna(getTime(row[6])):
-                    #     validated = False
-                    #     write(logfile,propertyFile,sheet2.title,None,'Date is not correct for DOB',getValue(row[0], str, ''))
+  
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], str, ''), '  ',ex)
                 # write(logfile,propertyFile,sheet2.title,None,str(ex) ,getValue(row[0], str, ''))

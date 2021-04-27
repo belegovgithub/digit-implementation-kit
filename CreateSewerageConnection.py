@@ -182,7 +182,7 @@ def ValidateCols(sewerageFile, sheet, logfile):
             validated = False
             write(logfile,sewerageFile,sheet.title,None,'Column order / name is not correct',column_list[i])
             # break
-    ## Approach 2 -- Directly check difference in column
+    # Approach 2 -- Directly check difference in column
     
     missingColumnHeader = list(set(proper_column_order)-set(column_list))
     extraColumnHeader = list(set(column_list)-set(proper_column_order))
