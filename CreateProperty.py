@@ -37,7 +37,7 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -61,7 +61,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True: # cityname =='ahmednagar' : #'roorkee'  :
+                    if True: #cityname =='jalandhar' : #'roorkee'  :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -112,7 +112,7 @@ def cbMain(cityname, successlogfile):
     
     if os.path.exists(propertyFile) : 
         localityDict = getLocalityData(cityname) 
-        validate =  validateDataForProperty(propertyFile, logfile,localityDict)
+        validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname)
         if(validate == False):                
             print('Data validation for property Failed, Please check the log file.') 
             if config.INSERT_DATA: 
@@ -168,7 +168,7 @@ def cbMain(cityname, successlogfile):
         print("Error in parsing json file",ex)
 
 
-def validateDataForProperty(propertyFile, logfile,localityDict):
+def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
     validated = True
     reason = ''
 
@@ -179,12 +179,16 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
         abas_ids = []        
         abas_ids_sheet2 = []        
         reason = 'Property file validation starts.\n'
-        # validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
+        validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
+        if not validated :
+            print("Column Mismatch, sheets needs to be corrected")
+            config["error_in_excel"].append(cityname +" have column issue in property sheet")
+            # return validated
         # print('no. of rows in Property file sheet 1: ', sheet2.max_row ) 
-        for index in range(3, sheet2.max_row +1): 
+        for index in range(2, sheet2.max_row +1): 
             if pd.isna(sheet2['A{0}'.format(index)].value):                    
                 break
-            propSheetABASId = sheet2['A{0}'.format(index)].value
+            propSheetABASId = sheet2['A{0}'.format(index)].value            
             if type(propSheetABASId) == int or type(propSheetABASId) == float:
                 propSheetABASId = str(int(sheet2['A{0}'.format(index)].value)) 
             abas_ids_sheet2.append(str(propSheetABASId).strip())
@@ -262,10 +266,13 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
                 
                 elif(str(row[27]) == "Multiple Owners"):
-                    if getValue(row[1], str, "") not in abas_ids_sheet2:
+                    propSheetABASId = ''
+                    if type(row[1]) == int or type(row[1]) == float:
+                        propSheetABASId = str(int(row[1])) 
+                    if propSheetABASId not in abas_ids_sheet2:
                         validated = False
                         reason = 'Property File data validation failed, abas id for multiple ownership is not available in Property Ownership Details sheet  '+ getValue(row[1], str, '') +'\n'
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas id for multiple ownership is not available in Property Ownership Details sheet ',getValue(row[1], str, ''))
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas id for multiple ownership is not available in Property Ownership Details sheet ',propSheetABASId)
                         #logfile.write(reason)
                 propUsgType=getValue(row[7], str, "")
                 if pd.isna(row[7]):
@@ -276,7 +283,7 @@ def validateDataForProperty(propertyFile, logfile,localityDict):
                 elif process_usage_type(propUsgType,True) is None:
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is not correct.\n'
-                    write(logfile,propertyFile,sheet1.title,getValue(row[7], str, ''),'usage type is not correct',"'" + getValue(row[1], str, '') + "'")
+                    write(logfile,propertyFile,sheet1.title,getValue(row[7], str, ''),'usage type is not correct', getValue(row[1], str, ''))
                     #logfile.write(reason)    
                 elif propUsgType.find("(") != -1 :
                     subUsageValue =getValue(row[8], str, '')

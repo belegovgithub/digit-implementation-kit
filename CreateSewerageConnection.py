@@ -42,7 +42,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     if not validated :
         print("Column Mismatch, sheets needs to be corrected")
         config["error_in_excel"].append(cityname +" have issue in Sewerage sheet")
-        return validated
+        # return validated
     abas_ids = [] 
     old_connections = []
     try:
@@ -90,12 +90,12 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 #logfile.write(reason)
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
             if(str(row[3]).strip() == 'No'):
-                if pd.isna(row[4]) :
-                    validated = False
-                    reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
-                    #logfile.write(reason) 
-                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
-                elif not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
+                # if pd.isna(row[4]) :
+                #     validated = False
+                #     reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
+                #     #logfile.write(reason) 
+                #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
+                if not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
                         validated = False
                         reason = 'Sewerage File data validation failed, Mobile number not correct for abas id '+ str(getValue(row[0], int, '')) +'\n'
                         write(logfile,sewerageFile,sewerage_sheet.title,None,'Mobile number not correct',getValue(row[0], int, ''))
@@ -118,12 +118,12 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 if len(getValue(row[6], str, "")) > 0 and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[6]))) :                      
                     validated = False
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
-            if pd.isna(row[18]):
-                validated = False
-                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
-            elif pd.isna(getTime(row[18])):
-                validated = False
-                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+            # if pd.isna(row[18]):
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
+            # elif pd.isna(getTime(row[18])):
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
             if pd.isna(row[17]):
                 validated = False
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Activation date is empty',getValue(row[1], str, ''))

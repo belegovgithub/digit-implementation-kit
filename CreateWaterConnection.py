@@ -41,7 +41,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
     if not validated :
         print("Column Mismatch, sheets needs to be corrected")
         config["error_in_excel"].append(cityname +" have column issue in water sheet")
-        return validated
+        # return validated
 
     abas_ids = [] 
     old_connections = []
@@ -118,12 +118,12 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
 
             if(str(row[3]).strip() == 'No'):
-                if pd.isna(row[4]) :
-                    validated = False
-                    reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
-                    #logfile.write(reason) 
-                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
-                elif not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
+                # if pd.isna(row[4]) :
+                #     validated = False
+                #     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
+                #     #logfile.write(reason) 
+                #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
+                if not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
                     validated = False
                     reason = 'Water File data validation failed, Mobile number not correct for abas id '+ getValue(row[1], str, '') +'\n'
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Mobile number not correct',getValue(row[1], str, ''))
