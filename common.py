@@ -234,7 +234,6 @@ def get_used_localities(auth_token, boundary_data, boundary_type):
             "tenantId": tenant_id
         }
     }), headers={'Content-Type': 'application/json'})
-
     localities_used = resp.json()["services"]
     localities_in_use = []
     if boundary_type == "REVENUE":
@@ -248,7 +247,7 @@ def get_used_localities(auth_token, boundary_data, boundary_type):
     return localities_in_use
 
 
-def create_boundary(config_function, boundary_type):
+def create_boundary(auth_token, config_function, boundary_type,write_localization=False):
     # load_admin_boundary_config()
     current_boundary_type = boundary_type
     config_function()
@@ -261,8 +260,7 @@ def create_boundary(config_function, boundary_type):
     zones = zones.astype(str)
     locality = locality.astype(str)
 
-    offset = 1
-
+ 
     index_code = get_column_index(wards, config.COLUMN_WARD_CODE) or 1
     index_name = get_column_index(wards, config.COLUMN_WARD_NAME) or 2
     index_zone_name = get_column_index(wards, config.COLUMN_WARD_ADMIN_ZONE_NAME) or 3
@@ -397,25 +395,19 @@ def create_boundary(config_function, boundary_type):
         ]
     }
 
-    data = json.dumps(final_data, indent=2)
+    #data = json.dumps(final_data, indent=2)
+    #print(data)
 
-    print(data)
+    # errors = validate_boundary_data(auth_token, final_data, boundary_type, config.BOUNDARY_DUPLICATE_CHECK,
+    #                                 config.BOUNDARY_USED_CHECK)
+    # if len(errors) > 0:
+    #     for error in errors:
+    #         print(error)
+    #     return
 
-    auth_token = superuser_login()["access_token"]
-    errors = validate_boundary_data(auth_token, final_data, boundary_type, config.BOUNDARY_DUPLICATE_CHECK,
-                                    config.BOUNDARY_USED_CHECK)
-    if len(errors) > 0:
-        for error in errors:
-            print(error)
-        return
+ 
 
-    import os
-    if config.ASSUME_YES:
-        response = os.getenv("ASSUME_YES", None) or input("\nDo you want to append the data in repo (y/[n])? ")
-    else:
-        response = "y"
-
-    if response.lower() == "y":
+    if True:
 
         boundary_path = config.MDMS_LOCATION / config.CITY_NAME.lower() / "egov-location"
         os.makedirs(boundary_path, exist_ok=True)
@@ -423,26 +415,30 @@ def create_boundary(config_function, boundary_type):
         if os.path.isfile(boundary_path / "boundary-data.json"):
             with open(boundary_path / "boundary-data.json") as f:
                 existing_boundary_data = json.load(f)
+            revenue_bdy =None 
+            for bdy in existing_boundary_data["TenantBoundary"] : 
+                if bdy["hierarchyType"]["code"]=="REVENUE":
+                    revenue_bdy =bdy["boundary"]
 
-            if len(existing_boundary_data["TenantBoundary"]) == 0:
-                # should never happen but just in case
-                existing_boundary_data["TenantBoundary"].append(new_boundary_data)
-                print("Boundary added")
-            elif len(existing_boundary_data["TenantBoundary"]) == 1:
-                if existing_boundary_data["TenantBoundary"][0]["hierarchyType"]["code"] == current_boundary_type:
-                    existing_boundary_data["TenantBoundary"][0] = new_boundary_data
-                    print("Boundary already exists. Overwriting")
-                else:
-                    existing_boundary_data["TenantBoundary"].append(new_boundary_data)
-                    print("Boundary file exists. Adding new data")
-            elif len(existing_boundary_data["TenantBoundary"]) == 2:
-                if existing_boundary_data["TenantBoundary"][0]["hierarchyType"]["code"] == current_boundary_type:
-                    existing_boundary_data["TenantBoundary"][0] = new_boundary_data
-                else:
-                    existing_boundary_data["TenantBoundary"][1] = new_boundary_data
-                print("Boundary already exists. Overwriting")
-                print("File Path : ", boundary_path, "boundary-data.json")
-
+            for new_z in zones_list :  
+                existing_zone =list(filter(lambda zone_data: zone_data["code"]==new_z["code"],revenue_bdy["children"]))
+                if len(existing_zone) ==0 : 
+                    revenue_bdy["children"].append(new_z)
+                else : 
+                    ## zone exist then get the first result
+                    existing_zone=existing_zone[0]
+                    for new_w in new_z["children"]:
+                        existing_ward =list(filter(lambda ward_data: ward_data["code"]==new_w["code"], existing_zone["children"]))
+                        if len(existing_ward) ==0 : 
+                            existing_zone["children"].append (new_w)
+                        else : 
+                            ## ward exist 
+                            existing_ward=existing_ward[0]
+                            for new_m in new_w["children"]:
+                                existing_mohalla =list(filter(lambda mohalla_data: mohalla_data["code"]==new_m["code"], existing_ward["children"]))
+                                if len(existing_mohalla) ==0 : 
+                                    existing_ward["children"].append (new_m)
+                                
         else:
             # the file doesn't exists already, so we can safely generate current boundary
             print("Boundary didn't exist. Creating one")
@@ -452,9 +448,83 @@ def create_boundary(config_function, boundary_type):
         with open(os.path.join(boundary_path , "boundary-data.json"), "w") as f:
             json.dump(existing_boundary_data, f, indent=2)
 
-    process_boundary_localization_hindi(zones, wards, locality)
+    process_boundary_localization_hindi(auth_token,zones, wards, locality,boundary_path,write_localization)
+    process_boundary_localization_english(auth_token, boundary_path,write_localization )
 
-def process_boundary_localization_hindi(zones, wards, locality):
+def get_code(prefix, code):
+    import re
+    patt = re.compile(r"[-.\s'\"+]", re.I)
+    return (patt.sub("_", prefix) + "_" + patt.sub("_", code)).upper()
+
+def process_boundary_localization_english(auth_token, boundary_path,   write_localization=False):
+    locale_data = []
+    with open(os.path.join(boundary_path , "boundary-data.json"), mode="r") as f:
+        data = json.load(f)
+        used_codes = set()
+        for b in data["TenantBoundary"]:
+            boundary_type = b["hierarchyType"]["code"]
+            tenant_id = b["boundary"]["code"]
+
+            locale_module = "rainmaker-" + tenant_id
+
+            for l1 in b["boundary"]["children"]:
+                code = get_code(tenant_id + "_" + boundary_type , l1["code"])
+                if code not in used_codes:
+                    used_codes.add(code)
+                    locale_data.append({
+                        "code": code,
+                        "message": l1["name"],
+                        "module": locale_module,
+                        "locale": "en_IN"
+                    })
+
+                for l2 in l1["children"]:
+                    code = get_code(tenant_id + "_" + boundary_type , l2["code"])
+                    if code not in used_codes:
+                        used_codes.add(code)
+                        locale_data.append({
+                            "code": code,
+                            "message": l2["name"],
+                            "module": locale_module,
+                            "locale": "en_IN"
+                        })
+
+                    for l3 in l2.get("children", []):
+                        code = get_code(tenant_id + "_" + boundary_type, l3["code"])
+                        if code not in used_codes:
+                            used_codes.add(code)
+                            locale_data.append({
+                                "code": code,
+                                "message": l3["name"],
+                                "module": locale_module,
+                                "locale": "en_IN"
+                            })
+
+            existing_message= search_localization(auth_token,locale_module,"en_IN",tenant_id)["messages"]
+            existing_message_codes =[ e_m["code"] for e_m in existing_message]
+
+            new_data =[]
+            for loc in locale_data :
+                if loc["code"] not in existing_message_codes : 
+                    new_data.append(loc)
+
+            #if generate_file:
+            with io.open(os.path.join(boundary_path,"en_locale.json"), mode="w") as f:        
+                json.dump(new_data, indent=2, fp=f)
+
+            if write_localization : 
+                data = {
+                    "RequestInfo": {
+                        "authToken": "{{access_token}}"
+                    },
+                    "tenantId": tenant_id,
+                    "messages": new_data
+                }
+                localize_response = upsert_localization(auth_token, data)
+                print("Boundary localization for english is pushed.")
+ 
+
+def process_boundary_localization_hindi(auth_token, zones, wards, locality,boundary_path,write_localization):
     load_revenue_boundary_config()    
     locale_module = "rainmaker-" + config.TENANT_ID
     locale_data = []
@@ -482,28 +552,31 @@ def process_boundary_localization_hindi(zones, wards, locality):
                         "module": locale_module,
                         "locale": "hi_IN"
                     })
-    # locale_data.append(locale_data_zone)
-    # locale_data.append(locale_data_ward)
-    # locale_data.append(locale_data_locality)
+ 
 
-    outputpath = Path(".") / "localization" / config.CONFIG_ENV / (
-                    "boundary_" + "REVENUE" + "_" + config.TENANT_ID + ".json")
+ 
 
-    data = {
-        "RequestInfo": {
-            "authToken": "{{access_token}}"
-        },
-        "tenantId": config.TENANT_ID,
-        "messages": locale_data
-    }
+    existing_message= search_localization(auth_token,locale_module,"hi_IN",config.TENANT_ID)["messages"]
+    existing_message_codes =[ e_m["code"] for e_m in existing_message]
 
-    # with io.open(outputpath, mode="w") as f:        
-    #     json.dump(data, indent=2, fp=f)
-    #print(data)
-    auth_token = superuser_login()["access_token"]
-    localize_response = upsert_localization(auth_token, data)
-    print("Boundary localization for hindi is pushed.")
-    #print(localize_response)
+    new_data =[]
+    for loc in locale_data :
+        if loc["code"] not in existing_message_codes : 
+            new_data.append(loc)
+    with io.open(os.path.join(boundary_path,"hi_locale.json"), mode="w") as f:        
+        json.dump(new_data, indent=2, fp=f)
+
+    if write_localization : 
+        data = {
+            "RequestInfo": {
+                "authToken": "{{access_token}}"
+            },
+            "tenantId": config.TENANT_ID,
+            "messages": new_data
+        }
+        localize_response = upsert_localization(auth_token, data)
+        print("Boundary localization for hindi is pushed.")
+ 
     
 def fix_value(val, default_str="", default_nan=None):
     if val is None:
