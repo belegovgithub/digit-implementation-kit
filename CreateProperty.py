@@ -106,7 +106,7 @@ def cbMain(cityname, successlogfile):
     logfile = open(os.path.join(root, name, "Logfile.json"), "w")   
     logfile.write("[ ")  
     if config.INSERT_DATA :
-        validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
+        validate, property_owner_obj = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
         if(validate == False):                
             print('Data validation Failed for mobile entry, Please check the log file.') 
             return
@@ -137,13 +137,13 @@ def cbMain(cityname, successlogfile):
         print("Property File doesnot exist for ", cityname) 
     
     if os.path.exists(waterFile) : 
-        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
+        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj)  
         
     else:
         print("Water File doesnot exist for ", cityname) 
 
     if os.path.exists(sewerageFile) : 
-        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
+        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, property_owner_obj)  
     else:
         print("Sewerage File doesnot exist for ", cityname) 
 
@@ -494,10 +494,10 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_water = openpyxl.load_workbook(waterFile) 
             water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
             for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-                if pd.isna(row[0]):
+                if pd.isna(getValue(row[1],str,None)):
                     continue
                 if(str(row[3]).strip() == 'Yes'):
-                    for obj in owner_obj[str(row[1]).strip()]:
+                    for obj in owner_obj[getValue(row[1],str,"")]:
                         if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
                             validated = False
                             reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip()
@@ -526,10 +526,10 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             wb_sewerage = openpyxl.load_workbook(sewerageFile) 
             sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
             for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
-                if pd.isna(row[0]):
+                if pd.isna(getValue(row[1],str,None)):
                     continue
                 if(str(row[3]).strip() == 'Yes'):
-                    for obj in owner_obj[str(row[1]).strip()]:
+                    for obj in owner_obj[getValue(row[1],str,"")]:
                         if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
                             validated = False
                             reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip()
@@ -542,7 +542,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
         print(config.CITY_NAME," DefaultMobileNo Exception: ",ex)
         traceback.print_exc()
 
-    return validated
+    return validated, owner_obj
 
 def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, name):
     # abas_ids_multiple_owner = []
@@ -599,10 +599,11 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             
             auth_token = superuser_login()["access_token"]
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
-            with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
-                json.dump(res, f, indent=2,  ensure_ascii=False)
+            # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
+            #     json.dump(res, f, indent=2,  ensure_ascii=False)
             if(len(res['Properties']) == 0):  
                 try:
+                    print("Property sheet ",property.abasPropertyId)
                     property.oldPropertyId =  getValue( row[2] ,str,None)
                     property.propertyType = process_property_type(str(row[3]).strip())            
                     property.landArea = getValue(row[4],float,1) 
@@ -646,6 +647,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     property.units.append(unit)
                     property.owners = []
                     # converter = lambda  x,y  : x  if x is not pd.isna else y
+                    if type(row[10])== int and row[10] == 0 :
+                        property.noOfFloors = 1
                     property.noOfFloors = getValue(row[10],int,1) 
                     property.noOfFlats = getValue(row[11],int,0) 
                     financial_year = getValue(row[23],str,"2020-2021").replace("-20", "-")

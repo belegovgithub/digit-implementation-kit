@@ -14,7 +14,7 @@ import traceback
 def main():
     Flag =False
     
-def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname) :
+def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
@@ -235,7 +235,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     for row in sewerageSheet.iter_rows(min_row=3, max_col=22, max_row=sewerageSheet.max_row +1 , values_only=True):
          
         index = index + 1
-        abasPropertyId =  getValue(str(row[1]).strip(),str,None)  
+        abasPropertyId =  getValue(str(row[1]).strip(),str,None)          
         property = Property() 
         auth_token = superuser_login()["access_token"]
         tenantId = 'pb.'+ cityname
@@ -253,6 +253,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
         # with io.open(os.path.join(root, name,"sewerage_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         if(len(res['SewerageConnections']) == 0):
+            print("Sewerage sheet ",abasPropertyId)
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False) 

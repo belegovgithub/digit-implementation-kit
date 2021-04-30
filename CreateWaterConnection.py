@@ -13,13 +13,13 @@ import traceback
 def main():
     Flag =False
     
-def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname) :
+def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
     #print('no. of rows in water file: ', waterSheet.max_row ) 
-    validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
+    validate = validateWaterData(propertySheet, waterFile, logfile, cityname, property_owner_obj)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
         if config.INSERT_DATA: 
@@ -271,7 +271,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         
         index = index + 1
         abasPropertyId =  getValue(row[1],str,None)  
-        # print("water sheet ",abasPropertyId)
+        
         property = Property() 
         auth_token = superuser_login()["access_token"]
         tenantId = 'pb.'+ cityname
@@ -290,7 +290,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         # with io.open(os.path.join(root, name,waterConnection.oldConnectionNo+"water_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         
-        if(len(res['WaterConnection']) == 0):        
+        if(len(res['WaterConnection']) == 0):   
+            print("water sheet ",abasPropertyId)     
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False) 
