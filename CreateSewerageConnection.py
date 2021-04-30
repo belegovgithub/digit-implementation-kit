@@ -38,11 +38,11 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
     index = 2
     reason = 'sewerage file validation starts.\n'
-    validated = ValidateCols(sewerageFile, sewerage_sheet, logfile)
-    if not validated :
-        print("Column Mismatch, sheets needs to be corrected")
-        config["error_in_excel"].append(cityname +" have issue in Sewerage sheet")
-        # return validated
+    # validated = ValidateCols(sewerageFile, sewerage_sheet, logfile)
+    # if not validated :
+    #     print("Column Mismatch, sheets needs to be corrected")
+    #     config["error_in_excel"].append(cityname +" have issue in Sewerage sheet")
+
     abas_ids = [] 
     old_connections = []
     try:
@@ -175,23 +175,28 @@ def ValidateCols(sewerageFile, sheet, logfile):
     column_list = [c.value for c in next(sheet.iter_rows(min_row=2, max_row=2))]
 
     validated = True
-    ## Approach 1 : check for individual column 
-    for i in range(4, 19):
-        if(proper_column_order[i].strip() != column_list[i].strip()) :
-            print('Sewerage file', column_list[i])
-            validated = False
-            write(logfile,sewerageFile,sheet.title,None,'Column order / name is not correct',column_list[i])
-            # break
-    # Approach 2 -- Directly check difference in column
-    
-    missingColumnHeader = list(set(proper_column_order)-set(column_list))
-    extraColumnHeader = list(set(column_list)-set(proper_column_order))
-    if len (missingColumnHeader) > 0 : 
-        write(logfile,sewerageFile,sheet.title,None,' Some Columns are Missing In Sheet')
-        validated=False
-    if len (extraColumnHeader) > 0 :
-        write(logfile,sewerageFile,sheet.title,None,'Extra Columns exist in Sheet')
-        validated=False
+    try:
+        ## Approach 1 : check for individual column 
+        for i in range(4, 19):
+            if(proper_column_order[i].strip() != column_list[i].strip()) :
+                print('Sewerage file', column_list[i])
+                validated = False
+                write(logfile,sewerageFile,sheet.title,None,'Column order / name is not correct',column_list[i])
+                # break
+        # Approach 2 -- Directly check difference in column
+        
+        missingColumnHeader = list(set(proper_column_order)-set(column_list))
+        extraColumnHeader = list(set(column_list)-set(proper_column_order))
+        if len (missingColumnHeader) > 0 : 
+            write(logfile,sewerageFile,sheet.title,None,' Some Columns are Missing In Sheet')
+            validated=False
+        if len (extraColumnHeader) > 0 :
+            write(logfile,sewerageFile,sheet.title,None,'Extra Columns exist in Sheet')
+            validated=False
+    except Exception as ex:
+        validated = False
+        print(config.CITY_NAME," validateCols Sewerage Exception: ",ex)
+        traceback.print_exc()
     return validated 
     
 def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name):
@@ -201,28 +206,29 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1 ):    
         try:    
-            abas_id = propertySheet['B{0}'.format(i)].value.strip()
-            for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
-                owner = Owner()
-                address = Address()
-                address.buildingName = getValue(row[17].strip(),str,"")
-                address.doorNo = getValue(row[18],str,"")
-                correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
-                owner.name = getValue(row[28],str,"NAME")
-                owner.mobileNumber = getValue(row[29],str,"3000000000")
-                owner.emailId = getValue(row[30],str,"")
-                owner.gender = process_gender(row[31])
-                owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
-                owner.relationship =  process_relationship(row[34])
-                owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
-                if(owner.sameAsPeropertyAddress ==  'Yes'):
-                    owner.correspondenceAddress = correspondence_address
-                else: 
-                    owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
-                owner.ownerType =  process_special_category(str(row[37]).strip())
-                if abas_id not in owner_obj:
-                    owner_obj[abas_id] = []
-                owner_obj[abas_id].append(owner)
+            abas_id = getValue(propertySheet['B{0}'.format(i)].value,str,None)
+            if not pd.isna(abas_id):
+                for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
+                    owner = Owner()
+                    address = Address()
+                    address.buildingName = getValue(row[17].strip(),str,"")
+                    address.doorNo = getValue(row[18],str,"")
+                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
+                    owner.name = getValue(row[28],str,"NAME")
+                    owner.mobileNumber = getValue(row[29],str,"3000000000")
+                    owner.emailId = getValue(row[30],str,"")
+                    owner.gender = process_gender(row[31])
+                    owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
+                    owner.relationship =  process_relationship(row[34])
+                    owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
+                    if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        owner.correspondenceAddress = correspondence_address
+                    else: 
+                        owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
+                    owner.ownerType =  process_special_category(str(row[37]).strip())
+                    if abas_id not in owner_obj:
+                        owner_obj[abas_id] = []
+                    owner_obj[abas_id].append(owner)
         except Exception as ex:
             print(config.CITY_NAME," createSewerageJson Exception: ", getValue(row[0], int, ''), '   ', ex)
     index = 2
@@ -236,7 +242,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
             print("empty Abas id in sewerage file for sl no. ", getValue(row[0], int, ''))
-            continue
+            break
         sewerageConnection = SewerageConnection()
         connectionHolder = ConnectionHolder()
         processInstance = ProcessInstance()
@@ -362,6 +368,7 @@ def process_relationship(value):
         "parent": "PARENT",
         "spouse": "SPOUSE",
         "gurdian": "GUARDIAN",
+        "guardian": "GUARDIAN",
         "none": "PARENT"
     }
     return relationship_MAP[value]
