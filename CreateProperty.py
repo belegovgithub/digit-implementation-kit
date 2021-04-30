@@ -647,9 +647,9 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     property.units.append(unit)
                     property.owners = []
                     # converter = lambda  x,y  : x  if x is not pd.isna else y
-                    if type(row[10])== int and row[10] == 0 :
-                        property.noOfFloors = 1
                     property.noOfFloors = getValue(row[10],int,1) 
+                    if(int(property.noOfFloors) == 0):
+                        property.noOfFloors = getValue(1,int,1)
                     property.noOfFlats = getValue(row[11],int,0) 
                     financial_year = getValue(row[23],str,"2020-2021").replace("-20", "-")
                     property.financialYear = financial_year

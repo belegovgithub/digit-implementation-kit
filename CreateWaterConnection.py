@@ -31,7 +31,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
         wb_water.save(waterFile)        
     wb_water.close()
 
-def validateWaterData(propertySheet, waterFile, logfile, cityname):
+def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owner_obj):
     validated = True
     wb_water = openpyxl.load_workbook(waterFile) 
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details')     
@@ -115,8 +115,12 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
             elif getTime(row[18]) is None:
                 validated = False
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
-
-            if(str(row[3]).strip() == 'No'):
+            if(str(row[3]).strip() == 'Yes'):
+                for obj in property_owner_obj[getValue(row[1],str,"")]:
+                    if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+                        validated = False
+                        write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D and connection holder detail is mandatory ',getValue(row[1], str, ''))
+            elif(str(row[3]).strip() == 'No'):
                 # if pd.isna(row[4]) :
                 #     validated = False
                 #     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'

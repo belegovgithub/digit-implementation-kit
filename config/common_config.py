@@ -69,7 +69,7 @@ config.ROLE_CODE_MAP = {
 
 
 def load_config():
-    config.INSERT_DATA =False
+    config.INSERT_DATA =True
     config.isUpdateallowed = False
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
@@ -257,7 +257,9 @@ def getValue(value,dataType,defValue="") :
         if(value == None or value == 'None' or pd.isna(value)): 
             return defValue    
         else : 
-            if dataType ==str : 
+            if dataType ==str :
+                if type(value) == int or type(value) == float:
+                    value= str(int(value))
                 return dataType(value).strip()
             elif dataType == float:
                 return round(value, 2)

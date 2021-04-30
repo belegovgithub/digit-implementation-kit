@@ -20,7 +20,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
     sewerageSheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details')  
     #print('no. of rows in sewerage file: ', sewerageSheet.max_row +1 ) 
-    validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname)  
+    validate = validateSewerageData(propertySheet, sewerageFile, logfile, cityname, property_owner_obj)  
     if(validate == False):                
         print('Data validation for sewerage Failed, Please check the log file.') 
         if config.INSERT_DATA: 
@@ -32,7 +32,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
         wb_sewerage.save(sewerageFile)        
     wb_sewerage.close()
 
-def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
+def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, property_owner_obj):
     validated = True
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
@@ -89,7 +89,12 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname):
                 reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
                 #logfile.write(reason)
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
-            if(str(row[3]).strip() == 'No'):
+            if(str(row[3]).strip() == 'Yes'):
+                for obj in property_owner_obj[getValue(row[1],str,"")]:
+                    if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+                        validated = False
+                        write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D and connection holder detail is mandatory ',getValue(row[1], str, ''))
+            elif(str(row[3]).strip() == 'No'):
                 # if pd.isna(row[4]) :
                 #     validated = False
                 #     reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
