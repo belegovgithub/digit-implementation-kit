@@ -440,7 +440,8 @@ def process_relationship(value):
         "spouse": "SPOUSE",
         "gurdian": "GUARDIAN",
         "guardian": "GUARDIAN",
-        "none": "PARENT"
+        "none": "PARENT",
+        "na": "PARENT"
     }
     return relationship_MAP[value]
 
@@ -497,7 +498,8 @@ def process_special_category(value):
         "Defense Personnel": "DEFENSE",
         "Employee/Staff of CB": "STAFF",
         "None of the above": "NONE",
-        "None":"NONE"
+        "None":"NONE",
+        "na":"NONE"
     }
     return special_category_MAP[value]
 

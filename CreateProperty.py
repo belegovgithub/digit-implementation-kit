@@ -830,7 +830,8 @@ def process_relationship(value):
         "spouse": "SPOUSE",
         "gurdian": "GUARDIAN",
         "guardian": "GUARDIAN",
-        "none": "PARENT"
+        "none": "PARENT",
+        "na": "PARENT"
     }
     return relationship_MAP[value]
 
@@ -925,11 +926,6 @@ for sub_usg_key in SUB_USAGE_MAP :
         if sub_usg_val.startswith(ele) :
             USAGE_SUB_USAGE_MAP[ele].append(sub_usg_key.strip().lower())
 
- 
-
-
-
-
 def process_sub_usage_type(value,  isValidation =False ):  
     value =value.strip().lower()
     return SUB_USAGE_MAP[value]
@@ -959,7 +955,8 @@ def process_special_category(value):
         "defense personnel": "DEFENSE",
         "employee/staff of cb": "STAFF",
         "none of the above": "NONE",
-        "none":"NONE"
+        "none":"NONE",
+        "na":"NONE"
     }
     return special_category_MAP[value]
 
