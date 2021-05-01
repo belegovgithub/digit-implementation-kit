@@ -9,9 +9,6 @@ import pandas as pd
 import openpyxl
 import collections
 import traceback
-            
-def main():
-    Flag =False
     
 def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
@@ -52,9 +49,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                 # write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
                 #logfile.write(reason)
                 continue
-            propSheetABASId = propertySheet['B{0}'.format(index)].value
-            if type(propSheetABASId) == int or type(propSheetABASId) == float:
-                propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
+            propSheetABASId = getValue(propertySheet['B{0}'.format(index)].value, str,'')
             abas_ids.append(str(propSheetABASId).strip())     
     except Exception as ex:
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
@@ -115,12 +110,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
             elif getTime(row[18]) is None:
                 validated = False
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
-            if(str(row[3]).strip() == 'Yes'):
-                for obj in property_owner_obj[getValue(row[1],str,"")]:
-                    if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-                        validated = False
-                        write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D and connection holder detail is mandatory ',getValue(row[1], str, ''))
-            elif(str(row[3]).strip() == 'No'):
+            if(str(row[3]).strip().lower() == 'no'):
                 # if pd.isna(row[4]) :
                 #     validated = False
                 #     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
@@ -157,14 +147,19 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
                     #logfile.write(reason)
             if not pd.isna(row[1]):
-                abasid = row[1]
-                if type(abasid) == int or type(abasid) ==float : 
-                    abasid = str(int (abasid))
+                abasid = getValue(row[1], str, '')
                 if str(abasid).strip() not in abas_ids:                    
                     validated = False
                     reason = 'there is no abas id available in property data for water connection sl no. '+ getValue(row[0], str, '') +'\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'ABAS id not available in property data',getValue(row[1], str, ''))
+                else:
+                    if str(row[3]).strip().lower() == 'yes' and not pd.isna(abasid):
+                        for obj in property_owner_obj[abasid]:
+                            if(getValue(obj['ownerType'],str,"") == 'Multiple Owners'):
+                                validated = False
+                                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D of water template and connection holder detail is mandatory ',getValue(row[1], str, ''))
+            
         except Exception as ex:
             # write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
             print(config.CITY_NAME," validateWaterData Exception: ", getValue(row[0], int, ''), '  ', ex)
@@ -174,9 +169,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
         try:
             if pd.isna(water_sheet['B{0}'.format(index)].value):                    
                 break
-            oldConnectionNo = water_sheet['C{0}'.format(index)].value
-            if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
-                oldConnectionNo = str(int(water_sheet['C{0}'.format(index)].value)) 
+            oldConnectionNo = getValue(water_sheet['C{0}'.format(index)].value, str,'')
             old_connections.append(str(oldConnectionNo).strip())
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForWater Exception: existing water connection no is empty: ",ex)
@@ -306,7 +299,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     break
                 
                 try:  
-                    if(str(row[3]).strip() == 'Yes'):
+                    if(str(row[3]).strip().lower() == 'yes'):
                         waterConnection.connectionHolders = None
                         # owner = owner_obj[abasPropertyId]
                         # connectionHolder.name = owner.name

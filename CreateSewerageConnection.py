@@ -10,9 +10,6 @@ import pandas as pd
 import openpyxl
 import collections
 import traceback
-
-def main():
-    Flag =False
     
 def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
@@ -53,9 +50,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                 # #logfile.write(reason)
                 # write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
                 continue
-            propSheetABASId = propertySheet['B{0}'.format(index)].value
-            if type(propSheetABASId) == int or type(propSheetABASId) == float:
-                propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
+            propSheetABASId = getValue(propertySheet['B{0}'.format(index)].value, str, '') 
             abas_ids.append(str(propSheetABASId).strip())   
     except Exception as ex:
         print(config.CITY_NAME," validateSewerageData Exception: ", ex)
@@ -89,12 +84,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                 reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
                 #logfile.write(reason)
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
-            if(str(row[3]).strip() == 'Yes'):
-                for obj in property_owner_obj[getValue(row[1],str,"")]:
-                    if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-                        validated = False
-                        write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D and connection holder detail is mandatory ',getValue(row[1], str, ''))
-            elif(str(row[3]).strip() == 'No'):
+            if(str(row[3]).strip().lower() == 'no'):
                 # if pd.isna(row[4]) :
                 #     validated = False
                 #     reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
@@ -138,13 +128,18 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
 
             if not pd.isna(row[1]):
                 abasid = getValue(row[1], str, '')
-                if type(abasid) == int or type(abasid) ==float : 
-                    abasid = str(int (abasid))
                 if str(abasid).strip() not in abas_ids:
                     validated = False
                     reason = 'there is no abas id available in property data for sewerage connection sl no. '+ getValue(row[0], str, '') +'\n'
                     #logfile.write(reason) 
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'ABAS id not available in property data',getValue(row[1], str, ''))
+                else:
+                    if str(row[3]).strip().lower() == 'yes' and not pd.isna(abasid):
+                        for obj in property_owner_obj[abasid]:
+                            if(getValue(obj['ownerType'],str,"") == 'Multiple Owners'):
+                                validated = False
+                                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D of sewerage template and connection holder detail is mandatory ',getValue(row[1], str, ''))
+            
         except Exception as ex:
             print(config.CITY_NAME," validateSewerageData Exception: ", getValue(row[0], int, ''), '   ', ex)
             # write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
@@ -152,9 +147,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
         try:
             if pd.isna(sewerage_sheet['B{0}'.format(index)].value):                    
                 break
-            oldConnectionNo = sewerage_sheet['C{0}'.format(index)].value
-            if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
-                oldConnectionNo = str(int(sewerage_sheet['C{0}'.format(index)].value)) 
+            oldConnectionNo = getValue(sewerage_sheet['C{0}'.format(index)].value, str,'')
             old_connections.append(str(oldConnectionNo).strip())
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForSewerage Exception: existing sewerage connection no is empty: ",ex)
@@ -268,7 +261,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     propertyId = resProperty["propertyId"]
                     break
                 try: 
-                    if(str(row[3]).strip() == 'Yes'):
+                    if(str(row[3]).strip().lower() == 'yes'):
                         sewerageConnection.connectionHolders = None
                     else:
                         connectionHolder.name = getValue(row[5],str,"NAME")

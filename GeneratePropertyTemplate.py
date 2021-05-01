@@ -65,25 +65,26 @@ def main():
                 template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
                 # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
                 dfLocality = getLocalityData(cityname)
+                print(dfLocality)
                 workbook1 = openpyxl.load_workbook(cbFile)   
                 writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
                 writer.book = workbook1                  
                 sheet = workbook1.get_sheet_by_name('Property Assembly Detail')                
-                if(ValidateCols(sheet) == False):
-                    print(cityname, "Column Order Validation Failed")
-                    continue
-                df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
-                df2.to_excel(writer,sheet_name="Master Data",index=False) 
-                df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
+                # if(ValidateCols(sheet) == False):
+                #     print(cityname, "Column Order Validation Failed")
+                #     continue
+                # df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
+                # df2.to_excel(writer,sheet_name="Master Data",index=False) 
+                # df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
                 dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
                 os.makedirs(template_path, exist_ok=True)
-                insert_columns(sheet)  
+                # insert_columns(sheet)  
                                              
                 generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
                 workbook1.save(generatedFile)        
                 workbook1.close()
                 # add_header(templateFile, generatedFile) 
-                DataValidation1(generatedFile)
+                # DataValidation1(generatedFile)
 
                 
 
