@@ -126,7 +126,6 @@ def cbMain(cityname, successlogfile):
         sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')         
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
         
-        localitySheet = wb_property.get_sheet_by_name('Locality')
         df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
         locality_data = {}
         for ind in df.index: 
@@ -139,8 +138,7 @@ def cbMain(cityname, successlogfile):
         print("Property File doesnot exist for ", cityname) 
     
     if os.path.exists(waterFile) : 
-        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj)  
-        
+        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj)          
     else:
         print("Water File doesnot exist for ", cityname) 
 
