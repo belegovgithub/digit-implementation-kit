@@ -24,7 +24,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
             return
     else:
         print('Data validation for sewerage success.')
-    if config.INSERT_DATA: 
+    if config.INSERT_DATA and config.CREATE_SEWERAGE: 
         createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
         wb_sewerage.save(sewerageFile)        
     wb_sewerage.close()

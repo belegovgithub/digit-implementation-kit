@@ -23,7 +23,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
             return
     else:
         print('Data validation for water success.')
-    if config.INSERT_DATA: 
+    if config.INSERT_DATA and config.CREATE_WATER: 
         createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
         wb_water.save(waterFile)        
     wb_water.close()
