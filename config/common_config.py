@@ -72,6 +72,7 @@ def load_config():
     config.INSERT_DATA =True
     config.CREATE_PROPERTY =True
     config.CREATE_WATER =True
+    config.CREATE_SEWERAGE =True
     config.isUpdateallowed = False
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'

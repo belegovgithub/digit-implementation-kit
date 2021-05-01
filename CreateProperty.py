@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='shillong' : 
+                    if cityname =='mhow' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -482,8 +482,8 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                         sheet2['D{0}'.format(index)].value = mobileNumber
                 wb_property.save(propertyFile)        
             wb_property.close()
-        else:
-            print("Property File doesnot exist for ", cityname)  
+        # else:
+        #     print("Property File doesnot exist for ", cityname)  
         if config.CREATE_WATER:
             if os.path.exists(waterFile) :
                 wb_water = openpyxl.load_workbook(waterFile) 
@@ -493,7 +493,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                     index = index + 1
                     if pd.isna(row[0]):
                         continue
-                    if(str(row[3]).strip() == 'No'):
+                    if(str(row[3]).strip().lower() == 'no'):
                         if pd.isna(row[4]):
                             mobileNumber = mobileNumber + 1
                             value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
@@ -513,41 +513,41 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                                 validated = False
                                 reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip()
                                 print(reason)
-                                logfile.write(reason)
-            else:
-                print("Water File doesnot exist for ", cityname)  
+                                # logfile.write(reason)
+            # else:
+            #     print("Water File doesnot exist for ", cityname)  
+        if config.CREATE_SEWERAGE :
+            if os.path.exists(sewerageFile) :
+                wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+                sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
+                index = 2
+                for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
+                    index = index + 1
+                    if pd.isna(row[0]):
+                        continue
+                    if(str(row[3]).strip().lower() == 'no'):
+                        if pd.isna(row[4]):
+                            mobileNumber = mobileNumber + 1
+                            value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+                            logfile.write(value)
+                            sewerage_sheet['E{0}'.format(index)].value = mobileNumber
+                    
+                wb_sewerage.save(sewerageFile)        
+                wb_sewerage.close()
+                wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+                sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
+                for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
+                    if pd.isna(getValue(row[1],str,None)):
+                        continue
+                    if(str(row[3]).strip().lower() == 'yes'):
+                        for obj in owner_obj[getValue(row[1],str,"")]:
+                            if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+                                validated = False
+                                reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip()
+                                # logfile.write(reason)
 
-        if os.path.exists(sewerageFile) :
-            wb_sewerage = openpyxl.load_workbook(sewerageFile) 
-            sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-            index = 2
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
-                index = index + 1
-                if pd.isna(row[0]):
-                    continue
-                if(str(row[3]).strip() == 'No'):
-                    if pd.isna(row[4]):
-                        mobileNumber = mobileNumber + 1
-                        value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-                        logfile.write(value)
-                        sewerage_sheet['E{0}'.format(index)].value = mobileNumber
-                
-            wb_sewerage.save(sewerageFile)        
-            wb_sewerage.close()
-            wb_sewerage = openpyxl.load_workbook(sewerageFile) 
-            sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
-                if pd.isna(getValue(row[1],str,None)):
-                    continue
-                if(str(row[3]).strip().lower() == 'yes'):
-                    for obj in owner_obj[getValue(row[1],str,"")]:
-                        if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-                            validated = False
-                            reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip()
-                            logfile.write(reason)
-
-        else:
-            print("Sewerage File doesnot exist for ", cityname) 
+            # else:
+            #     print("Sewerage File doesnot exist for ", cityname) 
         print("Last mobile number added: ", mobileNumber)
     except Exception as ex:
         print(config.CITY_NAME," DefaultMobileNo Exception: ",ex)
@@ -614,7 +614,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             #     json.dump(res, f, indent=2,  ensure_ascii=False)
             if(len(res['Properties']) == 0):  
                 try:
-                    print("Property sheet ",property.abasPropertyId)
+                    print("Property",property.abasPropertyId)
                     property.oldPropertyId =  getValue( row[2] ,str,None)
                     property.propertyType = process_property_type(str(row[3]).strip())            
                     property.landArea = getValue(row[4],float,1) 

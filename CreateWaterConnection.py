@@ -227,7 +227,6 @@ def ValidateCols(waterFile, sheet, logfile):
     return validated   
 
 def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
-    print("createWaterJson",cityname)
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
@@ -288,7 +287,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         
         if(len(res['WaterConnection']) == 0):   
-            print("water sheet ",abasPropertyId)     
+            print("water",abasPropertyId)     
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False) 
