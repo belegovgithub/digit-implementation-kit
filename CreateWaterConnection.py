@@ -469,6 +469,8 @@ def process_connection_type(value):
 def process_motor_info(value):
     motor_info_MAP = {
         "None": "WITHOUTPUMP",
+        "NA": "WITHOUTPUMP",
+        "na": "WITHOUTPUMP",
         "With Pump": "WITHPUMP",
         "Without Pump": "WITHOUTPUMP"
     }
