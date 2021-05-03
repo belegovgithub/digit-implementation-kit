@@ -507,19 +507,18 @@ def process_boundary_localization_english(auth_token, boundary_path,   write_loc
             for loc in locale_data :
                 if loc["code"] not in existing_message_codes : 
                     new_data.append(loc)
-
-            #if generate_file:
-            with io.open(os.path.join(boundary_path,"en_locale.json"), mode="w") as f:        
-                json.dump(new_data, indent=2, fp=f)
-
-            if write_localization : 
-                data = {
+            data = {
                     "RequestInfo": {
                         "authToken": "{{access_token}}"
                     },
                     "tenantId": tenant_id,
                     "messages": new_data
-                }
+            }
+            #if generate_file:
+            with io.open(os.path.join(boundary_path,"en_locale.json"), mode="w") as f:        
+                json.dump(data, indent=2, fp=f)
+
+            if write_localization : 
                 localize_response = upsert_localization(auth_token, data)
                 print("Boundary localization for english is pushed.")
  
@@ -538,6 +537,7 @@ def process_boundary_localization_hindi(auth_token, zones, wards, locality,bound
                         "module": locale_module,
                         "locale": "hi_IN"
                     })
+    ward_locale =dict()
     for i in range(len(wards)) :         
         locale_data.append({
                         "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_" + wards.iloc[i,1].strip(),
@@ -545,10 +545,16 @@ def process_boundary_localization_hindi(auth_token, zones, wards, locality,bound
                         "module": locale_module,
                         "locale": "hi_IN"
                     })
-    for i in range(len(locality)) :         
+        ward_locale[wards.iloc[i,1].strip()]=wards.iloc[i,3].strip()
+    for i in range(len(locality)) : 
+        mohalla_name=  locality.iloc[i,4].strip()
+        if config.APPEND_WARD_NAME_IN_HINDI_LOCALITY : 
+            mohalla_name =mohalla_name +" - " + ward_locale[locality.iloc[i,5].strip()]
+            
+
         locale_data.append({
                         "code": "PB_"+ config.CITY_NAME.upper() + "_REVENUE_" + locality.iloc[i,2].strip(),
-                        "message": locality.iloc[i,4].strip(),
+                        "message": mohalla_name,
                         "module": locale_module,
                         "locale": "hi_IN"
                     })
@@ -563,17 +569,17 @@ def process_boundary_localization_hindi(auth_token, zones, wards, locality,bound
     for loc in locale_data :
         if loc["code"] not in existing_message_codes : 
             new_data.append(loc)
-    with io.open(os.path.join(boundary_path,"hi_locale.json"), mode="w") as f:        
-        json.dump(new_data, indent=2, fp=f)
-
-    if write_localization : 
-        data = {
+    data = {
             "RequestInfo": {
                 "authToken": "{{access_token}}"
             },
             "tenantId": config.TENANT_ID,
             "messages": new_data
-        }
+    }
+    with io.open(os.path.join(boundary_path,"hi_locale.json"), mode="w") as f:        
+        json.dump(data, indent=2, fp=f)
+
+    if write_localization : 
         localize_response = upsert_localization(auth_token, data)
         print("Boundary localization for hindi is pushed.")
  

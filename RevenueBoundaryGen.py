@@ -12,6 +12,7 @@ from config import config
 
 def main():
     auth_token = superuser_login()["access_token"]
+    config.APPEND_WARD_NAME_IN_HINDI_LOCALITY=False
     create_boundary(auth_token,load_revenue_boundary_config, "REVENUE",write_localization=False)
  
 
