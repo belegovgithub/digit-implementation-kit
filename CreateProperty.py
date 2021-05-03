@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='kirkee' : 
+                    if cityname =='jalandhar' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -419,7 +419,7 @@ def createOwnerObj(propertyFile) :
             sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')        
             for i in range(3, sheet1.max_row +1):
                 #print('B{0}'.format(i))
-                if pd.isna(sheet1['B{0}'.format(i)].value):                    
+                if pd.isna(getValue(sheet1['B{0}'.format(i)].value, str, None)):                    
                     continue
                 abas_id = getValue(sheet1['B{0}'.format(i)].value, str, '')
                 for row in sheet1.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
@@ -564,9 +564,9 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
     multiple_owner_obj = {}
     for i in range(2, sheet2.max_row +1):   
         try:
-            if pd.isna(sheet2['A{0}'.format(i)].value):                    
+            if pd.isna(getValue(sheet2['A{0}'.format(i)].value, str, None)):                    
                 continue     
-            abas_id = sheet2['A{0}'.format(i)].value.strip()
+            abas_id = getValue(sheet2['A{0}'.format(i)].value, str, None)
             for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
                 owner = Owner()
                 Owner.status = 'ACTIVE'
