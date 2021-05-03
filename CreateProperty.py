@@ -37,7 +37,8 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -61,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True: #cityname =='jalandhar' : #'roorkee'  :
+                    if cityname =='mhow' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -103,9 +104,11 @@ def cbMain(cityname, successlogfile):
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
     sewerageFile = os.path.join(root, name, "Template for Existing Sewerage Connection Detail.xlsx")
     logfile = open(os.path.join(root, name, "Logfile.json"), "w")   
-    logfile.write("[ ")  
+    logfile.write("[ ")
+    property_owner_obj = {}
+    property_owner_obj = createOwnerObj(propertyFile)  
     if config.INSERT_DATA :
-        validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile) 
+        validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile, property_owner_obj) 
         if(validate == False):                
             print('Data validation Failed for mobile entry, Please check the log file.') 
             return
@@ -123,12 +126,11 @@ def cbMain(cityname, successlogfile):
         sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')         
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
         
-        localitySheet = wb_property.get_sheet_by_name('Locality')
         df = pd.read_excel(propertyFile, sheet_name='Locality', usecols=['Locality Name', 'Code'])
         locality_data = {}
         for ind in df.index: 
             locality_data[df['Locality Name'][ind]] =  df['Code'][ind]   
-        if config.INSERT_DATA: 
+        if config.INSERT_DATA and config.CREATE_PROPERTY: 
             createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
             wb_property.save(propertyFile)        
         wb_property.close()
@@ -136,13 +138,12 @@ def cbMain(cityname, successlogfile):
         print("Property File doesnot exist for ", cityname) 
     
     if os.path.exists(waterFile) : 
-        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname)  
-        
+        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj)          
     else:
         print("Water File doesnot exist for ", cityname) 
 
     if os.path.exists(sewerageFile) : 
-        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname)  
+        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, property_owner_obj)  
     else:
         print("Sewerage File doesnot exist for ", cityname) 
 
@@ -179,19 +180,17 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
         abas_ids = []        
         abas_ids_sheet2 = []        
         reason = 'Property file validation starts.\n'
-        validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
-        if not validated :
-            print("Column Mismatch, sheets needs to be corrected")
-            config["error_in_excel"].append(cityname +" have column issue in property sheet")
-            # return validated
+        # validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
+        # if not validated :
+        #     print("Column Mismatch, sheets needs to be corrected")
+        #     config["error_in_excel"].append(cityname +" have column issue in property sheet")
+
         # print('no. of rows in Property file sheet 1: ', sheet2.max_row ) 
         for index in range(2, sheet2.max_row +1): 
             if pd.isna(sheet2['A{0}'.format(index)].value):                    
                 break
-            propSheetABASId = sheet2['A{0}'.format(index)].value            
-            if type(propSheetABASId) == int or type(propSheetABASId) == float:
-                propSheetABASId = str(int(sheet2['A{0}'.format(index)].value)) 
-            abas_ids_sheet2.append(str(propSheetABASId).strip())
+            propSheetABASId = getValue(sheet2['A{0}'.format(index)].value , str, '')           
+            abas_ids_sheet2.append(propSheetABASId)
 
         emptyRows=0
         count =0 
@@ -266,9 +265,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
                 
                 elif(str(row[27]) == "Multiple Owners"):
-                    propSheetABASId = ''
-                    if type(row[1]) == int or type(row[1]) == float:
-                        propSheetABASId = str(int(row[1])) 
+                    propSheetABASId = getValue(row[1], str, "")
                     if propSheetABASId not in abas_ids_sheet2:
                         validated = False
                         reason = 'Property File data validation failed, abas id for multiple ownership is not available in Property Ownership Details sheet  '+ getValue(row[1], str, '') +'\n'
@@ -285,7 +282,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                     reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is not correct.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[7], str, ''),'usage type is not correct', getValue(row[1], str, ''))
                     #logfile.write(reason)    
-                elif propUsgType.find("(") != -1 :
+                elif propUsgType.find("(") != -1 and propUsgType != 'Nonresidential ( Nonresidential )' :
                     subUsageValue =getValue(row[8], str, '')
                     if pd.isna(row[8]):
                         validated = False
@@ -307,10 +304,8 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
             try: 
                 if pd.isna(sheet1['B{0}'.format(index)].value):                    
                     break
-                propSheetABASId = sheet1['B{0}'.format(index)].value
-                if type(propSheetABASId) == int or type(propSheetABASId) == float:
-                    propSheetABASId = str(int(sheet1['B{0}'.format(index)].value)) 
-                abas_ids.append(str(propSheetABASId).strip())
+                propSheetABASId = getValue(sheet1['B{0}'.format(index)].value, str, '')
+                abas_ids.append(propSheetABASId)
             except Exception as ex:
                 print( config.CITY_NAME,  " validateDataForProperty Exception: abas id is empty: ",getValue(row[0], int, ''), '  ',ex)
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
@@ -369,9 +364,11 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
   
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], str, ''), '  ',ex)
+                traceback.print_exc()
                 # write(logfile,propertyFile,sheet2.title,None,str(ex) ,getValue(row[0], str, ''))
     except Exception as ex:
         print(config.CITY_NAME," validateDataForProperty Exception: ",ex)
+        traceback.print_exc()
          
     reason = 'Property file validation ends.\n'
     #print(reason)
@@ -392,145 +389,163 @@ def ValidateCols(logfile, propertyFile, sheet1, sheet2):
     'Relationship*', 'Is correspondence address, same As Property Adderss*', 'Correspondence Address*', 'Special category*']
     validated = True
     column_list = [c.value for c in next(sheet1.iter_rows(min_row=2, max_row=2))]
-    
-    for i in range(0, 42):
-        if(proper_column_order1[i].strip() != column_list[i].strip()) :
-            print('Property file', column_list[i])
-            validated = False
-            write(logfile,propertyFile,sheet1.title,None,'Column order / name is not correct',column_list[i])
-            # break
+    try:
+        for i in range(0, 42):
+            if(proper_column_order1[i].strip() != column_list[i].strip()) :
+                print('Property file', column_list[i])
+                validated = False
+                write(logfile,propertyFile,sheet1.title,None,'Column order / name is not correct',column_list[i])
+                # break
 
-    column_list = [c.value for c in next(sheet2.iter_rows(min_row=1, max_row=1))]
-    # print('\n')
-    for i in range(0, 12):
-        if(proper_column_order2[i].strip() != column_list[i].strip()) :
-            print('Property file', column_list[i])
-            validated = False
-            write(logfile,propertyFile,sheet2.title,None,'Column order / name is not correct',column_list[i])
-            # break
-    
-    return validated                     
-def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile, logfile):
-    validated = True
-    search_key = 'pb.'+ cityname
-    res = list(tenantMapping.keys()).index(search_key)
-    res = res+1
-    res = res* 100000
-    mobileNumber = 3000000000 + res + 0
+        column_list = [c.value for c in next(sheet2.iter_rows(min_row=1, max_row=1))]
+        # print('\n')
+        for i in range(0, 12):
+            if(proper_column_order2[i].strip() != column_list[i].strip()) :
+                print('Property file', column_list[i])
+                validated = False
+                write(logfile,propertyFile,sheet2.title,None,'Column order / name is not correct',column_list[i])
+                # break
+    except Exception as ex:
+        validated = False
+        print(config.CITY_NAME," validateCols Property Exception: ",ex)
+        traceback.print_exc()
+    return validated  
+
+def createOwnerObj(propertyFile) :
     owner_obj = {}
     try:
         if os.path.exists(propertyFile) : 
             wb_property = openpyxl.load_workbook(propertyFile) 
-            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
-            sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')        
+            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')        
             for i in range(3, sheet1.max_row +1):
                 #print('B{0}'.format(i))
                 if pd.isna(sheet1['B{0}'.format(i)].value):                    
                     continue
-                abas_id = sheet1['B{0}'.format(i)].value.strip()
+                abas_id = getValue(sheet1['B{0}'.format(i)].value, str, '')
                 for row in sheet1.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
                     owner = {}               
                     owner['mobileNumber'] = getMobileNumber(row[29],str,"")
                     owner['ownerType'] =  getValue(row[27],str,"") 
                     if abas_id not in owner_obj:
                         owner_obj[abas_id] = []
-                    owner_obj[abas_id].append(owner)
-            index = 2
-            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):
-                index = index + 1
-                if pd.isna(row[1]):
-                    continue 
-                if (str(row[27]).strip() != 'Multiple Owners'):
-                    if pd.isna(row[29]):
-                        mobileNumber = mobileNumber + 1                    
-                        value = 'AD{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-                        # logfile.write(value)
-                        sheet1['AD{0}'.format(index)].value = mobileNumber
-            index = 1
-            for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row ,values_only=True): 
-                index = index + 1 
-                if pd.isna(row[0]) :  
-                    if (not pd.isna(row[1]) or not pd.isna(row[2])):
-                        print("empty abas id in property file sheet2 while property validation")
-                        write(logfile,propertyFile,sheet2.title,None,"empty abas id in property file sheet2 while property validation",None)
-                        continue 
-                    else : 
-                        continue
-                
-                if pd.isna(row[3]):
-                    mobileNumber = mobileNumber + 1
-                    value = 'D{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-                    # logfile.write(value)
-                    # print(value)
-                    sheet2['D{0}'.format(index)].value = mobileNumber
-            wb_property.save(propertyFile)        
+                    owner_obj[abas_id].append(owner)       
             wb_property.close()
-        else:
-            print("Property File doesnot exist for ", cityname)  
+            return owner_obj
+    except Exception as ex:
+        print(config.CITY_NAME," createOwnerObj Exception: ",ex)
+        traceback.print_exc()
+    
 
-        # if os.path.exists(waterFile) :
-        #     wb_water = openpyxl.load_workbook(waterFile) 
-        #     water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
-        #     index = 2
-        #     for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-        #         index = index + 1
-        #         if pd.isna(row[0]):
-        #             continue
-        #         if(str(row[3]).strip() == 'No'):
-        #             if pd.isna(row[4]):
-        #                 mobileNumber = mobileNumber + 1
-        #                 value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-        #                 logfile.write(value)
-        #                 water_sheet['E{0}'.format(index)].value = mobileNumber
-                
-        #     wb_water.save(waterFile)        
-        #     wb_water.close()
-        #     wb_water = openpyxl.load_workbook(waterFile) 
-        #     water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
-        #     for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-        #         if pd.isna(row[0]):
-        #             continue
-        #         if(str(row[3]).strip() == 'Yes'):
-        #             for obj in owner_obj[str(row[1]).strip()]:
-        #                 if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-        #                     validated = False
-        #                     reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
-        #                     print(reason)
-        #                     logfile.write(reason)
+def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile, logfile, owner_obj):
+    validated = True
+    search_key = 'pb.'+ cityname
+    res = list(tenantMapping.keys()).index(search_key)
+    res = res+1
+    res = res* 100000
+    mobileNumber = 3000000000 + res + 0
+    # mobileNumber = 3002401400
+    try:
+        if os.path.exists(propertyFile) : 
+            wb_property = openpyxl.load_workbook(propertyFile) 
+            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+            sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')  
+            if config.CREATE_PROPERTY:
+                index = 2
+                for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):
+                    index = index + 1
+                    if pd.isna(row[1]):
+                        continue 
+                    if (str(row[27]).strip() != 'Multiple Owners'):
+                        if pd.isna(row[29]):
+                            mobileNumber = mobileNumber + 1                    
+                            value = 'AD{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+                            # logfile.write(value)
+                            sheet1['AD{0}'.format(index)].value = mobileNumber
+                index = 1
+                for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row ,values_only=True): 
+                    index = index + 1 
+                    if pd.isna(row[0]) :  
+                        if (not pd.isna(row[1]) or not pd.isna(row[2])):
+                            print("empty abas id in property file sheet2 while property validation")
+                            write(logfile,propertyFile,sheet2.title,None,"empty abas id in property file sheet2 while property validation",None)
+                            continue 
+                        else : 
+                            continue
+                    
+                    if pd.isna(row[3]):
+                        mobileNumber = mobileNumber + 1
+                        value = 'D{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+                        # logfile.write(value)
+                        # print(value)
+                        sheet2['D{0}'.format(index)].value = mobileNumber
+                wb_property.save(propertyFile)        
+            wb_property.close()
         # else:
-        #     print("Water File doesnot exist for ", cityname)  
+        #     print("Property File doesnot exist for ", cityname)  
+        if config.CREATE_WATER:
+            if os.path.exists(waterFile) :
+                wb_water = openpyxl.load_workbook(waterFile) 
+                water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
+                index = 2
+                for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+                    index = index + 1
+                    if pd.isna(row[0]):
+                        continue
+                    if(str(row[3]).strip().lower() == 'no'):
+                        if pd.isna(row[4]):
+                            mobileNumber = mobileNumber + 1
+                            value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+                            logfile.write(value)
+                            water_sheet['E{0}'.format(index)].value = mobileNumber
+                    
+                wb_water.save(waterFile)        
+                wb_water.close()
+                wb_water = openpyxl.load_workbook(waterFile) 
+                water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
+                for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+                    if pd.isna(getValue(row[1],str,None)):
+                        continue
+                    if(str(row[3]).strip().lower() == 'yes'):
+                        for obj in owner_obj[getValue(row[1],str,"")]:
+                            if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+                                validated = False
+                                reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip()
+                                print(reason)
+                                # logfile.write(reason)
+            # else:
+            #     print("Water File doesnot exist for ", cityname)  
+        if config.CREATE_SEWERAGE :
+            if os.path.exists(sewerageFile) :
+                wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+                sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
+                index = 2
+                for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
+                    index = index + 1
+                    if pd.isna(row[0]):
+                        continue
+                    if(str(row[3]).strip().lower() == 'no'):
+                        if pd.isna(row[4]):
+                            mobileNumber = mobileNumber + 1
+                            value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
+                            logfile.write(value)
+                            sewerage_sheet['E{0}'.format(index)].value = mobileNumber
+                    
+                wb_sewerage.save(sewerageFile)        
+                wb_sewerage.close()
+                wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+                sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
+                for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
+                    if pd.isna(getValue(row[1],str,None)):
+                        continue
+                    if(str(row[3]).strip().lower() == 'yes'):
+                        for obj in owner_obj[getValue(row[1],str,"")]:
+                            if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+                                validated = False
+                                reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip()
+                                # logfile.write(reason)
 
-        # if os.path.exists(sewerageFile) :
-        #     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
-        #     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-        #     index = 2
-        #     for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
-        #         index = index + 1
-        #         if pd.isna(row[0]):
-        #             continue
-        #         if(str(row[3]).strip() == 'No'):
-        #             if pd.isna(row[4]):
-        #                 mobileNumber = mobileNumber + 1
-        #                 value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
-        #                 logfile.write(value)
-        #                 sewerage_sheet['E{0}'.format(index)].value = mobileNumber
-                
-        #     wb_sewerage.save(sewerageFile)        
-        #     wb_sewerage.close()
-        #     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
-        #     sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-        #     for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
-        #         if pd.isna(row[0]):
-        #             continue
-        #         if(str(row[3]).strip() == 'Yes'):
-        #             for obj in owner_obj[str(row[1]).strip()]:
-        #                 if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-        #                     validated = False
-        #                     reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip() +'\n'
-        #                     logfile.write(reason)
-
-        # else:
-        #     print("Sewerage File doesnot exist for ", cityname) 
+            # else:
+            #     print("Sewerage File doesnot exist for ", cityname) 
         print("Last mobile number added: ", mobileNumber)
     except Exception as ex:
         print(config.CITY_NAME," DefaultMobileNo Exception: ",ex)
@@ -593,10 +608,11 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             
             auth_token = superuser_login()["access_token"]
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
-            with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
-                json.dump(res, f, indent=2,  ensure_ascii=False)
+            # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
+            #     json.dump(res, f, indent=2,  ensure_ascii=False)
             if(len(res['Properties']) == 0):  
                 try:
+                    print("Property",property.abasPropertyId)
                     property.oldPropertyId =  getValue( row[2] ,str,None)
                     property.propertyType = process_property_type(str(row[3]).strip())            
                     property.landArea = getValue(row[4],float,1) 
@@ -617,7 +633,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     if pd.isna(row[13]):
                         locality.code = "LOCAL_OTHERS"   
                     else:    
-                        locality.code = locality_data[row[13].strip()]
+                        locality.code = locality_data[getValue(row[13] ,str,"Others")]
                     address.city = cityname
                     address.locality = locality
                     address.location = process_location(str(row[20]).strip())
@@ -641,6 +657,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     property.owners = []
                     # converter = lambda  x,y  : x  if x is not pd.isna else y
                     property.noOfFloors = getValue(row[10],int,1) 
+                    if(int(property.noOfFloors) == 0):
+                        property.noOfFloors = getValue(1,int,1)
                     property.noOfFlats = getValue(row[11],int,0) 
                     financial_year = getValue(row[23],str,"2020-2021").replace("-20", "-")
                     property.financialYear = financial_year
@@ -811,7 +829,9 @@ def process_relationship(value):
         "parent": "PARENT",
         "spouse": "SPOUSE",
         "gurdian": "GUARDIAN",
-        "none": "PARENT"
+        "guardian": "GUARDIAN",
+        "none": "PARENT",
+        "na": "PARENT"
     }
     return relationship_MAP[value]
 
@@ -906,11 +926,6 @@ for sub_usg_key in SUB_USAGE_MAP :
         if sub_usg_val.startswith(ele) :
             USAGE_SUB_USAGE_MAP[ele].append(sub_usg_key.strip().lower())
 
- 
-
-
-
-
 def process_sub_usage_type(value,  isValidation =False ):  
     value =value.strip().lower()
     return SUB_USAGE_MAP[value]
@@ -940,7 +955,8 @@ def process_special_category(value):
         "defense personnel": "DEFENSE",
         "employee/staff of cb": "STAFF",
         "none of the above": "NONE",
-        "none":"NONE"
+        "none":"NONE",
+        "na":"NONE"
     }
     return special_category_MAP[value]
 

@@ -9,39 +9,35 @@ import pandas as pd
 import openpyxl
 import collections
 import traceback
-            
-def main():
-    Flag =False
     
-def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname) :
+def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
     waterSheet = wb_water.get_sheet_by_name('Water Connection Details')  
     #print('no. of rows in water file: ', waterSheet.max_row ) 
-    validate = validateWaterData(propertySheet, waterFile, logfile, cityname)  
+    validate = validateWaterData(propertySheet, waterFile, logfile, cityname, property_owner_obj)  
     if(validate == False):                
         print('Data validation for water Failed, Please check the log file.') 
         if config.INSERT_DATA: 
             return
     else:
         print('Data validation for water success.')
-    if config.INSERT_DATA: 
+    if config.INSERT_DATA and config.CREATE_WATER: 
         createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
         wb_water.save(waterFile)        
     wb_water.close()
 
-def validateWaterData(propertySheet, waterFile, logfile, cityname):
+def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owner_obj):
     validated = True
     wb_water = openpyxl.load_workbook(waterFile) 
     water_sheet = wb_water.get_sheet_by_name('Water Connection Details')     
     index = 2
     reason = 'Water file validation starts.\n'
-    validated = ValidateCols(waterFile, water_sheet, logfile)
-    if not validated :
-        print("Column Mismatch, sheets needs to be corrected")
-        config["error_in_excel"].append(cityname +" have column issue in water sheet")
-        # return validated
+    # validated = ValidateCols(waterFile, water_sheet, logfile)
+    # if not validated :
+    #     print("Column Mismatch, sheets needs to be corrected")
+    #     config["error_in_excel"].append(cityname +" have column issue in water sheet")
 
     abas_ids = [] 
     old_connections = []
@@ -53,9 +49,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                 # write(logfile,"property excel",propertySheet.title,index,'Sl no. column is empty')
                 #logfile.write(reason)
                 continue
-            propSheetABASId = propertySheet['B{0}'.format(index)].value
-            if type(propSheetABASId) == int or type(propSheetABASId) == float:
-                propSheetABASId = str(int(propertySheet['B{0}'.format(index)].value)) 
+            propSheetABASId = getValue(propertySheet['B{0}'.format(index)].value, str,'')
             abas_ids.append(str(propSheetABASId).strip())     
     except Exception as ex:
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
@@ -100,7 +94,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', last meter reading is empty.\n'
                     #logfile.write(reason)
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last meter reading is empty',getValue(row[1], str, ''))
-                elif not bool(re.match("^[0-9]+$",str(row[21]))) :                      
+                elif not bool(re.match("^[0-9]+$",getValue(row[21], str, ''))) :                      
                     validated = False
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Last meter reading must be a numeric value.',getValue(row[1], str, ''))
                     #logfile.write(reason)
@@ -116,8 +110,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
             elif getTime(row[18]) is None:
                 validated = False
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
-
-            if(str(row[3]).strip() == 'No'):
+            if(str(row[3]).strip().lower() == 'no'):
                 # if pd.isna(row[4]) :
                 #     validated = False
                 #     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
@@ -154,25 +147,29 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname):
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
                     #logfile.write(reason)
             if not pd.isna(row[1]):
-                abasid = row[1]
-                if type(abasid) == int or type(abasid) ==float : 
-                    abasid = str(int (abasid))
+                abasid = getValue(row[1], str, '')
                 if str(abasid).strip() not in abas_ids:                    
                     validated = False
                     reason = 'there is no abas id available in property data for water connection sl no. '+ getValue(row[0], str, '') +'\n'
                     #logfile.write(reason) 
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'ABAS id not available in property data',getValue(row[1], str, ''))
+                else:
+                    if str(row[3]).strip().lower() == 'yes' and not pd.isna(abasid):
+                        for obj in property_owner_obj[abasid]:
+                            if(getValue(obj['ownerType'],str,"") == 'Multiple Owners'):
+                                validated = False
+                                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D of water template and connection holder detail is mandatory ',getValue(row[1], str, ''))
+            
         except Exception as ex:
             # write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
             print(config.CITY_NAME," validateWaterData Exception: ", getValue(row[0], int, ''), '  ', ex)
+            traceback.print_exc()
 
     for index in range(3, water_sheet.max_row +1):
         try:
             if pd.isna(water_sheet['B{0}'.format(index)].value):                    
                 break
-            oldConnectionNo = water_sheet['C{0}'.format(index)].value
-            if type(oldConnectionNo) == int or type(oldConnectionNo) == float:
-                oldConnectionNo = str(int(water_sheet['C{0}'.format(index)].value)) 
+            oldConnectionNo = getValue(water_sheet['C{0}'.format(index)].value, str,'')
             old_connections.append(str(oldConnectionNo).strip())
         except Exception as ex:
             print( config.CITY_NAME,  " validateDataForWater Exception: existing water connection no is empty: ",ex)
@@ -202,60 +199,65 @@ def ValidateCols(waterFile, sheet, logfile):
     # print(len(proper_column_order))
     # print(len(column_list))
     validated = True
-    ## Approach 1 : check for individual column 
-    for i in range(0, 23):
-        if(i== 3):
-            continue
-        if(proper_column_order[i] != column_list[i]) :
-            print('Water file', column_list[i])
-            validated = False
-            write(logfile,waterFile,sheet.title,None,'Column order / name is not correct',column_list[i])
-            # break
-    
+    try:
+        ## Approach 1 : check for individual column 
+        for i in range(0, 23):
+            if(i== 3):
+                continue
+            if(proper_column_order[i] != column_list[i]) :
+                print('Water file', column_list[i])
+                validated = False
+                write(logfile,waterFile,sheet.title,None,'Column order / name is not correct',column_list[i])
+                # break
+        
 
-    ## Approach 2 -- Directly check difference in column
-    missingColumnHeader = list(set(proper_column_order)-set(column_list))
-    extraColumnHeader = list(set(column_list)-set(proper_column_order))
-    if len (missingColumnHeader) > 0 : 
-        write(logfile,waterFile,sheet.title,None,' Some Columns are Missing In Sheet')
-        validated=False
-    if len (extraColumnHeader) > 0 :
-        write(logfile,waterFile,sheet.title,None,'Extra Columns exist in Sheet')
-        validated=False
+        ## Approach 2 -- Directly check difference in column
+        missingColumnHeader = list(set(proper_column_order)-set(column_list))
+        extraColumnHeader = list(set(column_list)-set(proper_column_order))
+        if len (missingColumnHeader) > 0 : 
+            write(logfile,waterFile,sheet.title,None,' Some Columns are Missing In Sheet')
+            validated=False
+        if len (extraColumnHeader) > 0 :
+            write(logfile,waterFile,sheet.title,None,'Extra Columns exist in Sheet')
+            validated=False
+    except Exception as ex:
+        validated = False
+        print(config.CITY_NAME," validateCols Water Exception: ",ex)
+        traceback.print_exc()
     return validated   
 
 def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
-    print("createWaterJson",cityname)
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1):  
         try:      
-            abas_id = propertySheet['B{0}'.format(i)].value.strip()
-            for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
-                owner = Owner()
-                address = Address()
-                address.buildingName = getValue(row[17],str,"")
-                address.doorNo = getValue(row[18],str,"")
-                correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(row[13],str,"Others"),cityname)
-                owner.name = getValue(row[28],str,"NAME")
-                owner.mobileNumber = getValue(row[29],str,"3000000000")
-                owner.emailId = getValue(row[30],str,"")
-                owner.gender = process_gender(row[31])
-                if not pd.isna(row[32]):
-                    owner.dob = getTime(row[32])
-                owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
-                owner.relationship =  process_relationship(row[34])
-                owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                if(owner.sameAsPeropertyAddress ==  'Yes'):
-                    owner.correspondenceAddress = correspondence_address
-                else: 
-                    owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
-                owner.ownerType =  process_special_category(str(row[37]).strip())
-                if abas_id not in owner_obj:
-                    owner_obj[abas_id] = []
-                owner_obj[abas_id].append(owner)
+            abas_id = getValue(propertySheet['B{0}'.format(i)].value,str,None)
+            if not pd.isna(abas_id):
+                for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
+                    owner = Owner()
+                    address = Address()
+                    address.buildingName = getValue(row[17],str,"")
+                    address.doorNo = getValue(row[18],str,"")
+                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(row[13],str,"Others"),cityname)
+                    owner.name = getValue(row[28],str,"NAME")
+                    owner.mobileNumber = getValue(row[29],str,"3000000000")
+                    owner.emailId = getValue(row[30],str,"")
+                    owner.gender = process_gender(row[31])
+                    if not pd.isna(row[32]):
+                        owner.dob = getTime(row[32])
+                    owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
+                    owner.relationship =  process_relationship(row[34])
+                    owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                    if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        owner.correspondenceAddress = correspondence_address
+                    else: 
+                        owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
+                    owner.ownerType =  process_special_category(str(row[37]).strip())
+                    if abas_id not in owner_obj:
+                        owner_obj[abas_id] = []
+                    owner_obj[abas_id].append(owner)
         except Exception as ex:
             traceback.print_exc()
             print(config.CITY_NAME," createWaterJson Exception: ", row[0], '   ', ex)
@@ -265,14 +267,14 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         
         index = index + 1
         abasPropertyId =  getValue(row[1],str,None)  
-        print("water sheet ",abasPropertyId)
+        
         property = Property() 
         auth_token = superuser_login()["access_token"]
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
             print("empty Abas id in water file for sl no. ", row[0])
-            continue
+            break
         waterConnection = WaterConnection()
         connectionHolder = ConnectionHolder()
         processInstance = ProcessInstance()
@@ -280,11 +282,12 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         waterConnection.connectionHolders = []
         waterConnection.oldConnectionNo = getValue(row[2],str,None)
 
-        # status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
+        status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
         # with io.open(os.path.join(root, name,waterConnection.oldConnectionNo+"water_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         
-        if(len(res['WaterConnection']) == 0):        
+        if(len(res['WaterConnection']) == 0):   
+            print("water",abasPropertyId)     
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False) 
@@ -295,7 +298,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     break
                 
                 try:  
-                    if(str(row[3]).strip() == 'Yes'):
+                    if(str(row[3]).strip().lower() == 'yes'):
                         waterConnection.connectionHolders = None
                         # owner = owner_obj[abasPropertyId]
                         # connectionHolder.name = owner.name
@@ -336,7 +339,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.proposedTaps = getValue(row[23],int,1)
                     if( waterConnection.connectionType == 'Metered'):
                         waterConnection.meterId = getValue(row[20],str,None)
-                        additionalDetail.initialMeterReading = getValue(row[21],int,None)
+                        additionalDetail.initialMeterReading = getValue(row[21],float,None)
                     if not pd.isna(row[18]):
                         waterConnection.connectionExecutionDate = getTime(row[18])
                     additionalDetail.locality = ''
@@ -436,7 +439,9 @@ def process_relationship(value):
         "parent": "PARENT",
         "spouse": "SPOUSE",
         "gurdian": "GUARDIAN",
-        "none": "PARENT"
+        "guardian": "GUARDIAN",
+        "none": "PARENT",
+        "na": "PARENT"
     }
     return relationship_MAP[value]
 
@@ -493,7 +498,8 @@ def process_special_category(value):
         "Defense Personnel": "DEFENSE",
         "Employee/Staff of CB": "STAFF",
         "None of the above": "NONE",
-        "None":"NONE"
+        "None":"NONE",
+        "na":"NONE"
     }
     return special_category_MAP[value]
 
