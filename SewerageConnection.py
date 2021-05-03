@@ -90,9 +90,6 @@ class SewerageConnection:
     motorInfo: Optional[str]
     applicationType: Optional[str]
     authorizedConnection: Optional[str]
-    waterSource: Optional[str]
-    sourceInfo: Optional[str]
-    waterSubSource: Optional[str]
     connectionType : Optional[str]
     meterId: Optional[str]
     processInstance: Optional[ProcessInstance]
@@ -112,8 +109,7 @@ class SewerageConnection:
                  water: Optional[str] = None, sewerage: Optional[str] = None, drainageSize: Optional[int] = None, 
                  noOfWaterClosets : Optional[int] = None, noOfToilets: Optional[int] = None, motorInfo: Optional[str] = None,
                  applicationType: Optional[str] = None, authorizedConnection: Optional[str] = None,
-                 waterSource: Optional[str] = None, sourceInfo: Optional[str] = None,
-                 waterSubSource: Optional[str] = None, connectionType : Optional[str] = None, meterId : Optional[str] = None,
+                 connectionType : Optional[str] = None, meterId : Optional[str] = None,
                  processInstance: Optional[ProcessInstance] = None, documents: Optional[List[Document]] = None,
                  additionalDetails: Optional[AdditionalDetail] =None, 
                  property: Optional[Property] = None, source: Optional[str] = None, channel: Optional[str] = None,
@@ -138,9 +134,6 @@ class SewerageConnection:
         self.motorInfo = motorInfo
         self.applicationType = applicationType
         self.authorizedConnection = authorizedConnection
-        self.waterSource = waterSource
-        self.sourceInfo = sourceInfo
-        self.waterSubSource = waterSubSource
         self.connectionType = connectionType
         self.meterId = meterId
         self.processInstance = processInstance

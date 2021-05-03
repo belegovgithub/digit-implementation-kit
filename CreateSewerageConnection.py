@@ -278,12 +278,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     
                     
                     sewerageConnection.drainageSize = getValue(row[14],float,0.25)
-                    sewerageConnection.proposedDrainageSize = getValue(row[14],float,0.25)
-                    if(sewerageConnection.waterSource != 'OTHERS'):
-                        sewerageConnection.waterSubSource = sewerageConnection.waterSource.split('.')[1]                
-                    else:
-                        sewerageConnection.waterSubSource = ''
-                        sewerageConnection.sourceInfo = 'Other'
+                    sewerageConnection.proposedDrainageSize = getValue(row[14],float,0.25)                    
                     sewerageConnection.propertyOwnership  = process_propertyOwnership(str(row[11]))
                     sewerageConnection.noOfWaterClosets = getValue(row[15],int,1)
                     sewerageConnection.proposedWaterClosets = getValue(row[15],int,1)
