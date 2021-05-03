@@ -377,9 +377,9 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         createdCount = createdCount + 1
                         break
                 else:
-                    with io.open(os.path.join(root, name, str(waterConnection.oldConnectionNo) + "_water_create_req.json"), mode="w", encoding="utf-8") as f:
+                    with io.open(os.path.join(root, name, abasPropertyId + "_water_create_req.json"), mode="w", encoding="utf-8") as f:
                         json.dump(req_data, f, indent=2,  ensure_ascii=False)
-                    with io.open(os.path.join(root, name, str(waterConnection.oldConnectionNo) + "_water_create_res.json"), mode="w", encoding="utf-8") as f:
+                    with io.open(os.path.join(root, name, abasPropertyId + "_water_create_res.json"), mode="w", encoding="utf-8") as f:
                         json.dump(res, f, indent=2,  ensure_ascii=False)
                     reason = 'water not created status code '+ str(statusCode)+ ' for existing connection no. ' + str(waterConnection.oldConnectionNo) + ' response: '+ str(res) + '\n'
                     # logfile.write(reason)

@@ -234,7 +234,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     for row in sewerageSheet.iter_rows(min_row=3, max_col=22, max_row=sewerageSheet.max_row +1 , values_only=True):
          
         index = index + 1
-        abasPropertyId =  getValue(str(row[1]).strip(),str,None)          
+        abasPropertyId =  getValue(row[1],str,None)          
         property = Property() 
         
         tenantId = 'pb.'+ cityname
@@ -325,9 +325,9 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         createdCount = createdCount + 1
                         break
                 else:
-                    with io.open(os.path.join(root, name, str(sewerageConnection.oldConnectionNo) + "_sewerage_create_req.json"), mode="w", encoding="utf-8") as f:
+                    with io.open(os.path.join(root, name, abasPropertyId + "_sewerage_create_req.json"), mode="w", encoding="utf-8") as f:
                         json.dump(req_data, f, indent=2,  ensure_ascii=False)
-                    with io.open(os.path.join(root, name, str(sewerageConnection.oldConnectionNo) + "_sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
+                    with io.open(os.path.join(root, name, abasPropertyId + "_sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
                         json.dump(res, f, indent=2,  ensure_ascii=False)
                     reason = 'sewerage not created status code '+ str(statusCode)+ ' for existing connection no. ' + str(sewerageConnection.oldConnectionNo) + ' response: '+ str(res) + '\n'
                     # logfile.write(reason)
