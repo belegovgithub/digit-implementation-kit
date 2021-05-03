@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='jalandhar' : 
+                    if cityname =='kirkee' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -648,7 +648,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         unit.usageCategory = property.usageCategory
                     else:                
                         unit.usageCategory = property.subUsageCategory
-                    constructionDetail.builtUpArea = getValue(row[5],int,1) 
+                    constructionDetail.builtUpArea = property.superBuiltUpArea 
                     unit.construction_detail = constructionDetail        
                     property.address = address
                     property.units = []
