@@ -230,6 +230,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
+    auth_token = superuser_login()["access_token"]
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1):  
         try:      
@@ -269,7 +270,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         abasPropertyId =  getValue(row[1],str,None)  
         
         property = Property() 
-        auth_token = superuser_login()["access_token"]
+        
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):

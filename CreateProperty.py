@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='mhow' : 
+                    if cityname =='kirkee' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -560,7 +560,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
-
+    auth_token = superuser_login()["access_token"]
     multiple_owner_obj = {}
     for i in range(2, sheet2.max_row +1):   
         try:
@@ -604,9 +604,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             institution = Institution()
             additionalDetail = AdditionalDetails()
             tenantId = 'pb.'+ cityname
-            property.tenantId = tenantId
+            property.tenantId = tenantId            
             
-            auth_token = superuser_login()["access_token"]
             status, res = property.search_abas_property(auth_token, tenantId, property.abasPropertyId)
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False)

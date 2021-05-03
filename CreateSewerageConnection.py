@@ -201,6 +201,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
+    auth_token = superuser_login()["access_token"]
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1 ):    
         try:    
@@ -235,7 +236,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
         index = index + 1
         abasPropertyId =  getValue(str(row[1]).strip(),str,None)          
         property = Property() 
-        auth_token = superuser_login()["access_token"]
+        
         tenantId = 'pb.'+ cityname
         property.tenantId = tenantId
         if pd.isna(abasPropertyId):
