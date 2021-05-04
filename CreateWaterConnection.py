@@ -250,8 +250,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         owner.dob = getTime(row[32])
                     owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                     owner.relationship =  process_relationship(row[34])
-                    owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                    if(owner.sameAsPeropertyAddress ==  'Yes'):
+                    owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
+                    if(owner.sameAsPeropertyAddress ==  True):
                         owner.correspondenceAddress = correspondence_address
                     else: 
                         owner.correspondenceAddress = getValue(row[36],str,correspondence_address)

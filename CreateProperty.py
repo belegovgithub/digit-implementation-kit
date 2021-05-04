@@ -582,7 +582,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     owner.dob = getTime(row[6])
                 owner.fatherOrHusbandName = getValue( row[7] ,str,"Guardian")
                 owner.relationship =  process_relationship(row[8])
-                owner.sameAsPeropertyAddress = getValue( row[9] ,str,"Yes")            
+                owner.sameAsPeropertyAddress = getValue( row[9] ,bool,True)            
                 owner.ownerType =  process_special_category(str(row[11]).strip())
                 if abas_id not in multiple_owner_obj:
                     multiple_owner_obj[abas_id] = []
@@ -676,8 +676,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             owner.dob = getTime(row[32])
                         owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                         owner.relationship =  process_relationship(row[34])
-                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                        if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
+                        if(owner.sameAsPeropertyAddress ==  True):
                             owner.correspondenceAddress = correspondence_address
                         else: 
                             owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
@@ -689,13 +689,13 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         owner.name = getValue(row[28],str,"NAME")
                         owner.mobileNumber = getValue(row[29],str,"3000000000")
                         owner.emailId = getValue(row[30],str,"")
-                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                        owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
                         owner.correspondenceAddress = getValue(row[36],str,"")
                         institution.name = getValue(row[38],str,"Institution")
                         institution.type = process_private_institution_type(str(row[39]).strip())
                         institution.designation = getValue(row[40],str,"Designation")
                         owner.altContactNumber = getValue(row[41],str,"10000000000")
-                        if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        if(owner.sameAsPeropertyAddress ==  True):
                             owner.correspondenceAddress = correspondence_address
                         else: 
                             owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
@@ -707,14 +707,13 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         owner.name = getValue(row[28],str,"NAME")
                         owner.mobileNumber = getValue(row[29],str,"3000000000")
                         owner.emailId = getValue(row[30],str,"")
-                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
+                        owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
                         owner.correspondence_address = getValue(row[36],str,"")
                         institution.name = getValue(row[38],str,"Institution")
                         institution.type = process_govt_institution_type(str(row[39]).strip())
                         institution.designation = getValue(row[40],str,"Designation")
                         owner.altContactNumber = getValue(row[41],str,"10000000000")
-                        owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
-                        if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        if(owner.sameAsPeropertyAddress ==  True):
                             owner.correspondenceAddress = correspondence_address
                         else: 
                             owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
@@ -725,7 +724,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         for owner_obj in multiple_owner_obj[property.abasPropertyId]:
                             owner = owner_obj
                             owner.status = 'ACTIVE'  
-                            if(owner.sameAsPeropertyAddress ==  'Yes'):
+                            if(owner.sameAsPeropertyAddress ==  True):
                                 owner.correspondenceAddress = correspondence_address
                             else: 
                                 owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
@@ -742,8 +741,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         #         owner.gender = process_gender(row[5])
                         #         owner.fatherOrHusbandName = getValue(str(row[7]).strip(),str,"Guardian")
                         #         owner.relationship =  process_relationship(row[8])
-                        #         owner.sameAsPeropertyAddress = getValue(str(row[9]).strip(),str,"Yes")
-                        #         if(owner.sameAsPeropertyAddress ==  'Yes'):
+                        #         owner.sameAsPeropertyAddress = getValue(str(row[9]).strip(),bool,True)
+                        #         if(owner.sameAsPeropertyAddress ==  True):
                         #             owner.correspondenceAddress = correspondence_address
                         #         else: 
                         #             owner.correspondenceAddress = getValue(str(row[10]).strip(),str,"Correspondence")

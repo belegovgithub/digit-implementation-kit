@@ -219,8 +219,8 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     owner.gender = process_gender(row[31])
                     owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                     owner.relationship =  process_relationship(row[34])
-                    owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),str,"Yes")
-                    if(owner.sameAsPeropertyAddress ==  'Yes'):
+                    owner.sameAsPeropertyAddress = getValue(str(row[35]).strip(),bool,True)
+                    if(owner.sameAsPeropertyAddress ==  ,bool,True):
                         owner.correspondenceAddress = correspondence_address
                     else: 
                         owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
