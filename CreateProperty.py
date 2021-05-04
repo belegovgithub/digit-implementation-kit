@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='lansdowne' : 
+                    if cityname =='wellington' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -502,18 +502,18 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                 
             wb_water.save(waterFile)        
             wb_water.close()
-            wb_water = openpyxl.load_workbook(waterFile) 
-            water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
-            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-                if pd.isna(getValue(row[1],str,None)):
-                    continue
-                if(str(row[3]).strip().lower() == 'yes'):
-                    for obj in owner_obj[getValue(row[1],str,"")]:
-                        if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-                            validated = False
-                            reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip()
-                            print(reason)
-                            # logfile.write(reason)
+            # wb_water = openpyxl.load_workbook(waterFile) 
+            # water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
+            # for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+            #     if pd.isna(getValue(row[1],str,None)):
+            #         continue
+            #     if(str(row[3]).strip().lower() == 'yes'):
+            #         for obj in owner_obj[getValue(row[1],str,"")]:
+            #             if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+            #                 validated = False
+            #                 reason = 'Mobile number in property is not available as in water template same as owner detail for abas id. '+ str(row[1]).strip()
+            #                 print(reason)
+            #                 # logfile.write(reason)
         # else:
         #     print("Water File doesnot exist for ", cityname)  
         if os.path.exists(sewerageFile) :
@@ -533,17 +533,17 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
                 
             wb_sewerage.save(sewerageFile)        
             wb_sewerage.close()
-            wb_sewerage = openpyxl.load_workbook(sewerageFile) 
-            sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
-            for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
-                if pd.isna(getValue(row[1],str,None)):
-                    continue
-                if(str(row[3]).strip().lower() == 'yes'):
-                    for obj in owner_obj[getValue(row[1],str,"")]:
-                        if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
-                            validated = False
-                            reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip()
-                            # logfile.write(reason)
+            # wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+            # sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
+            # for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
+            #     if pd.isna(getValue(row[1],str,None)):
+            #         continue
+            #     if(str(row[3]).strip().lower() == 'yes'):
+            #         for obj in owner_obj[getValue(row[1],str,"")]:
+            #             if(len(getMobileNumber(obj['mobileNumber'],str,"")) == 0):
+            #                 validated = False
+            #                 reason = 'Mobile number in property is not available as in sewerage template same as owner detail for abas id. '+ str(row[1]).strip()
+            #                 # logfile.write(reason)
 
         # else:
         #     print("Sewerage File doesnot exist for ", cityname) 
