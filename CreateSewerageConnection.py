@@ -285,7 +285,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     sewerageConnection.noOfToilets = getValue(row[16],int,1)
                     sewerageConnection.proposedToilets = getValue(row[16],int,1)
                     if not pd.isna(row[17]):
-                        waterConnection.connectionExecutionDate = getTime(row[17])
+                        sewerageConnection.connectionExecutionDate = getTime(row[17])
                     additionalDetail.locality = ''
                     sewerageConnection.additionalDetails = additionalDetail
                     processInstance.action = 'ACTIVATE_CONNECTION'

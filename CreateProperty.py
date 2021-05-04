@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='babina' : 
+                    if cityname =='ahmedabad' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -250,6 +250,10 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                         reason = 'Property File data sheet1 validation failed, Mobile number not correct for sl no. '+ getValue(row[0], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Mobile number not correct',getValue(row[1], str, ''))
                         #logfile.write(reason)
+                    if not pd.isna(row[41])  and  ( len(getMobileNumber(row[41],str,"")) != 11):
+                        validated = False
+                        reason = 'Property File data sheet1 validation failed, landline number not correct for sl no. '+ getValue(row[0], str, '') +'\n'
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'landline number not correct',getValue(row[1], str, ''))
                     # if not pd.isna(row[33]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[33]))):                        
                     #     validated = False
                     #     reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ getValue(row[0], int, '') +'\n'
@@ -690,7 +694,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         institution.name = getValue(row[38],str,"Institution")
                         institution.type = process_private_institution_type(str(row[39]).strip())
                         institution.designation = getValue(row[40],str,"Designation")
-                        owner.altContactNumber = getValue(row[41],str,"1000000000")
+                        owner.altContactNumber = getValue(row[41],str,"10000000000")
                         if(owner.sameAsPeropertyAddress ==  'Yes'):
                             owner.correspondenceAddress = correspondence_address
                         else: 
@@ -708,7 +712,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         institution.name = getValue(row[38],str,"Institution")
                         institution.type = process_govt_institution_type(str(row[39]).strip())
                         institution.designation = getValue(row[40],str,"Designation")
-                        owner.altContactNumber = getValue(row[41],str,"1000000000")
+                        owner.altContactNumber = getValue(row[41],str,"10000000000")
                         owner.sameAsPeropertyAddress = getValue(row[35],str,"Yes")
                         if(owner.sameAsPeropertyAddress ==  'Yes'):
                             owner.correspondenceAddress = correspondence_address
