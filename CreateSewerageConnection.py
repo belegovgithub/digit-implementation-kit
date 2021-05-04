@@ -252,7 +252,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
         # with io.open(os.path.join(root, name,"sewerage_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         if(len(res['SewerageConnections']) == 0):
-            print("Sewerage",abasPropertyId)
+            
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False) 
@@ -262,6 +262,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     propertyId = resProperty["propertyId"]
                     break
                 try: 
+                    print(cityname, "Sewerage",abasPropertyId)
                     if(str(row[3]).strip().lower() == 'yes'):
                         sewerageConnection.connectionHolders = None
                     else:

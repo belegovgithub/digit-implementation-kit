@@ -287,8 +287,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
         # with io.open(os.path.join(root, name,waterConnection.oldConnectionNo+"water_search_res.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(res, f, indent=2,  ensure_ascii=False)  
         
-        if(len(res['WaterConnection']) == 0):   
-            print("water",abasPropertyId)     
+        if(len(res['WaterConnection']) == 0):                
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:
             #     json.dump(res, f, indent=2,  ensure_ascii=False) 
@@ -299,6 +298,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     break
                 
                 try:  
+                    print(cityname, "water",abasPropertyId)   
                     if(str(row[3]).strip().lower() == 'yes'):
                         waterConnection.connectionHolders = None
                         # owner = owner_obj[abasPropertyId]

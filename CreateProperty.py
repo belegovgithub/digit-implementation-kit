@@ -37,8 +37,8 @@ INDEX_STATE = 30
 INDEX_CITY_HINDI = 31
 INDEX_DISTRICT_HINDI = 32
 INDEX_STATE_HINDI = 33
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='ahmedabad' : 
+                    if True:# cityname =='ahmedabad' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -615,7 +615,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             #     json.dump(res, f, indent=2,  ensure_ascii=False)
             if(len(res['Properties']) == 0):  
                 try:
-                    print("Property",property.abasPropertyId)
+                    print(cityname, "Property",property.abasPropertyId)
                     property.oldPropertyId =  getValue( row[2] ,str,None)
                     property.propertyType = process_property_type(str(row[3]).strip())            
                     property.landArea = getValue(row[4],float,1) 
