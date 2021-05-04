@@ -69,7 +69,7 @@ config.ROLE_CODE_MAP = {
 
 
 def load_config():
-    config.INSERT_DATA =True
+    config.INSERT_DATA =False
     config.CREATE_PROPERTY =True
     config.CREATE_WATER =True
     config.CREATE_SEWERAGE =True

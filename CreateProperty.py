@@ -62,7 +62,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='wellington' : 
+                    if cityname =='kirkee' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -244,7 +244,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                         reason = 'Property File data sheet1 validation failed for sl no. '+ str(getValue(row[0], str, '')) + ', mobile no. is empty.\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'mobile no. is empty',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                    elif not pd.isna(row[29])  and  ( len(getMobileNumber(row[29],str,"")) != 10):
+                    elif not pd.isna(row[29])  and  not bool(re.match("^[6-9][0-9]{9}$", getMobileNumber(row[29],str,""))) :
                         validated = False
                         count = count + 1
                         reason = 'Property File data sheet1 validation failed, Mobile number not correct for sl no. '+ getValue(row[0], str, '') +'\n'
@@ -336,7 +336,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                         reason = 'Property File data validation failed for abas id  '+ getValue(row[0], str, '') + ', mobile no. is empty in multiple owner sheet.\n'
                         write(logfile,propertyFile,sheet2.title,None,'mobile no. is empty',getValue(row[0], str, ''))
                         #logfile.write(reason) 
-                    elif not pd.isna(row[3]) and ( len(getMobileNumber(row[3],str,"")) != 10):
+                    elif not pd.isna(row[3]) and not bool(re.match("^[6-9][0-9]{9}$", getMobileNumber(row[3],str,""))) :
                         validated = False
                         reason = 'Property File data validation failed, Mobile number not correct for abas id '+ getValue(row[0], str, '') +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Mobile number not correct',getValue(row[0], str, ''))

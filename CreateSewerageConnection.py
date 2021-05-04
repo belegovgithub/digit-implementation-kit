@@ -90,7 +90,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                 #     reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
                 #     #logfile.write(reason) 
                 #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
-                if not pd.isna(row[4]) and ( len(getMobileNumber(row[4],str,"")) != 10):
+                if not pd.isna(row[4]) and not bool(re.match("^[6-9][0-9]{9}$", getMobileNumber(row[4],str,""))):
                         validated = False
                         reason = 'Sewerage File data validation failed, Mobile number not correct for abas id '+ str(getValue(row[0], int, '')) +'\n'
                         write(logfile,sewerageFile,sewerage_sheet.title,None,'Mobile number not correct',getValue(row[0], int, ''))
@@ -201,6 +201,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
+    propertyNotAvailableCount = 0
     auth_token = superuser_login()["access_token"]
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1 ):    
@@ -267,7 +268,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         sewerageConnection.connectionHolders = None
                     else:
                         connectionHolder.name = getValue(row[5],str,"NAME")
-                        connectionHolder.mobileNumber = getValue(row[4],str,"3000000000")
+                        connectionHolder.mobileNumber = getMobileNumber(row[4],str,"3000000000")
                         connectionHolder.fatherOrHusbandName = getValue(row[9],str,"Guardian")
                         connectionHolder.emailId = getValue(row[6],str,"")
                         connectionHolder.correspondenceAddress = getValue(row[12],str,"Correspondence")
@@ -332,6 +333,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
             else:
                 reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
                 print(reason)
+                propertyNotAvailableCount = propertyNotAvailableCount + 1
                 # logfile.write(reason)
         else:
             for found_index, resSewerage in enumerate(res["SewerageConnections"]):
@@ -349,6 +351,8 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     reason = 'sewerage not created count: '+ str(notCreatedCount)
     print(reason)
     reason = 'sewerage searched count: '+ str(searchedCount)
+    print(reason)
+    reason = 'Property not available count: '+ str(propertyNotAvailableCount)
     print(reason)
 
 
