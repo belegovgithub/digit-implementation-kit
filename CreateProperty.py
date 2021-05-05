@@ -15,28 +15,7 @@ import traceback
 
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
-INDEX_SL_NO = 0
-INDEX_ABAS_PROPERTY_ID = 1
-INDEX_OLD_PROPERTY_ID = 2
-INDEX_PROPERTY_TYPE = 3
-INDEX_TOTAL_LAND_AREA = 4
-INDEX_TOTAL_CONSTRUCTED_AREA = 5
-INDEX_USAGE_TYPE = 6
-INDEX_TENANT_REGIONNAME = 7
-INDEX_TENANT_REGIONCODE = 8
-INDEX_TENANT_LATITUDE = 9
-INDEX_TENANT_LONGITUDE = 10
-INDEX_TENANT_CONTACT = 12
-INDEX_TENANT_EMAIL = 13
-INDEX_TENANT_ADDRESS = 14
-INDEX_TENANT_FB = 17
-INDEX_TENANT_TWITTER = 18
-INDEX_TENANT_POPULATION = 20
-INDEX_TENANT_GRADE = "Cantonment Board"
-INDEX_STATE = 30
-INDEX_CITY_HINDI = 31
-INDEX_DISTRICT_HINDI = 32
-INDEX_STATE_HINDI = 33
+
 FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
@@ -62,7 +41,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='kirkee' : 
+                    if cityname =='chakrata' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
