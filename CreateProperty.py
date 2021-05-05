@@ -16,8 +16,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -41,7 +41,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='dehuroad' : 
+                    if cityname =='nasirabad' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -94,6 +94,8 @@ def cbMain(cityname, successlogfile):
     
     if os.path.exists(propertyFile) : 
         localityDict = getLocalityData(cityname) 
+        print(localityDict)
+        return
         validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname)
         if(validate == False):                
             print('Data validation for property Failed, Please check the log file.') 
@@ -939,7 +941,8 @@ def process_special_category(value):
         "employee/staff of cb": "STAFF",
         "none of the above": "NONE",
         "none":"NONE",
-        "na":"NONE"
+        "na":"NONE",
+        "NA":"NONE"
     }
     return special_category_MAP[value]
 
