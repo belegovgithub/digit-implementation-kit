@@ -251,7 +251,10 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         owner.dob = getTime(row[32])
                     owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                     owner.relationship =  process_relationship(row[34])
-                    owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
+                    if getValue( row[35] ,str,"Yes").lower() == "yes":
+                        owner.sameAsPeropertyAddress = True   
+                    else:
+                        owner.sameAsPeropertyAddress = False 
                     if(owner.sameAsPeropertyAddress ==  True):
                         owner.correspondenceAddress = correspondence_address
                     else: 
@@ -497,17 +500,19 @@ def process_connection_permission(value):
     return connection_permission_MAP[value]
     
 def process_special_category(value):
+    if value is None: 
+        value ="None"
+    value =value.strip().lower()
     special_category_MAP = {
-        "Freedom fighter": "FREEDOMFIGHTER",
-        "Widow": "WIDOW",
-        "Handicapped": "HANDICAPPED",
-        "Below Poverty Line": "BPL",
-        "Defense Personnel": "DEFENSE",
-        "Employee/Staff of CB": "STAFF",
-        "None of the above": "NONE",
-        "None":"NONE",
-        "na":"NONE",
-        "NA":"NONE"
+        "freedom fighter": "FREEDOMFIGHTER",
+        "widow": "WIDOW",
+        "handicapped": "HANDICAPPED",
+        "below poverty line": "BPL",
+        "defense personnel": "DEFENSE",
+        "employee/staff of cb": "STAFF",
+        "none of the above": "NONE",
+        "none":"NONE",
+        "na":"NONE"
     }
     return special_category_MAP[value]
 

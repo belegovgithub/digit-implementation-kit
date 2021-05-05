@@ -41,7 +41,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='delhi' : 
+                    if cityname =='wellington' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -558,7 +558,10 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     owner.dob = getTime(row[6])
                 owner.fatherOrHusbandName = getValue( row[7] ,str,"Guardian")
                 owner.relationship =  process_relationship(row[8])
-                owner.sameAsPeropertyAddress = getValue( row[9] ,bool,True)            
+                if getValue( row[9] ,str,"Yes").lower() == "yes":
+                    owner.sameAsPeropertyAddress = True   
+                else:
+                    owner.sameAsPeropertyAddress = False 
                 owner.ownerType =  process_special_category(str(row[11]).strip())
                 if abas_id not in multiple_owner_obj:
                     multiple_owner_obj[abas_id] = []
@@ -652,7 +655,10 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             owner.dob = getTime(row[32])
                         owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                         owner.relationship =  process_relationship(row[34])
-                        owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
+                        if getValue( row[35] ,str,"Yes").lower() == "yes":
+                            owner.sameAsPeropertyAddress = True   
+                        else:
+                            owner.sameAsPeropertyAddress = False 
                         if(owner.sameAsPeropertyAddress ==  True):
                             owner.correspondenceAddress = correspondence_address
                         else: 
@@ -665,8 +671,10 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         owner.name = getValue(row[28],str,"NAME")
                         owner.mobileNumber = getValue(row[29],str,"3000000000")
                         owner.emailId = getValue(row[30],str,"")
-                        owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
-                        owner.correspondenceAddress = getValue(row[36],str,"")
+                        if getValue( row[35] ,str,"Yes").lower() == "yes":
+                            owner.sameAsPeropertyAddress = True   
+                        else:
+                            owner.sameAsPeropertyAddress = False 
                         institution.name = getValue(row[38],str,"Institution")
                         institution.type = process_private_institution_type(str(row[39]).strip())
                         institution.designation = getValue(row[40],str,"Designation")
@@ -683,8 +691,10 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         owner.name = getValue(row[28],str,"NAME")
                         owner.mobileNumber = getValue(row[29],str,"3000000000")
                         owner.emailId = getValue(row[30],str,"")
-                        owner.sameAsPeropertyAddress = getValue(row[35],bool,True)
-                        owner.correspondence_address = getValue(row[36],str,"")
+                        if getValue( row[35] ,str,"Yes").lower() == "yes":
+                            owner.sameAsPeropertyAddress = True   
+                        else:
+                            owner.sameAsPeropertyAddress = False 
                         institution.name = getValue(row[38],str,"Institution")
                         institution.type = process_govt_institution_type(str(row[39]).strip())
                         institution.designation = getValue(row[40],str,"Designation")
@@ -703,7 +713,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             if(owner.sameAsPeropertyAddress ==  True):
                                 owner.correspondenceAddress = correspondence_address
                             else: 
-                                owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
+                                owner.correspondenceAddress = getValue(row[10],str,"Correspondence")
                             property.owners.append(owner)
 
                         # occurances = [i for i,x in enumerate(abas_ids_multiple_owner) if x == property.abas_property_id]
@@ -940,8 +950,7 @@ def process_special_category(value):
         "employee/staff of cb": "STAFF",
         "none of the above": "NONE",
         "none":"NONE",
-        "na":"NONE",
-        "NA":"NONE"
+        "na":"NONE"
     }
     return special_category_MAP[value]
 
