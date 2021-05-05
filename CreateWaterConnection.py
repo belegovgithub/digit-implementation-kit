@@ -506,7 +506,8 @@ def process_special_category(value):
         "Employee/Staff of CB": "STAFF",
         "None of the above": "NONE",
         "None":"NONE",
-        "na":"NONE"
+        "na":"NONE",
+        "NA":"NONE"
     }
     return special_category_MAP[value]
 
