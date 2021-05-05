@@ -90,7 +90,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                 #     reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', mobile number is empty.\n'
                 #     #logfile.write(reason) 
                 #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'mobile number is empty',getValue(row[1], str, ''))
-                if not pd.isna(row[4]) and not bool(re.match("^[6-9][0-9]{9}$", getMobileNumber(row[4],str,""))):
+                if not pd.isna(row[4]) and not bool(re.match(config.MOBILE_PATTERN, getMobileNumber(row[4],str,""))):
                         validated = False
                         reason = 'Sewerage File data validation failed, Mobile number not correct for abas id '+ str(getValue(row[0], int, '')) +'\n'
                         write(logfile,sewerageFile,sewerage_sheet.title,None,'Mobile number not correct',getValue(row[0], int, ''))

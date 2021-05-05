@@ -69,10 +69,11 @@ config.ROLE_CODE_MAP = {
 
 
 def load_config():
-    config.INSERT_DATA =False
-    config.CREATE_PROPERTY =True
+    config.INSERT_DATA =True
+    config.MOBILE_PATTERN = "^[3-9][0-9]{9}$"
+    config.CREATE_PROPERTY =False
     config.CREATE_WATER =True
-    config.CREATE_SEWERAGE =True
+    config.CREATE_SEWERAGE =False    
     config.isUpdateallowed = False
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
