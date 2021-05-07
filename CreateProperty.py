@@ -41,7 +41,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='wellington' : 
+                    if cityname =='nasirabad' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -91,7 +91,6 @@ def cbMain(cityname, successlogfile):
         if(validate == False):                
             print('Data validation Failed for mobile entry, Please check the log file.') 
             return
-    
     if os.path.exists(propertyFile) : 
         localityDict = getLocalityData(cityname) 
         validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname)
@@ -872,6 +871,7 @@ def process_occupancy_type(value):
     value =str(value).strip().lower()
     OC_MAP = {
         "na": "SELFOCCUPIED",
+        "residential": "SELFOCCUPIED",
         "none": "SELFOCCUPIED",
         "self-occupied": "SELFOCCUPIED",
         "selfoccupied": "SELFOCCUPIED",
