@@ -270,50 +270,63 @@ def add_column(workbook,sheet_name, column):
 
 
 def main_water_usge():
-    templateFile = r"D:\Logs_Downloads\CB agra-20210429T104934Z-001\Template.xlsx"
-    folderPath =r"D:\Logs_Downloads\CB agra-20210429T104934Z-001"
+    templateFile = r"D:\Logs_Downloads\Legacy\Template.xlsx"
+    folderPath =r"D:\Logs_Downloads\Legacy\CB_PROPERTY_DATA_VERIFIED"
     connUsgDf = pd.read_excel(templateFile, 'Connection Usage Type')
     thin = Side(border_style="thin", color="000000") 
+    EXL_NAME="Template for Existing Water Connection Detail.xlsx" 
 
     for root, dirs, files in os.walk(folderPath, topdown=True):
         for f in files : 
-            if f =="Template for Existing Water Connection Detail.xlsx" :
-                cbFile =os.path.join(root,f)
-                with pd.ExcelWriter(cbFile) as writer:
-                    writer.book = openpyxl.load_workbook(cbFile)
-                    if 'Connection Usage Type' not in writer.book.sheetnames :
-                        connUsgDf.to_excel(writer, sheet_name='Connection Usage Type',index=False) 
-                    connectionSheet = writer.book.get_sheet_by_name('Water Connection Details') 
-                    
-                    ## Add column and Format Column
-                    connectionSheet["Y1"]="Connection Usage*"
-                    connectionSheet["Z1"]="Connection Sub Usage*"
-                    column_list_connectionSheet = [c.value for c in next(connectionSheet.iter_rows(min_row=1, max_row=1))]
-                    for col_num, value in enumerate(column_list_connectionSheet):
-                        if value in ("Connection Usage*","Connection Sub Usage*") :
-                            connectionSheet.cell(row=1, column=col_num+1).value = value
-                            connectionSheet.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="07AEF9")
-                            connectionSheet.cell(row=1, column=col_num+1).font = Font(bold=True)
-                            connectionSheet.cell(row=1, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
-                            connectionSheet.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
-                    connectionSheet.merge_cells('Y1:Y2')
-                    connectionSheet.merge_cells('Z1:Z2')
-                    addValidationToColumns(connectionSheet,"Y","$A$2:$A$9","Connection Usage Type")
-                    connUsageSheet = writer.book.get_sheet_by_name('Connection Usage Type')
-                    if "CommercialNonresidential" not in connUsageSheet.tables : 
+            if f ==EXL_NAME:
+                try: 
+                    cbFile =os.path.join(root,f)
+                    with pd.ExcelWriter(cbFile) as writer:
+                        writer.book = openpyxl.load_workbook(cbFile)
+                        if 'Connection Usage Type' not in writer.book.sheetnames :
+                            connUsgDf.to_excel(writer, sheet_name='Connection Usage Type',index=False) 
+                        connectionSheet = writer.book.get_sheet_by_name('Water Connection Details') 
                         
-                        tab = Table(displayName="CommercialNonresidential", ref="B1:B26")
-                        connUsageSheet.add_table(tab)
-                        tab = Table(displayName="IndustrialNonresidential", ref="C1:C5")
-                        connUsageSheet.add_table(tab)
-                        tab = Table(displayName="InstitutionalNonresidential", ref="D1:D20")
-                        connUsageSheet.add_table(tab)
-                        tab = Table(displayName="OthersNonresidential", ref="F1:F2")
-                        connUsageSheet.add_table(tab) 
-                    for index in range( 3,connectionSheet.max_row+1) :
-                        dv = DataValidation(type='list', formula1='=INDIRECT(SUBSTITUTE( SUBSTITUTE(SUBSTITUTE(Y{0},"(",""),")",""), " ",""))'.format(index))
-                        dv.add('Z{0}'.format(index))
-                        connectionSheet.add_data_validation(dv)
+                        ## Add column and Format Column
+                        connectionSheet["Y1"]="Connection Usage*"
+                        connectionSheet["Z1"]="Connection Sub Usage*"
+                        column_list_connectionSheet = [c.value for c in next(connectionSheet.iter_rows(min_row=1, max_row=1))]
+                        for col_num, value in enumerate(column_list_connectionSheet):
+                            if value in ("Connection Usage*","Connection Sub Usage*") :
+                                connectionSheet.cell(row=1, column=col_num+1).value = value
+                                connectionSheet.cell(row=1, column=col_num+1).fill = PatternFill("solid", fgColor="07AEF9")
+                                connectionSheet.cell(row=1, column=col_num+1).font = Font(bold=True)
+                                connectionSheet.cell(row=1, column=col_num+1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                                connectionSheet.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
+                        connectionSheet.merge_cells('Y1:Y2')
+                        connectionSheet.merge_cells('Z1:Z2')
+                        addValidationToColumns(connectionSheet,"Y","$A$2:$A$9","Connection Usage Type")
+                        connUsageSheet = writer.book.get_sheet_by_name('Connection Usage Type')
+                        if "CommercialNonresidential" not in connUsageSheet.tables : 
+                            
+                            tab = Table(displayName="CommercialNonresidential", ref="B1:B26")
+                            connUsageSheet.add_table(tab)
+                            tab = Table(displayName="IndustrialNonresidential", ref="C1:C5")
+                            connUsageSheet.add_table(tab)
+                            tab = Table(displayName="InstitutionalNonresidential", ref="D1:D20")
+                            connUsageSheet.add_table(tab)
+                            tab = Table(displayName="OthersNonresidential", ref="F1:F2")
+                            connUsageSheet.add_table(tab) 
+                        for index in range( 3,connectionSheet.max_row+1) :
+                            dv = DataValidation(type='list', formula1='=INDIRECT(SUBSTITUTE( SUBSTITUTE(SUBSTITUTE(Y{0},"(",""),")",""), " ",""))'.format(index))
+                            dv.add('Z{0}'.format(index))
+                            connectionSheet.add_data_validation(dv)
+
+                        folder_name =root.replace("CB_PROPERTY_DATA_VERIFIED","CB_PROPERTY_DATA_VERIFIED_MODIFIED")
+                        os.makedirs(folder_name, exist_ok=True)
+                        generatedFile = os.path.join(folder_name,EXL_NAME)
+                        
+                        if not os.path.isfile(generatedFile):
+                            print(generatedFile)
+                            writer.book.save(generatedFile)      
+
+                except Exception as e :
+                    print("Error in copying file ",e)        
 
 
 if __name__ == "__main__":
