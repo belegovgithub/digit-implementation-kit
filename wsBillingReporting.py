@@ -13,26 +13,152 @@ def getDictValue(dictObj, key,defaultValue ="NOT DEFINED") :
     return defaultValue
 
 
+BILLING_SLAB_LIST =['propertyOwnershipCategory', 'connectionType', 'calculationAttribute', 'buildingType', 'PropertyLocation', 'slabs', 'waterSource', 'minimumCharge', 'ownershipCategory', 'buildingSubType', 'motorCharge', 'ownerType', 'id', 'unAuthorizedConnection', 'maximumCharge', 'authorizedConnection', 'maintenanceCharge']
+
+filter_keys=["authorizedConnection",'propertyOwnershipCategory','ownershipCategory', 'ownerType', 'buildingSubType',
+ 'majorUsageType',   'PropertyLocation',   'buildingType', 'waterSource']
+NOT_DEFINED="NOT DEFINED"
+EMPTY_VALUE =None
+
+attributeMasterData={
+    "authorizedConnection" :{
+        "path":r"ws-services-masters\authorizedConnection.json",
+        "key" : "authorizedConnection",
+    },
+    "propertyOwnershipCategory":{
+        "path":r"PropertyTax\PropertyOwnershipCategory.json",
+        "key" : "PropertyOwnershipCategory",
+    },
+    "ownershipCategory": {
+        "path":r"PropertyTax\OwnerShipCategory.json",
+        "key" : "OwnerShipCategory",
+    },
+    "ownerType":{
+        "path":r"PropertyTax\OwnerType.json",
+        "key" : "OwnerType",
+    },
+    "buildingSubType":{
+        "path" : r"PropertyTax\UsageCategory.json",
+        "key" : "UsageCategory",
+    },
+    "majorUsageType":{
+        "path": r"PropertyTax\UsageCategory.json",
+        "key" : "UsageCategory",
+    },
+    "PropertyLocation":{
+        "path": r"PropertyTax\PropertyLocation.json",
+        "key" : "PropertyLocation",
+    },
+    "buildingType":{
+        "path":r"PropertyTax\UsageCategory.json",
+        "key" : "UsageCategory",
+    },
+    "waterSource":{
+        "path":r"ws-services-masters\waterSource.json",
+        "key" : "waterSource",
+    }
+
+}
+
+CANNONICAL_NAME ={
+  "ownershipCategory": "Property Ownership Type ( Govt/Pvt/Single/Multiple)",
+  "calculationAttribute": "Billing Based On",
+  "attribute" :"Billing Based On",
+  "propertyOwnershipCategory": "Connection Owned By",
+  "buildingType": "Water Usage Type",
+  "majorUsageType": "Water Major Usage",
+  "ownerType": "Category Of Connection Holder",
+  "connectionType": "Connection Type",
+  "waterSource": "Source Of Water",
+  "authorizedConnection": "Connection Authorization",
+  "buildingSubType": "Water Sub Usage Type",
+  "maintenanceCharge": "Maintance Charge",
+  "PropertyLocation": "Location Of Property",
+  "id": "Billing Slab Id",
+  "minimumCharge": "Minimum Bill Charge",
+  "motorCharge": "Motor Charge",
+  "maximumCharge": "Maximum Bill Charge", 
+  "cbname" :"CB Name",
+  "filterAttribute": "Data Filter Param",
+  "type": "Calculion Rate/Flat",
+  "meterCharge": "Meter Charges",
+  "to": "Slab To",
+  "from": "Slab From",
+  "charge": "Charge",
+  "billingAppliable":"Bill Applicable",
+  "billingCycle":"Billing Cycle",
+  "connectionType" :"Connection Type",
+#   "demandGenerationDateMillis":"Bill Generation Day",
+#   "demandExpiryDate":"Bill Expiry Day",
+#   "demandEndDateMillis":"Bill Due Day",
+#   "calcAttrDefined":"Validation On calculation",
+#   "calcJsonParamActive" :"Validation On CalculationJson Active",
+#   "validationBillingSlabCalculionMismatch":"Calculation Attribute Mismatch",
+#   "validationInvalidFilterValue" : "Invalid Filter Parameter",
+#   "validationFilterValueNotDefined" :"Filter Value Not Defined In Slabs",
+ 
+}
+
+def addKeyToDict(dict, key,value) :
+    if key in CANNONICAL_NAME :
+        if CANNONICAL_NAME[key] not in dict : 
+            dict[CANNONICAL_NAME[key]]=value
+
+
+
+BILLING_SLAB_TEMPLATE={
+  "ownershipCategory": None,
+  "calculationAttribute": "M",
+  "propertyOwnershipCategory": None,
+  "buildingType": None,
+  "ownerType": None,
+  "connectionType": "M",
+  "waterSource": None,
+  "slabs": [],
+  "authorizedConnection": None,
+  "buildingSubType": None,
+  "maintenanceCharge": 0,
+  "PropertyLocation": None,
+  "id": "M",
+  "minimumCharge": 0,
+  "motorCharge": 0,
+  "maximumCharge": 0, 
+}
+
+BILL_TEMPLATE={
+  "type": "FLAT",
+  "meterCharge": 0,
+  "to": "M",
+  "from": "M",
+  "charge": 0
+}
+
 
 def main ():
-    filter_keys=['ownershipCategory', 'ownerType', 'buildingSubType', 'majorUsageType', 'Pipe Size', 'PropertyLocation', 'propertyOwnershipCategory', 'buildingType', 'waterSource']
-    NOT_DEFINED="NOT DEFINED"
-    tenantMapping=[]
-    cbMapping =[]
-    print(config.TENANT_JSON)
+     
+    cbMapping=[]
+    for key in attributeMasterData : 
+        data =attributeMasterData[key]
+        if os.path.isfile(os.path.join(config.MDMS_LOCATION,data["path"] )) :
+            with io.open(os.path.join(config.MDMS_LOCATION,data["path"] ), encoding="utf-8") as f:
+                # print( data["key"])
+                # print(json.load(f))
+                data["data"] =json.load(f)[data["key"]]
+    with io.open(os.path.join(config.MDMS_LOCATION,"master.json"), mode="w", encoding="utf-8") as f:
+        json.dump(attributeMasterData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+                
+
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
             if module["code"].find(".")==-1 : 
               continue
             cbname = module["code"].split(".")[1]
+
             billPerJsonPath =os.path.join(config.MDMS_LOCATION,cbname,"ws-services-masters","billingPeriod.json")
             calcAttrJsonPath =os.path.join(config.MDMS_LOCATION,cbname,"ws-services-calculation","CalculationAttribute.json")
             billingSlabJsonPath =os.path.join(config.MDMS_LOCATION,cbname,"ws-services-calculation","WCBillingSlab.json")
-             
-
             if os.path.isfile(billPerJsonPath) :
-
                 WCBillingSlab=[]
                 CalculationAttribute=[]
                 billingPeriod=[]
@@ -43,66 +169,128 @@ def main ():
                 with io.open(billingSlabJsonPath, encoding="utf-8") as f:
                     WCBillingSlab =json.load(f)["WCBillingSlab"]
                 for billingRow in billingPeriod:
+                    billPeriodMatchWithCalc =False
+                    if not billingRow["active"] :
+                        continue
                     for calcAttr in CalculationAttribute :
                         if calcAttr["name"] == billingRow["connectionType"] :
+                            billPeriodMatchWithCalc=True
+                            if not calcAttr["active"] : 
+                                cb_dict= createDict(cbName =cbname,billApplicable=True,calcAttrDefined="Not Active" ,billingRow=billingRow  )
+                                cbMapping.append(cb_dict)
+                                continue
+                            isSlabDefined =False
                             for wcBillSlab in WCBillingSlab : 
                                 if wcBillSlab["connectionType"]==billingRow["connectionType"]  :
-                                    cb_dict =OrderedDict()
-                                    cb_dict["CB Name"]=cbname
-                                    cb_dict["Is Billing Enabled"]=True
-                                    cb_dict.update(billingRow)
-                                    cb_dict["Is Calc Billing Enabled"]=getDictValue (calcAttr ,"active")
+                                    isSlabDefined =True
+                                    cb_dict =createDict(cbName =cbname,billApplicable=True,calcAttrDefined="Active" ,billingRow=billingRow  )
+                                    addKeyToDict( cb_dict,"calcJsonParamActive",getDictValue (calcAttr ,"active"))
+                                    calcAttrBilling=getDictValue (calcAttr ,"attribute" )
+                                    filterAttr=getDictValue (calcAttr,"filterAttribute",[] )
+                                    if "filterAttribute"  not in calcAttr :
+                                        addKeyToDict( cb_dict,"validationFilterAttrNotDefined",NOT_DEFINED)
+
+                                    if calcAttrBilling !=  getDictValue (wcBillSlab ,"calculationAttribute" ) :
+                                        addKeyToDict( cb_dict,"validationBillingSlabCalculionMismatch",getDictValue (wcBillSlab ,"calculationAttribute" ))
                                     
-                                    if "filterAttribute"  in calcAttr : 
-                                        cb_dict["filterAttribute"]= " ; ".join(getDictValue (calcAttr,"filterAttribute",[] ))
-                                    else : 
-                                        cb_dict["filterAttribute"]=NOT_DEFINED
-                                    cb_dict["Calculation Attribute"]=getDictValue (calcAttr ,"attribute" )
-                                    for filterkey in filter_keys :
+                                    filterDisplayList =""
+                                    for findex, f in enumerate(filterAttr):
+                                        filterDisplayList = filterDisplayList +"{0}. {1} \n".format(findex+1, CANNONICAL_NAME[f] )
+                                    if len(filterDisplayList)> 0 : 
+                                        filterDisplayList=filterDisplayList[:-2]
+                                    addKeyToDict( cb_dict,"filterAttribute",filterDisplayList)
+                                    addKeyToDict( cb_dict,"attribute",getDictValue (calcAttr ,"attribute" ))
+                                    invalidKey =set(filterAttr) -set(filter_keys)
+                                    if len(invalidKey) > 0 :
+                                        addKeyToDict( cb_dict,"validationInvalidFilterValue",list(invalidKey))
+ 
+                                    
+                                    values_not_defined=[]
+                                    for filterkey in filterAttr :
                                         fkey =filterkey
                                         if filterkey =="majorUsageType" :
                                             fkey="buildingType"
-                                        cb_dict[filterkey] =getDictValue (wcBillSlab ,fkey )
-                                    cb_dict["Billng Id"]= getDictValue (wcBillSlab ,"id" )
-                                    cb_dict["Billng Calculation Attribute"]= getDictValue (wcBillSlab ,"calculationAttribute" )
-                                    cb_dict["Billng Calculation Attribute"]= getDictValue (wcBillSlab ,"calculationAttribute" )
-                                    cb_dict["Billng Calculation Attribute"]= getDictValue (wcBillSlab ,"calculationAttribute" )
-                                    cb_dict["Billng Calculation Attribute"]= getDictValue (wcBillSlab ,"calculationAttribute" )
-                                    cb_dict["Minimum Charge"]= getDictValue (wcBillSlab ,"minimumCharge" )
-                                    #cb_dict.update(wcBillSlab)
+                                        if fkey not in wcBillSlab.keys() :
+                                            values_not_defined.append(fkey)
+                                    if len(values_not_defined) > 0 :
+                                        addKeyToDict( cb_dict,"validationFilterValueNotDefined",list(values_not_defined))
+                                    
+                                    for ele in wcBillSlab : 
+                                        fkey =ele
+                                        if ele =="majorUsageType" :
+                                            fkey="buildingType"
+                                        value = getDictValue (wcBillSlab ,fkey )
+                                        if ele in attributeMasterData :
+                                            listData =attributeMasterData[ele]["data"]
+                                            for l in listData : 
+                                                if l["code"]==value : 
+                                                    value=l["name"]
+                                        addKeyToDict(cb_dict,ele,value)
                                     slabs =getDictValue (wcBillSlab ,"slabs",[] ) 
                                     if len(slabs)>0 : 
-                                        for slab in slabs : 
+                                        for slab in slabs :  
                                             slab_data = copy.deepcopy(cb_dict)
-                                            slab_data.update(slab)
+                                            for s in slab : 
+                                                addKeyToDict(slab_data,s,getDictValue (slab ,s ))
                                             cbMapping.append(slab_data)
                                     else : 
                                         cbMapping.append(cb_dict)
+                            if  not isSlabDefined :
+                                cb_dict= createDict(cbName =cbname,billApplicable=True,calcAttrDefined="Not Active" ,billingRow=billingRow  )
+                                cb_dict["Billing Slab Defined"]="No"
+                                cbMapping.append(cb_dict)
 
+
+                    if not billPeriodMatchWithCalc : 
+                        cb_dict= createDict(cbName =cbname,billApplicable=True,calcAttrDefined="No",billingRow=billingRow  )
+                        cbMapping.append(cb_dict)
+                        
 
                     
 
 
             else : 
-                cb_dict =OrderedDict()
-                cb_dict["CB Name"]=cbname
-                cb_dict["Is Billing Enabled"]=False
-                cbMapping.append(cb_dict)
+                cbMapping.append(createDict(cbName=  cbname  ))
     with io.open(os.path.join(config.MDMS_LOCATION,"billing_mapping.json"), mode="w", encoding="utf-8") as f:
         json.dump(cbMapping, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
     df = pd.read_json (json.dumps(cbMapping))
     df.to_excel(os.path.join(config.MDMS_LOCATION,"billing_mapping_data.xlsx"), index = None)
              
     print(os.path.join(config.MDMS_LOCATION,"billing_mapping.json"))
-
- 
-
-
-
- 
+    # print(list(set(billingRowKeys)))
+    # print(list(set(billRowKeys)))
+    # ele =list(set(billingRowKeys))
+    # di =dict()
+    # for e  in ele : 
+    #     di[e]=None 
+    
+    # with io.open(os.path.join(config.MDMS_LOCATION,"billingRow.json"), mode="w", encoding="utf-8") as f:
+    #     json.dump(di, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+    # ele =list(set(billRowKeys))
+    # di =dict()
+    # for e  in ele : 
+    #     di[e]=None 
+    
+    # with io.open(os.path.join(config.MDMS_LOCATION,"bill.json"), mode="w", encoding="utf-8") as f:
+    #     json.dump(di, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
     return
 
-   
+
+def createDict(cbName="", billApplicable=False,calcAttrDefined="No", billingRow=None) :
+    cb_dict =OrderedDict()
+    addKeyToDict(cb_dict,"cbname",cbName)
+    addKeyToDict(cb_dict,"billingAppliable",("Applicable" if billApplicable else  "Not Applicable"))  
+
+    if billApplicable : 
+        addKeyToDict(cb_dict,"calcAttrDefined",calcAttrDefined)   
+    if billingRow is not None : 
+        addKeyToDict(cb_dict,"billingCycle",getDictValue (billingRow ,"billingCycle",None ) )   
+        addKeyToDict(cb_dict,"connectionType",getDictValue (billingRow ,"connectionType",None ) )  
+        addKeyToDict(cb_dict,"demandGenerationDateMillis",int (getDictValue (billingRow ,"demandGenerationDateMillis",0 ) /86400000 ) )  
+        addKeyToDict(cb_dict,"billingCycle",int (getDictValue (billingRow ,"demandExpiryDate",0 ) /86400000 ) )  
+        addKeyToDict(cb_dict,"demandEndDateMillis",int (getDictValue (billingRow ,"demandEndDateMillis",0 ) /86400000 ) )  
+    return cb_dict
+     
 
  
 if __name__ == "__main__":
