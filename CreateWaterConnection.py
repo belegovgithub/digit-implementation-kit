@@ -231,6 +231,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     searchedCount = 0
     notCreatedCount = 0
     propertyNotAvailableCount = 0
+    propertyNotAvailableArr = []
     auth_token = superuser_login()["access_token"]
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1):  
@@ -392,6 +393,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             else:
                 reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
                 propertyNotAvailableCount = propertyNotAvailableCount + 1
+                propertyNotAvailableArr.append(str(property.abasPropertyId))
                 print(reason)
                 # logfile.write(reason)
         else:
@@ -413,6 +415,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
     print(reason)
     reason = 'Property not available count: '+ str(propertyNotAvailableCount)
     print(reason)
+    print("Property not available arr: ", str(propertyNotAvailableArr))
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
