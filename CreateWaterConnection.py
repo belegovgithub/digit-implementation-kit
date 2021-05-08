@@ -374,7 +374,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         connectionNo = resWater["connectionNo"]
                         # value = 'B{0}'.format(index) + '    ' + str(connectionNo) + '\n'
                         # logfile.write(value)
-                        waterSheet['Y{0}'.format(index)].value = connectionNo
+                        waterSheet['AA{0}'.format(index)].value = connectionNo
                         reason = 'water connection created for existing connection no. ' + str(waterConnection.oldConnectionNo)
                         # logfile.write(reason)
                         # print(reason)
@@ -398,7 +398,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             for found_index, resWater in enumerate(res["WaterConnection"]):
                 connectionNo = resWater["connectionNo"]
                 break
-            waterSheet['Y{0}'.format(index)].value = connectionNo                    
+            waterSheet['AA{0}'.format(index)].value = connectionNo                    
             reason = 'water connection exist for existing connection no. ' + str(waterConnection.oldConnectionNo)
             # logfile.write(reason)
             # print(reason)
@@ -418,6 +418,9 @@ def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
 
 def process_water_source(value):
+    if value is None : 
+        value ="Others"
+    value = value.strip().lower()
     water_source_MAP = {
         'Ground-Borewell': 'GROUND.BOREWELL',
         'Ground-Handpump':'GROUND.HANDPUMP',
@@ -517,7 +520,8 @@ def process_special_category(value):
     return special_category_MAP[value]
 
 if __name__ == "__main__":
-    main()    
-    type         
+    main()
+
+        
 
 
