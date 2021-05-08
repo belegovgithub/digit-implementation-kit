@@ -792,6 +792,8 @@ def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
 
 def process_YesNo(value):
+    if value is None : 
+        value = 'None'
     value = value.lower()
     YesNo_MAP = {
         "yes": True,
