@@ -41,7 +41,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='nasirabad' : 
+                    if cityname =='ranikhet' : 
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -792,10 +792,13 @@ def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
 
 def process_YesNo(value):
+    if value is None : 
+        value = 'None'
+    value = value.lower()
     YesNo_MAP = {
-        "Yes": True,
-        "No": False,
-        "None": None
+        "yes": True,
+        "no": False,
+        "none": None
     }
     return YesNo_MAP[value]
 

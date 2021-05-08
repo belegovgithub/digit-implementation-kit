@@ -202,6 +202,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     searchedCount = 0
     notCreatedCount = 0
     propertyNotAvailableCount = 0
+    propertyNotAvailableArr = []
     auth_token = superuser_login()["access_token"]
     owner_obj = {}
     for i in range(3, propertySheet.max_row +1 ):    
@@ -334,9 +335,10 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     print(reason)
                     notCreatedCount = notCreatedCount + 1                      
             else:
-                reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
+                reason = 'property does not exist for abas id '+ abasPropertyId + '\n'
                 print(reason)
                 propertyNotAvailableCount = propertyNotAvailableCount + 1
+                propertyNotAvailableArr.append(abasPropertyId)
                 # logfile.write(reason)
         else:
             for found_index, resSewerage in enumerate(res["SewerageConnections"]):
@@ -357,7 +359,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
     print(reason)
     reason = 'Property not available count: '+ str(propertyNotAvailableCount)
     print(reason)
-
+    print("Property not available arr: ", str(propertyNotAvailableArr))
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname

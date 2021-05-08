@@ -391,9 +391,9 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     print(reason)
                     notCreatedCount = notCreatedCount + 1
             else:
-                reason = 'property does not exist for abas id '+ str(property.abasPropertyId) + '\n'
+                reason = 'property does not exist for abas id '+ abasPropertyId + '\n'
                 propertyNotAvailableCount = propertyNotAvailableCount + 1
-                propertyNotAvailableArr.append(str(property.abasPropertyId))
+                propertyNotAvailableArr.append(abasPropertyId)
                 print(reason)
                 # logfile.write(reason)
         else:
