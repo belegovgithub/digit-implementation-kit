@@ -19,7 +19,7 @@ filter_keys=["authorizedConnection",'propertyOwnershipCategory','ownershipCatego
  'majorUsageType',   'PropertyLocation',   'buildingType', 'waterSource']
 NOT_DEFINED="NOT DEFINED"
 EMPTY_VALUE =None
-
+lst =["Water consumption","No. of taps"]
 attributeMasterData={
     "authorizedConnection" :{
         "path":r"ws-services-masters\authorizedConnection.json",
@@ -61,17 +61,17 @@ attributeMasterData={
 }
 
 CANNONICAL_NAME ={
-  "ownershipCategory": "Property Ownership Type ( Govt/Pvt/Single/Multiple)",
-  "calculationAttribute": "Billing Based On",
-  "attribute" :"Billing Based On",
+  "ownershipCategory": "Owner Type Of Property",
+  "calculationAttribute": "Unit Of Measurement",
+  "attribute" :"Unit Of Measurement",
   "propertyOwnershipCategory": "Connection Owned By",
-  "buildingType": "Water Usage Type",
+  "buildingType": "Water Usage ",
   "majorUsageType": "Water Major Usage",
   "ownerType": "Category Of Connection Holder",
   "connectionType": "Connection Type",
   "waterSource": "Source Of Water",
   "authorizedConnection": "Connection Authorization",
-  "buildingSubType": "Water Sub Usage Type",
+  "buildingSubType": "Water Sub Usage",
   "maintenanceCharge": "Maintance Charge",
   "PropertyLocation": "Location Of Property",
   "id": "Billing Slab Id",
@@ -80,11 +80,11 @@ CANNONICAL_NAME ={
   "maximumCharge": "Maximum Bill Charge", 
   "cbname" :"CB Name",
   "filterAttribute": "Data Filter Param",
-  "type": "Calculion Rate/Flat",
+  "type": "Calculation Type",
   "meterCharge": "Meter Charges",
   "to": "Slab To",
   "from": "Slab From",
-  "charge": "Charge",
+  "charge": "Per Unit Charge",
   "billingAppliable":"Bill Applicable",
   "billingCycle":"Billing Cycle",
   "connectionType" :"Connection Type",
@@ -154,6 +154,10 @@ def main ():
             if module["code"].find(".")==-1 : 
               continue
             cbname = module["code"].split(".")[1]
+            if cbname=="testing" :
+                continue
+            # if cbname !="ambala":
+            #     continue
 
             billPerJsonPath =os.path.join(config.MDMS_LOCATION,cbname,"ws-services-masters","billingPeriod.json")
             calcAttrJsonPath =os.path.join(config.MDMS_LOCATION,cbname,"ws-services-calculation","CalculationAttribute.json")
@@ -217,8 +221,8 @@ def main ():
                                     
                                     for ele in wcBillSlab : 
                                         fkey =ele
-                                        if ele =="majorUsageType" :
-                                            fkey="buildingType"
+                                        if ele == "buildingType" and  "majorUsageType" in filterAttr:
+                                            ele="majorUsageType"
                                         value = getDictValue (wcBillSlab ,fkey )
                                         if ele in attributeMasterData :
                                             listData =attributeMasterData[ele]["data"]
@@ -232,6 +236,13 @@ def main ():
                                             slab_data = copy.deepcopy(cb_dict)
                                             for s in slab : 
                                                 addKeyToDict(slab_data,s,getDictValue (slab ,s ))
+                                            if "type" in slab_data : 
+                                                del slab_data["type"]
+                                            type="Flat"
+                                            if calcAttrBilling in lst :
+                                                type="Rate"
+                                                
+                                            addKeyToDict(slab_data,"type",type)
                                             cbMapping.append(slab_data)
                                     else : 
                                         cbMapping.append(cb_dict)
@@ -254,7 +265,17 @@ def main ():
     with io.open(os.path.join(config.MDMS_LOCATION,"billing_mapping.json"), mode="w", encoding="utf-8") as f:
         json.dump(cbMapping, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
     df = pd.read_json (json.dumps(cbMapping))
-    df.to_excel(os.path.join(config.MDMS_LOCATION,"billing_mapping_data.xlsx"), index = None)
+    df.to_excel(os.path.join(config.MDMS_LOCATION,"Consolidate Water Bill Parameter.xlsx"), index = None,
+        columns=["CB Name","Bill Applicable","Billing Cycle","Connection Type","Data Filter Param",
+        "Billing Slab Id",
+        "Location Of Property","Water Major Usage","Water Usage ","Water Sub Usage", "Owner Type Of Property", 
+         "Connection Owned By","Category Of Connection Holder","Source Of Water","Connection Authorization","Category Of Connection Holder",
+         "Unit Of Measurement",
+          "Calculation Type",
+         "Slab From","Slab To","Meter Charges","Per Unit Charge",
+          "Minimum Bill Charge","Maximum Bill Charge","Maintance Charge","Motor Charge"
+         ]
+    )
              
     print(os.path.join(config.MDMS_LOCATION,"billing_mapping.json"))
     # print(list(set(billingRowKeys)))
