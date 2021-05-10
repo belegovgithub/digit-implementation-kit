@@ -17,8 +17,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 
-# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -41,7 +41,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True: #cityname == 'agra' 
+                    if cityname == 'belgaum' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -605,7 +605,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     owner.sameAsPeropertyAddress = True   
                 else:
                     owner.sameAsPeropertyAddress = False 
-                owner.ownerType =  process_special_category(str(row[11]).strip())
+                owner.ownerType =  process_special_category(row[11])
                 if abas_id not in multiple_owner_obj:
                     multiple_owner_obj[abas_id] = []
                 multiple_owner_obj[abas_id].append(owner)
@@ -666,7 +666,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     address.buildingName = getValue(row[17] ,str,"")
                     address.doorNo = getValue(row[18],str,"")
                     address.pincode = getValue(row[19],str,None)
-                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue( row[13] ,str,"Others"),cityname)
+                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(row[13] ,str,"Others"),cityname)
                     unit.occupancyType = process_occupancy_type(str(row[9]).strip())
                     unit.arv = getValue(row[21],int,0) 
                     unit.floorNo = 0
@@ -706,7 +706,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             owner.correspondenceAddress = correspondence_address
                         else: 
                             owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
-                        owner.ownerType =  process_special_category(str(row[37]).strip())
+                        owner.ownerType =  process_special_category(row[37])
                         
                         property.owners.append(owner)
                     elif(property.ownershipCategory == 'INSTITUTIONALPRIVATE'):
@@ -726,7 +726,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             owner.correspondenceAddress = correspondence_address
                         else: 
                             owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
-                        owner.ownerType =  process_special_category(str(row[37]).strip())    
+                        owner.ownerType =  process_special_category(row[37])    
                         property.institution = institution
                         property.owners.append(owner)
                     elif(property.ownershipCategory == 'INSTITUTIONALGOVERNMENT'):
@@ -746,7 +746,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             owner.correspondenceAddress = correspondence_address
                         else: 
                             owner.correspondenceAddress = getValue(row[36],str,"Correspondence")
-                        owner.ownerType =  process_special_category(str(row[37]).strip())    
+                        owner.ownerType =  process_special_category(row[37])    
                         property.institution = institution
                         property.owners.append(owner)
                     elif(property.ownershipCategory == 'INDIVIDUAL.MULTIPLEOWNERS'):
@@ -774,8 +774,8 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         #         if(owner.sameAsPeropertyAddress ==  True):
                         #             owner.correspondenceAddress = correspondence_address
                         #         else: 
-                        #             owner.correspondenceAddress = getValue(str(row[10]).strip(),str,"Correspondence")
-                        #         owner.ownerType =  process_special_category(str(row[11]).strip())
+                        #             owner.correspondenceAddress = getValue(row[10],str,"Correspondence")
+                        #         owner.ownerType =  process_special_category(row[11])
                         #         property.owners.append(owner)
 
                     additionalDetail.isRainwaterHarvesting = False

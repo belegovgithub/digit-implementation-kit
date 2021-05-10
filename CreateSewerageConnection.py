@@ -212,9 +212,9 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                 for row in propertySheet.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
                     owner = Owner()
                     address = Address()
-                    address.buildingName = getValue(row[17].strip(),str,"")
+                    address.buildingName = getValue(row[17],str,"")
                     address.doorNo = getValue(row[18],str,"")
-                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(str(row[13]).strip(),str,"Others"),cityname)
+                    correspondence_address = get_propertyaddress(address.doorNo,address.buildingName,getValue(row[13],str,"Others"),cityname)
                     owner.name = getValue(row[28],str,"NAME")
                     owner.mobileNumber = getValue(row[29],str,"3000000000")
                     owner.emailId = getValue(row[30],str,"")
@@ -229,11 +229,12 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         owner.correspondenceAddress = correspondence_address
                     else: 
                         owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
-                    owner.ownerType =  process_special_category(str(row[37]).strip())
+                    owner.ownerType =  process_special_category(row[37])
                     if abas_id not in owner_obj:
                         owner_obj[abas_id] = []
                     owner_obj[abas_id].append(owner)
         except Exception as ex:
+            traceback.print_exc()
             print(config.CITY_NAME," createSewerageJson Exception: ", getValue(row[0], int, ''), '   ', ex)
     index = 2
     for row in sewerageSheet.iter_rows(min_row=3, max_col=22, max_row=sewerageSheet.max_row +1 , values_only=True):
@@ -277,7 +278,7 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                         connectionHolder.emailId = getValue(row[6],str,"")
                         connectionHolder.correspondenceAddress = getValue(row[12],str,"Correspondence")
                         connectionHolder.relationship = process_relationship(row[10])
-                        connectionHolder.ownerType = process_special_category(str(row[13]).strip())
+                        connectionHolder.ownerType = process_special_category(row[13])
                         connectionHolder.gender = process_gender(row[7])
                         connectionHolder.sameAsPropertyAddress = False
                         sewerageConnection.connectionHolders.append(connectionHolder)

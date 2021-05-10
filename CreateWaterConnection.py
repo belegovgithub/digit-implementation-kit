@@ -260,13 +260,13 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         owner.correspondenceAddress = correspondence_address
                     else: 
                         owner.correspondenceAddress = getValue(row[36],str,correspondence_address)
-                    owner.ownerType =  process_special_category(str(row[37]).strip())
+                    owner.ownerType =  process_special_category(row[37])
                     if abas_id not in owner_obj:
                         owner_obj[abas_id] = []
                     owner_obj[abas_id].append(owner)
         except Exception as ex:
             traceback.print_exc()
-            print(config.CITY_NAME," createWaterJson Exception: ", row[0], '   ', ex)
+            print(config.CITY_NAME," createWaterJson Exception: ", getValue(row[0], int, ''), '   ', ex)
 
     index = 2
     for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row , values_only=True):
@@ -323,7 +323,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                         connectionHolder.emailId = getValue(row[6],str,"")
                         connectionHolder.correspondenceAddress = getValue(row[12],str,"Correspondence")
                         connectionHolder.relationship = process_relationship(row[10])
-                        connectionHolder.ownerType = process_special_category(str(row[13]).strip())
+                        connectionHolder.ownerType = process_special_category(row[13])
                         connectionHolder.gender = process_gender(row[7])
                         connectionHolder.sameAsPropertyAddress = False
                         waterConnection.connectionHolders.append(connectionHolder)
@@ -370,6 +370,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                 # with io.open(os.path.join(root, name,"water_create_res.json"), mode="w", encoding="utf-8") as f:
                 #     json.dump(res, f, indent=2,  ensure_ascii=False)  
                 waterconnectionNo = '' 
+                print(statusCode)
                 if(statusCode == 200 or statusCode == 201):
                     for found_index, resWater in enumerate(res["WaterConnection"]):
                         connectionNo = resWater["connectionNo"]
