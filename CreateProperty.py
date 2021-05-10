@@ -16,8 +16,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 
 def main() :
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -31,6 +31,10 @@ def main() :
         os.makedirs(config.DATA_ENTRY_ISSUES_FOLDER)
     if not os.path.exists(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR")) :
         os.makedirs(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR"))
+    cityToSkip = ['Agra','Ahmedabad','Ahmednagar','Ajmer','Allahabad','Almora','Ambala','Amritsar','Babina',
+                    'Badamibagh','Barrackpore','Chakrata','Clement Town','Dehradun','Dehuroad','Delhi','Faizabad',
+                    'Jalandhar','Jalapahar','Kirkee','Lansdowne','Lucknow','Mathura','Mhow','Morar','Nasirabad',
+                    'Ranikhet','Roorkee','Saugor','Shahjahanpur','Shillong','Wellington']
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         for found_index, module in enumerate(cb_module_data["tenants"]):
@@ -41,10 +45,14 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname =='ranikhet' : 
-                        print("Processing for CB "+cityname.upper())
-                        config.CITY_NAME = cityname
-                        cbMain(cityname, successlogfile)
+                    for key in cityToSkip :
+                        if key.lower() == cityname : 
+                            continue
+                        if True: #cityname =='aurangabad' : 
+                            print("Processing for CB "+cityname.upper())
+                            config.CITY_NAME = cityname
+                            cbMain(cityname, successlogfile)
+                            break
                 except Exception as ex: 
                     print("Error in processing CB ",cityname , ex)
                     traceback.print_exc()
