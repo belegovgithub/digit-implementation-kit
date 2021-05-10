@@ -364,13 +364,12 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.status = 'ACTIVE'
                     
                 except Exception as ex:
-                    print("createWaterJson Exception: ", row[0], '   ', ex)
+                    traceback.print_exc()
+                    print("createWaterJson Exception: ", getValue(row[0], int, ''), '   ', ex)
 
                 req_data, statusCode, res = waterConnection.upload_water(auth_token, tenantId, waterConnection.oldConnectionNo, root, name)
                 # with io.open(os.path.join(root, name,"water_create_res.json"), mode="w", encoding="utf-8") as f:
                 #     json.dump(res, f, indent=2,  ensure_ascii=False)  
-                waterconnectionNo = '' 
-                print(statusCode)
                 if(statusCode == 200 or statusCode == 201):
                     for found_index, resWater in enumerate(res["WaterConnection"]):
                         connectionNo = resWater["connectionNo"]

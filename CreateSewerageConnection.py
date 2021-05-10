@@ -308,13 +308,12 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
                     sewerageConnection.channel = 'DATA_ENTRY'
                     sewerageConnection.status = 'ACTIVE'
                 except Exception as ex:
+                    traceback.print_exc()
                     print("createSewerageJson Exception: ", getValue(row[0], int, ''), '   ', ex)
 
-                
                 req_data, statusCode, res = sewerageConnection.upload_sewerage(auth_token, tenantId, sewerageConnection.oldConnectionNo, root, name)
                 # with io.open(os.path.join(root, name,"sewerage_create_res.json"), mode="w", encoding="utf-8") as f:
                 #     json.dump(res, f, indent=2,  ensure_ascii=False)  
-                sewerageconnectionNo = '' 
                 if(statusCode == 200 or statusCode == 201):
                     for found_index, resSewerage in enumerate(res["SewerageConnections"]):
                         connectionNo = resSewerage["connectionNo"]
