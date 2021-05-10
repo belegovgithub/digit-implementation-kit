@@ -6,6 +6,8 @@ import sys
 import pandas as pd
 import copy
 from collections import OrderedDict
+from pandas import ExcelWriter
+
 
 def getDictValue(dictObj, key,defaultValue ="NOT DEFINED") :
     if key in dictObj : 
@@ -276,24 +278,28 @@ def main ():
           "Minimum Bill Charge","Maximum Bill Charge","Maintance Charge","Motor Charge"
          ]
     )
+
+    with io.open(os.path.join(config.MDMS_LOCATION,"MasterData.json"), mode="w", encoding="utf-8") as f:
+        json.dump(attributeMasterData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder) 
+    import xlsxwriter
+    writer = ExcelWriter(os.path.join(config.MDMS_LOCATION,"Master Data For Bill.xlsx"))
+    for key in attributeMasterData:
+        master_data=attributeMasterData[key]["data"]
+
+        if key =="buildingSubType" :
+            master_data =[x for x in master_data if len(x["code"].split(".")) > 2 ]
+        elif key =="buildingType" :
+            master_data =[x for x in master_data if len(x["code"].split(".")) <=2 ]
+        elif key =="majorUsageType":
+            master_data =[x for x in master_data if len(x["code"].split(".")) == 1 ]
+        data =[]
+        for d in master_data : 
+            data.append({"Code" :d["code"] ,"Name" :d["name"] })
              
-    print(os.path.join(config.MDMS_LOCATION,"billing_mapping.json"))
-    # print(list(set(billingRowKeys)))
-    # print(list(set(billRowKeys)))
-    # ele =list(set(billingRowKeys))
-    # di =dict()
-    # for e  in ele : 
-    #     di[e]=None 
-    
-    # with io.open(os.path.join(config.MDMS_LOCATION,"billingRow.json"), mode="w", encoding="utf-8") as f:
-    #     json.dump(di, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
-    # ele =list(set(billRowKeys))
-    # di =dict()
-    # for e  in ele : 
-    #     di[e]=None 
-    
-    # with io.open(os.path.join(config.MDMS_LOCATION,"bill.json"), mode="w", encoding="utf-8") as f:
-    #     json.dump(di, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)  
+        df = pd.read_json (json.dumps(data))
+        df.to_excel(writer, CANNONICAL_NAME[key],index=False)
+    writer.save()
+
     return
 
 
