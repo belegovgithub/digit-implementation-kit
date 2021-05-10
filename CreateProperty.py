@@ -1,4 +1,5 @@
 from common import *
+import numpy as np
 from config import config, getValue, getMobileNumber, getTime,isna
 import io
 import os 
@@ -31,28 +32,19 @@ def main() :
         os.makedirs(config.DATA_ENTRY_ISSUES_FOLDER)
     if not os.path.exists(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR")) :
         os.makedirs(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR"))
-    cityToSkip = ['Agra','Ahmedabad','Ahmednagar','Ajmer','Allahabad','Almora','Ambala','Amritsar','Babina',
-                    'Badamibagh','Barrackpore','Chakrata','Clement Town','Dehradun','Dehuroad','Delhi','Faizabad',
-                    'Jalandhar','Jalapahar','Kirkee','Lansdowne','Lucknow','Mathura','Mhow','Morar','Nasirabad',
-                    'Ranikhet','Roorkee','Saugor','Shahjahanpur','Shillong','Wellington']
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
-        for found_index, module in enumerate(cb_module_data["tenants"]):
-            if module["city"]["ulbGrade"]=="ST":
-                continue
-            cityname =module["code"].lower()[3:]
+        ####Only for some CBs
+        cityToInclued = getCitiesToInclude(cb_module_data)
+        for found_index, cityname in enumerate(cityToInclued):
             config.errormsg=[]
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    for key in cityToSkip :
-                        if key.lower() == cityname : 
-                            continue
-                        if True: #cityname =='aurangabad' : 
-                            print("Processing for CB "+cityname.upper())
-                            config.CITY_NAME = cityname
-                            cbMain(cityname, successlogfile)
-                            break
+                    if True: #cityname == 'agra' 
+                        print("Processing for CB "+cityname.upper())
+                        config.CITY_NAME = cityname
+                        cbMain(cityname, successlogfile)
                 except Exception as ex: 
                     print("Error in processing CB ",cityname , ex)
                     traceback.print_exc()
@@ -62,6 +54,29 @@ def main() :
                 for element in config.errormsg:
                     dateerror.write(element + "\n") 
                 dateerror.close()
+
+        #### For all CBs
+        # for found_index, module in enumerate(cb_module_data["tenants"]):
+        #     if module["city"]["ulbGrade"]=="ST":
+        #         continue
+        #     cityname =module["code"].lower()[3:]
+        #     config.errormsg=[]
+        #     name = 'CB ' + cityname.lower()
+        #     if  os.path.exists( os.path.join(root,name)):                
+        #         try : 
+        #             if True: #cityname == 'agra' 
+        #                 print("Processing for CB "+cityname.upper())
+        #                 config.CITY_NAME = cityname
+        #                 cbMain(cityname, successlogfile)
+        #         except Exception as ex: 
+        #             print("Error in processing CB ",cityname , ex)
+        #             traceback.print_exc()
+        #             errorlogfile.write(cityname+"\n")
+        #     if len(config.errormsg ) > 0 : 
+        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+        #         for element in config.errormsg:
+        #             dateerror.write(element + "\n") 
+        #         dateerror.close()
     errorlogfile.close()
     successlogfile.close()
     if len(config.error_in_excel) > 0 : 
@@ -70,6 +85,27 @@ def main() :
                     cbHaveExcelIssue.write(element + "\n") 
         cbHaveExcelIssue.close()
 
+def getCitiesToInclude(cb_module_data):
+    cityToSkip = ['agra','ahmedabad','ahmednagar','ajmer','allahabad','almora','ambala','amritsar','babina',
+                    'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
+                    'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
+                    'ranikhet','roorkee','saugor','shahjahanpur','shillong','wellington']
+    cityToSkip.sort()
+    allCities = []
+    cityToInclued = []
+
+    for found_index, module in enumerate(cb_module_data["tenants"]):
+        if module["city"]["ulbGrade"]=="ST":
+            continue
+        cityname =module["code"].lower()[3:]
+        allCities.append(cityname)    
+    try:
+        allCities.sort()
+        cityToInclued = np.setdiff1d(allCities, cityToSkip)
+        # cityToInclued = set(allCities.sort()) - set(cityToSkip.sort())            
+    except:
+        traceback.print_exc() 
+    return cityToInclued
 
 def cbMain(cityname, successlogfile):
     Flag =False
