@@ -17,8 +17,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
@@ -71,7 +71,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if  cityname == 'aurangabad' :
+                    if  cityname == 'lebong' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -85,14 +85,15 @@ def main() :
                     dateerror.write(element + "\n") 
                 dateerror.close()
     errorlogfile.close()
-    successlogfile.close()
-    cbHaveExcelIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_EXCEL_ISSUE.txt"), "w")  
-    if len(config.error_in_excel) > 0 :         
+    successlogfile.close()   
+    if len(config.error_in_excel) > 0 :   
+        cbHaveExcelIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_EXCEL_ISSUE.txt"), "w")        
         for element in config.error_in_excel:
             cbHaveExcelIssue.write(element + "\n") 
         cbHaveExcelIssue.close()
-    cbHaveMultipleOwnerIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_MULTIPLE_OWNER_ISSUE.txt"), "w") 
-    if len(config.error_in_multiple_owner) > 0 :          
+     
+    if len(config.error_in_multiple_owner) > 0 :     
+        cbHaveMultipleOwnerIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_MULTIPLE_OWNER_ISSUE.txt"), "w")     
         for element in config.error_in_multiple_owner:
             cbHaveMultipleOwnerIssue.write(element + "\n") 
         cbHaveMultipleOwnerIssue.close()
@@ -208,8 +209,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
         wb_property = openpyxl.load_workbook(propertyFile) 
         sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
         sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')
-        abas_ids = []        
-        abas_ids_sheet2 = []        
+        abas_ids = []               
         reason = 'Property file validation starts.\n'
         # validated = ValidateCols(logfile, propertyFile, sheet1, sheet2)
         # if not validated :
@@ -217,12 +217,6 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
         #     config["error_in_excel"].append(cityname +" have column issue in property sheet")
 
         # print('no. of rows in Property file sheet 1: ', sheet2.max_row ) 
-        for index in range(2, sheet2.max_row +1): 
-            if pd.isna(sheet2['A{0}'.format(index)].value):                    
-                break
-            propSheetABASId = getValue(sheet2['A{0}'.format(index)].value , str, '')           
-            abas_ids_sheet2.append(propSheetABASId)
-
         emptyRows=0
         count =0 
         for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True): 
@@ -301,7 +295,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                 
                 elif(str(row[27]).lower() == "multiple owners"):
                     propSheetABASId = getValue(row[1], str, "")
-                    if propSheetABASId not in abas_ids_sheet2:
+                    if propSheetABASId not in multiple_owner_obj:
                         validated = False
                         reason = 'Property File data validation failed, abas id for multiple ownership is not available in Property Ownership Details sheet  '+ getValue(row[1], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas id for multiple ownership is not available in Property Ownership Details sheet ',propSheetABASId)
