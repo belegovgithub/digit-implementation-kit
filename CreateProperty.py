@@ -16,17 +16,23 @@ import traceback
 
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
-
+lastMobileNo = ''
 FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
+            'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
+            'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
+            'ranikhet','roorkee','saugor','shahjahanpur','shillong','wellington','belgaum']
 
-def main() :
+def main() :    
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
+    print('cityToSkip', len(cityToSkip))
     root = FOLDER_PATH
     errorlogfile = open(os.path.join(root, "errorCBs.txt"), "w")  
     successlogfile = open(os.path.join(root, "CB With ProperData.txt"), "w")
     config.error_in_excel=[]
+    config.error_in_multiple_owner=[]
     config.DATA_ENTRY_ISSUES_FOLDER =os.path.join(root,date_time + '-Data_Entries_Issues')
     if not os.path.exists(config.DATA_ENTRY_ISSUES_FOLDER) :
         os.makedirs(config.DATA_ENTRY_ISSUES_FOLDER)
@@ -35,36 +41,14 @@ def main() :
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         ####Only for some CBs
-        cityToInclued = getCitiesToInclude(cb_module_data)
-        for found_index, cityname in enumerate(cityToInclued):
-            config.errormsg=[]
-            name = 'CB ' + cityname.lower()
-            if  os.path.exists( os.path.join(root,name)):                
-                try : 
-                    if cityname == 'belgaum' :
-                        print("Processing for CB "+cityname.upper())
-                        config.CITY_NAME = cityname
-                        cbMain(cityname, successlogfile)
-                except Exception as ex: 
-                    print("Error in processing CB ",cityname , ex)
-                    traceback.print_exc()
-                    errorlogfile.write(cityname+"\n")
-            if len(config.errormsg ) > 0 : 
-                dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
-                for element in config.errormsg:
-                    dateerror.write(element + "\n") 
-                dateerror.close()
-
-        #### For all CBs
-        # for found_index, module in enumerate(cb_module_data["tenants"]):
-        #     if module["city"]["ulbGrade"]=="ST":
-        #         continue
-        #     cityname =module["code"].lower()[3:]
+        # cityToInclued = getCitiesToInclude(cityToSkip,cb_module_data)
+        # print('cityToInclued', len(cityToInclued)-1)
+        # for found_index, cityname in enumerate(cityToInclued):
         #     config.errormsg=[]
         #     name = 'CB ' + cityname.lower()
         #     if  os.path.exists( os.path.join(root,name)):                
         #         try : 
-        #             if True: #cityname == 'agra' 
+        #             if cityname == 'allahabad' :
         #                 print("Processing for CB "+cityname.upper())
         #                 config.CITY_NAME = cityname
         #                 cbMain(cityname, successlogfile)
@@ -77,19 +61,44 @@ def main() :
         #         for element in config.errormsg:
         #             dateerror.write(element + "\n") 
         #         dateerror.close()
+
+        #### For all CBs
+        for found_index, module in enumerate(cb_module_data["tenants"]):
+            if module["city"]["ulbGrade"]=="ST":
+                continue
+            cityname =module["code"].lower()[3:]
+            config.errormsg=[]
+            name = 'CB ' + cityname.lower()
+            if  os.path.exists( os.path.join(root,name)):                
+                try : 
+                    if  cityname == 'aurangabad' :
+                        print("Processing for CB "+cityname.upper())
+                        config.CITY_NAME = cityname
+                        cbMain(cityname, successlogfile)
+                except Exception as ex: 
+                    print("Error in processing CB ",cityname , ex)
+                    traceback.print_exc()
+                    errorlogfile.write(cityname+"\n")
+            if len(config.errormsg ) > 0 : 
+                dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+                for element in config.errormsg:
+                    dateerror.write(element + "\n") 
+                dateerror.close()
     errorlogfile.close()
     successlogfile.close()
-    if len(config.error_in_excel) > 0 : 
-        cbHaveExcelIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_EXCEL_ISSUE.txt"), "w")  
+    cbHaveExcelIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_EXCEL_ISSUE.txt"), "w")  
+    if len(config.error_in_excel) > 0 :         
         for element in config.error_in_excel:
-                    cbHaveExcelIssue.write(element + "\n") 
+            cbHaveExcelIssue.write(element + "\n") 
         cbHaveExcelIssue.close()
+    cbHaveMultipleOwnerIssue = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"_CB_HAVE_MULTIPLE_OWNER_ISSUE.txt"), "w") 
+    if len(config.error_in_multiple_owner) > 0 :          
+        for element in config.error_in_multiple_owner:
+            cbHaveMultipleOwnerIssue.write(element + "\n") 
+        cbHaveMultipleOwnerIssue.close()
 
-def getCitiesToInclude(cb_module_data):
-    cityToSkip = ['agra','ahmedabad','ahmednagar','ajmer','allahabad','almora','ambala','amritsar','babina',
-                    'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
-                    'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
-                    'ranikhet','roorkee','saugor','shahjahanpur','shillong','wellington']
+def getCitiesToInclude(cityToSkip,cb_module_data):
+    
     cityToSkip.sort()
     allCities = []
     cityToInclued = []
@@ -129,7 +138,7 @@ def cbMain(cityname, successlogfile):
     logfile = open(os.path.join(root, name, "Logfile.json"), "w")   
     logfile.write("[ ")
     property_owner_obj = {}
-    property_owner_obj = createOwnerObj(propertyFile)  
+    property_owner_obj, multiple_owner_obj = createOwnerObj(propertyFile)  
     if config.INSERT_DATA :
         validate = enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile,logfile, property_owner_obj) 
         if(validate == False):                
@@ -137,7 +146,7 @@ def cbMain(cityname, successlogfile):
             return
     if os.path.exists(propertyFile) : 
         localityDict = getLocalityData(cityname) 
-        validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname)
+        validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname, multiple_owner_obj)
         if(validate == False):                
             print('Data validation for property Failed, Please check the log file.') 
             if config.INSERT_DATA: 
@@ -191,7 +200,7 @@ def cbMain(cityname, successlogfile):
         print("Error in parsing json file",ex)
 
 
-def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
+def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multiple_owner_obj):
     validated = True
     reason = ''
 
@@ -250,7 +259,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                     validated = False
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(locality) +' Locality/ Mohalla does not exist in system ',getValue(row[1], str, ''))
                 
-                if(str(row[27]) != "Multiple Owners"):
+                if(str(row[27]).lower() != "multiple owners"):
                     if pd.isna(row[28]):
                         validated = False
                         reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ', name is empty.\n'
@@ -290,13 +299,28 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                         validated = False
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
                 
-                elif(str(row[27]) == "Multiple Owners"):
+                elif(str(row[27]).lower() == "multiple owners"):
                     propSheetABASId = getValue(row[1], str, "")
                     if propSheetABASId not in abas_ids_sheet2:
                         validated = False
                         reason = 'Property File data validation failed, abas id for multiple ownership is not available in Property Ownership Details sheet  '+ getValue(row[1], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas id for multiple ownership is not available in Property Ownership Details sheet ',propSheetABASId)
                         #logfile.write(reason)
+                    else:
+                        if(len(multiple_owner_obj[propSheetABASId]) > 1):
+                            for i in range(0, len(multiple_owner_obj[propSheetABASId])-1):
+                                obj = multiple_owner_obj[propSheetABASId][i]
+                                for j in range(i+1, len(multiple_owner_obj[propSheetABASId])):
+                                    obj1 = multiple_owner_obj[propSheetABASId][j]
+                                    if( not pd.isna(obj.mobileNumber) and not pd.isna(obj1.mobileNumber) 
+                                        and obj.mobileNumber == obj1.mobileNumber and not pd.isna(obj.name) and 
+                                        not pd.isna(obj1.name) and obj.name == obj1.name) :
+                                        validated = False                        
+                                        write(logfile,propertyFile,sheet2.title,None,'Same name and mobile number is given for multiple owners of a property ', propSheetABASId)  
+                                        config["error_in_multiple_owner"].append(cityname)
+                                        break
+                                if len(config.error_in_multiple_owner) > 0 :
+                                    break
                 propUsgType=getValue(row[7], str, "")
                 if pd.isna(row[7]):
                     validated = False
@@ -323,6 +347,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                             #raise Exception("dddd")
 
             except Exception as ex:
+                traceback.print_exc()
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], int, ''), '  ',ex)
                 # write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
 
@@ -333,6 +358,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname):
                 propSheetABASId = getValue(sheet1['B{0}'.format(index)].value, str, '')
                 abas_ids.append(propSheetABASId)
             except Exception as ex:
+                traceback.print_exc()
                 print( config.CITY_NAME,  " validateDataForProperty Exception: abas id is empty: ",getValue(row[0], int, ''), '  ',ex)
         duplicate_ids = [item for item, count in collections.Counter(abas_ids).items() if count > 1]
 
@@ -438,11 +464,13 @@ def ValidateCols(logfile, propertyFile, sheet1, sheet2):
     return validated  
 
 def createOwnerObj(propertyFile) :
-    owner_obj = {}
+    property_owner_obj = {}
+    multiple_owner_obj = {}
     try:
         if os.path.exists(propertyFile) : 
             wb_property = openpyxl.load_workbook(propertyFile) 
-            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')        
+            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+            sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')        
             for i in range(3, sheet1.max_row +1):
                 #print('B{0}'.format(i))
                 if pd.isna(getValue(sheet1['B{0}'.format(i)].value, str, None)):                    
@@ -452,11 +480,23 @@ def createOwnerObj(propertyFile) :
                     owner = {}               
                     owner['mobileNumber'] = getMobileNumber(row[29],str,"")
                     owner['ownerType'] =  getValue(row[27],str,"") 
-                    if abas_id not in owner_obj:
-                        owner_obj[abas_id] = []
-                    owner_obj[abas_id].append(owner)       
+                    if abas_id not in property_owner_obj:
+                        property_owner_obj[abas_id] = []
+                    property_owner_obj[abas_id].append(owner)       
             wb_property.close()
-            return owner_obj
+            for i in range(2, sheet2.max_row +1):
+                if pd.isna(getValue(sheet2['A{0}'.format(i)].value, str, None)):                    
+                    continue     
+                abas_id = getValue(sheet2['A{0}'.format(i)].value, str, None)
+                for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
+                    owner = Owner()
+                    owner.mobileNumber =  getMobileNumber( row[3] ,str,None)  
+                    owner.name =  getValue(row[2] ,str, None)               
+                    if abas_id not in multiple_owner_obj:
+                        multiple_owner_obj[abas_id] = []
+                    multiple_owner_obj[abas_id].append(owner)
+
+            return property_owner_obj, multiple_owner_obj
     except Exception as ex:
         print(config.CITY_NAME," createOwnerObj Exception: ",ex)
         traceback.print_exc()
@@ -749,7 +789,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         owner.ownerType =  process_special_category(row[37])    
                         property.institution = institution
                         property.owners.append(owner)
-                    elif(property.ownershipCategory == 'INDIVIDUAL.MULTIPLEOWNERS'):
+                    elif(property.ownershipCategory == 'INDIVIDUAL.MULTIPLEOWNERS'):    
                         for owner_obj in multiple_owner_obj[property.abasPropertyId]:
                             owner = owner_obj
                             owner.status = 'ACTIVE'  

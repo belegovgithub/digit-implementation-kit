@@ -136,7 +136,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                 else:
                     if str(row[3]).strip().lower() == 'yes' and not pd.isna(abasid):
                         for obj in property_owner_obj[abasid]:
-                            if(getValue(obj['ownerType'],str,"") == 'Multiple Owners'):
+                            if(getValue(obj['ownerType'],str,"").lower() == 'multiple owners'):
                                 validated = False
                                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D of sewerage template and connection holder detail is mandatory ',getValue(row[1], str, ''))
             
@@ -392,14 +392,17 @@ def process_gender(value):
     return gender_MAP[value]
 
 def process_connection_type(value):
+    value = value.strip().lower()
     connection_MAP = {
-        "Metered": "Metered",
-        "Non-Metered": "Non Metered",
-        "None": "Non Metered"     
+        "metered": "Metered",
+        "non-metered": "Non Metered",
+        "nonmetered": "Non Metered",
+        "none": "Non Metered"     
     }
     return connection_MAP[value]
 
 def process_propertyOwnership(value):
+    value = value.strip()
     propertyOwnership_MAP = {
         "None": None,
         "HOR": "HOR",

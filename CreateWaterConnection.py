@@ -156,7 +156,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                 else:
                     if str(row[3]).strip().lower() == 'yes' and not pd.isna(abasid):
                         for obj in property_owner_obj[abasid]:
-                            if(getValue(obj['ownerType'],str,"") == 'Multiple Owners'):
+                            if(getValue(obj['ownerType'],str,"").lower() == 'multiple owners'):
                                 validated = False
                                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D of water template and connection holder detail is mandatory ',getValue(row[1], str, ''))
             
@@ -331,16 +331,16 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     
                     waterConnection.pipeSize = getValue(row[14],float,0.25)
                     waterConnection.proposedPipeSize = getValue(row[14],float,0.25)
-                    waterConnection.waterSource = process_water_source(str(row[15]).strip())
+                    waterConnection.waterSource = process_water_source(row[15])
                     if(waterConnection.waterSource != 'OTHERS'):
                         waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
                     else:
                         waterConnection.waterSubSource = ''
                         waterConnection.sourceInfo = 'Other'
-                    waterConnection.connectionType = process_connection_type(str(row[16]).strip())
-                    waterConnection.motorInfo  = process_motor_info(str(row[17]).strip())
-                    waterConnection.propertyOwnership  = process_propertyOwnership(str(row[11]).strip())
-                    waterConnection.authorizedConnection = process_connection_permission(str(row[19]).strip())
+                    waterConnection.connectionType = process_connection_type(row[16])
+                    waterConnection.motorInfo  = process_motor_info(row[17])
+                    waterConnection.propertyOwnership  = process_propertyOwnership(row[11])
+                    waterConnection.authorizedConnection = process_connection_permission(row[19])
                     waterConnection.noOfTaps = getValue(row[23],int,1)
                     waterConnection.proposedTaps = getValue(row[23],int,1)
                     if( waterConnection.connectionType == 'Metered'):
@@ -422,7 +422,7 @@ def get_propertyaddress(doorNo, buildingName,locality,cityname):
 
 def process_water_source(value):
     if value is None : 
-        value ="Others"
+        value ="Pipe-Treated"
     value = value.strip().lower()
     water_source_MAP = {
         'Ground-Borewell': 'GROUND.BOREWELL',
@@ -436,14 +436,13 @@ def process_water_source(value):
         'Surface-Recycled Water':'SURFACE.RECYCLEDWATER',
         'Pipe-Treated':'PIPE.TREATED',
         'Pipe-Raw':'PIPE.RAW',
-        'Others':'OTHERS',
-        'None': 'OTHERS'
+        'MES': 'MES'
     }
     for key in water_source_MAP :
         if key.lower() == value : 
             return water_source_MAP[key]    
 
-    return water_source_MAP['None']
+    return water_source_MAP['Pipe-Treated']
 
 def process_relationship(value):
     if value is None : 
@@ -472,14 +471,17 @@ def process_gender(value):
     return gender_MAP[value]
 
 def process_connection_type(value):
+    value = value.strip().lower()
     connection_MAP = {
-        "Metered": "Metered",
-        "Non-Metered": "Non Metered",
-        "None": "Non Metered"     
+        "metered": "Metered",
+        "non-metered": "Non Metered",
+        "nonmetered": "Non Metered",
+        "none": "Non Metered"     
     }
     return connection_MAP[value]
 
 def process_motor_info(value):
+    value = value.strip()
     motor_info_MAP = {
         "None": "WITHOUTPUMP",
         "NA": "WITHOUTPUMP",
@@ -490,6 +492,7 @@ def process_motor_info(value):
     return motor_info_MAP[value]
 
 def process_propertyOwnership(value):
+    value = value.strip()
     propertyOwnership_MAP = {
         "None": None,
         "HOR": "HOR",
@@ -498,6 +501,7 @@ def process_propertyOwnership(value):
     return propertyOwnership_MAP[value]
 
 def process_connection_permission(value):
+    value = value.strip()
     connection_permission_MAP = {
         "Authorized": "AUTHORIZED",
         "Unauthorized": "UNAUTHORIZED",

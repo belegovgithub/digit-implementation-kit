@@ -60,38 +60,37 @@ def main():
                 print("Not In city",city)
                 continue
             cityname = tenantMapping[city]
+            if cityname =='belgaum' : 
+                if os.path.exists(cbFile) :  
+                    template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
+                    # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
+                    dfLocality = getLocalityData(cityname)
+                    workbook1 = openpyxl.load_workbook(cbFile)   
+                    writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
+                    writer.book = workbook1                  
+                    sheet = workbook1.get_sheet_by_name('Property Assembly Detail')                
+                    # if(ValidateCols(sheet) == False):
+                    #     print(cityname, "Column Order Validation Failed")
+                    #     continue
+                    # df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
+                    # df2.to_excel(writer,sheet_name="Master Data",index=False) 
+                    # df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
+                    dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
+                    os.makedirs(template_path, exist_ok=True)
+                    # insert_columns(sheet)  
+                                                
+                    generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
+                    workbook1.save(generatedFile)        
+                    workbook1.close()
+                    # add_header(templateFile, generatedFile) 
+                    # DataValidation1(generatedFile)
 
-            if os.path.exists(cbFile) :  
-                template_path = os.path.join(r"D:/eGov/Data/WS/Template/Property/CB " + cityname) 
-                # template_file = os.path.join(config.LOG_PATH ,  "Locality.xlsx" )
-                dfLocality = getLocalityData(cityname)
-                print(dfLocality)
-                workbook1 = openpyxl.load_workbook(cbFile)   
-                writer = pd.ExcelWriter(cbFile, engine='openpyxl')   
-                writer.book = workbook1                  
-                sheet = workbook1.get_sheet_by_name('Property Assembly Detail')                
-                # if(ValidateCols(sheet) == False):
-                #     print(cityname, "Column Order Validation Failed")
-                #     continue
-                # df1.to_excel(writer,sheet_name="Property Ownership Details",index=False) 
-                # df2.to_excel(writer,sheet_name="Master Data",index=False) 
-                # df3.to_excel(writer,sheet_name="Master_UsageType",index=False) 
-                dfLocality.to_excel(writer,sheet_name="Locality",index=False)            
-                os.makedirs(template_path, exist_ok=True)
-                # insert_columns(sheet)  
-                                             
-                generatedFile = os.path.join(template_path,'Template for Existing Property-Integrated with ABAS-' + cityname + '.xlsx')
-                workbook1.save(generatedFile)        
-                workbook1.close()
-                # add_header(templateFile, generatedFile) 
-                # DataValidation1(generatedFile)
+                    
 
-                
-
-                print(cityname, " Done")
-                count = count + 1
-            else:
-                print(cityname, " file does not exist")            
+                    print(cityname, " Done")
+                    count = count + 1
+                else:
+                    print(cityname, " file does not exist")            
                 
     print("Total Count: ", count)  
             
@@ -270,9 +269,10 @@ def add_column(workbook,sheet_name, column):
 
 
 def main_water_usge():
-    templateFile = r"D:\Logs_Downloads\Legacy\Template.xlsx"
-    folderPath =r"D:\Logs_Downloads\Legacy\CB_PROPERTY_DATA_VERIFIED"
+    templateFile = r"D:\eGov\Data\WS\Template\src\Template for Existing Water Connection Detail.xlsx"
+    folderPath =r"D:\eGov\Data\WS\Template\WaterSewerageTemplates\CB_PROPERTY_DATA_VERIFIED"
     connUsgDf = pd.read_excel(templateFile, 'Connection Usage Type')
+    waterSrc = pd.read_excel(templateFile, 'Water Source')
     thin = Side(border_style="thin", color="000000") 
     EXL_NAME="Template for Existing Water Connection Detail.xlsx" 
 
@@ -283,11 +283,20 @@ def main_water_usge():
                     cbFile =os.path.join(root,f)
                     with pd.ExcelWriter(cbFile) as writer:
                         writer.book = openpyxl.load_workbook(cbFile)
-                        if 'Connection Usage Type' not in writer.book.sheetnames :
-                            connUsgDf.to_excel(writer, sheet_name='Connection Usage Type',index=False) 
                         connectionSheet = writer.book.get_sheet_by_name('Water Connection Details') 
+                        connectionSheet.delete_cols(25,2)
+                        # connectionSheet.insert_cols(24,2) 
+                        if 'Water Source' in writer.book.sheetnames :
+                            existingWaterSrcSheet = writer.book.get_sheet_by_name('Water Source') 
+                            writer.book.remove_sheet(existingWaterSrcSheet)
+                        waterSrc.to_excel(writer, sheet_name='Water Source',index=False)                        
+                        if 'Connection Usage Type' in writer.book.sheetnames :
+                            existingUsgSheet = writer.book.get_sheet_by_name('Connection Usage Type') 
+                            writer.book.remove_sheet(existingUsgSheet)
+                        connUsgDf.to_excel(writer, sheet_name='Connection Usage Type',index=False) 
                         
                         ## Add column and Format Column
+
                         connectionSheet["Y1"]="Connection Usage*"
                         connectionSheet["Z1"]="Connection Sub Usage*"
                         column_list_connectionSheet = [c.value for c in next(connectionSheet.iter_rows(min_row=1, max_row=1))]
@@ -300,18 +309,14 @@ def main_water_usge():
                                 connectionSheet.cell(row=1, column=col_num+1).alignment = Alignment(wrap_text=True, horizontal="center")
                         connectionSheet.merge_cells('Y1:Y2')
                         connectionSheet.merge_cells('Z1:Z2')
-                        addValidationToColumns(connectionSheet,"Y","$A$2:$A$9","Connection Usage Type")
+                        addValidationToColumns(connectionSheet,"Y","$A$2:$A$7","Connection Usage Type")
                         connUsageSheet = writer.book.get_sheet_by_name('Connection Usage Type')
-                        if "CommercialNonresidential" not in connUsageSheet.tables : 
+                        if "Residential" not in connUsageSheet.tables : 
                             
-                            tab = Table(displayName="CommercialNonresidential", ref="B1:B26")
+                            tab = Table(displayName="Residential", ref="B1:B4")
                             connUsageSheet.add_table(tab)
-                            tab = Table(displayName="IndustrialNonresidential", ref="C1:C5")
-                            connUsageSheet.add_table(tab)
-                            tab = Table(displayName="InstitutionalNonresidential", ref="D1:D20")
-                            connUsageSheet.add_table(tab)
-                            tab = Table(displayName="OthersNonresidential", ref="F1:F2")
-                            connUsageSheet.add_table(tab) 
+                            tab = Table(displayName="Commercial", ref="C1:C3")
+                            connUsageSheet.add_table(tab)                            
                         for index in range( 3,connectionSheet.max_row+1) :
                             dv = DataValidation(type='list', formula1='=INDIRECT(SUBSTITUTE( SUBSTITUTE(SUBSTITUTE(Y{0},"(",""),")",""), " ",""))'.format(index))
                             dv.add('Z{0}'.format(index))
