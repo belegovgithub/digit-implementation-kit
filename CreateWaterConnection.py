@@ -55,7 +55,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
  
     emptyRows =0 
-    for row in water_sheet.iter_rows(min_row=3, max_col=24, max_row=water_sheet.max_row ,values_only=True):
+    for row in water_sheet.iter_rows(min_row=3, max_col=26, max_row=water_sheet.max_row ,values_only=True):
         index = index + 1
         try:        
             # if emptyRows > 10 :
@@ -159,7 +159,23 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                             if(getValue(obj['ownerType'],str,"").lower() == 'multiple owners'):
                                 validated = False
                                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' Property ownership is multiple owner, so enter No for column D of water template and connection holder detail is mandatory ',getValue(row[1], str, ''))
-            
+            waterUsgType=getValue(row[24], str, '')
+            if isna(waterUsgType):
+                validated = False
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'water usage type is empty',getValue(row[1], str, ''))                   
+            elif process_usage_type(waterUsgType,True) is None:
+                validated = False
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'water usage type is not correct', getValue(row[1], str, ''))
+            if waterUsgType.lower() == "residential" or  waterUsgType.lower() == "commercial" :
+                waterSubusage = getValue(row[25], str, '')
+                if waterSubusage != '' and waterSubusage.lower() not in  USAGE_SUB_USAGE_MAP[process_usage_type(waterUsgType,True)] :
+                    validated = False            
+                    # print("useage type ",subUsageValue.lower().strip())    
+                    # print(USAGE_SUB_USAGE_MAP[process_usage_type(propUsgType,True)])        
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'sub usage "'+waterSubusage+'" not correct as per usage type '+waterUsgType,getValue(row[1], str, ''))
+            # if process_subusage_type(waterUsgType,True) is None:
+            #     validated = False
+            #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'water sub usage type is not correct', getValue(row[1], str, ''))
         except Exception as ex:
             # write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
             print(config.CITY_NAME," validateWaterData Exception: ", getValue(row[0], int, ''), '  ', ex)
@@ -269,7 +285,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
             print(config.CITY_NAME," createWaterJson Exception: ", getValue(row[0], int, ''), '   ', ex)
 
     index = 2
-    for row in waterSheet.iter_rows(min_row=3, max_col=24, max_row=waterSheet.max_row , values_only=True):
+    for row in waterSheet.iter_rows(min_row=3, max_col=26, max_row=waterSheet.max_row , values_only=True):
         
         index = index + 1
         abasPropertyId =  getValue(row[1],str,None)  
@@ -525,6 +541,70 @@ def process_special_category(value):
         "na":"NONE"
     }
     return special_category_MAP[value]
+
+## As its static data so need to load it again
+USAGE_MAP = {
+        "Residential" : "RESIDENTIAL" ,
+        "Commercial" : "COMMERCIAL" ,
+        "Institutional" : "INSTITUTIONAL",
+        "Industrial" : "INDUSTRIAL" ,
+        "NonResidential" : "NONRESIDENTIAL" ,
+        "Non Residential" : "NONRESIDENTIAL" ,
+        "Mixed" : "MIXED" 
+    }
+USAGE_MAP = { k.strip().lower():USAGE_MAP[k] for k in USAGE_MAP}
+def process_usage_type(value, isValidation =False):
+    value =value.strip().lower()
+    if isValidation : 
+        if value in USAGE_MAP : 
+            return USAGE_MAP[value.strip().lower()] 
+        return None
+    return USAGE_MAP[value]
+
+def process_usage_type(value, isValidation =False):
+    value =value.strip().lower()
+    if isValidation : 
+        if value in USAGE_MAP : 
+            return USAGE_MAP[value.strip().lower()] 
+        return None
+    if value is None: 
+        value ="residential"    
+    for key in USAGE_MAP :
+        if key == value : 
+            return USAGE_MAP[key]  
+    return USAGE_MAP["residential"]  
+
+SUB_USAGE_MAP = {
+        "Residential" : "RESIDENTIAL.RESIDENTIAL" ,
+        "Others" : "RESIDENTIAL.OTHERS" ,
+        "Slum" : "RESIDENTIAL.SLUM" ,
+        "Commercial" : "COMMERCIAL.COMMERCIAL" ,
+        "Hotels" : "COMMERCIAL.HOTELS",
+        "None":   ''   
+    }
+SUB_USAGE_MAP = { k.strip().lower():SUB_USAGE_MAP[k] for k in SUB_USAGE_MAP}
+
+USAGE_SUB_USAGE_MAP =dict()
+for ele in USAGE_MAP :
+    if USAGE_MAP[ele] not in USAGE_SUB_USAGE_MAP  : 
+        USAGE_SUB_USAGE_MAP[USAGE_MAP[ele]]=list()
+for sub_usg_key in SUB_USAGE_MAP : 
+    sub_usg_val =SUB_USAGE_MAP[sub_usg_key]
+    for ele in USAGE_SUB_USAGE_MAP :
+        if sub_usg_val.startswith(ele) :
+            USAGE_SUB_USAGE_MAP[ele].append(sub_usg_key.strip().lower())
+
+def process_subusage_type(value, isValidation =False):
+    if isValidation : 
+        if value in SUB_USAGE_MAP : 
+            return SUB_USAGE_MAP[value.strip().lower()] 
+        return None
+    if value is None: 
+        value ="none"    
+    for key in SUB_USAGE_MAP :
+        if key.lower() == value : 
+            return SUB_USAGE_MAP[key]   
+    return SUB_USAGE_MAP["none"]   
 
 if __name__ == "__main__":
     main()

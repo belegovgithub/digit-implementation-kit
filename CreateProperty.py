@@ -71,7 +71,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if  cityname == 'lebong' :
+                    if  cityname == 'agra' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -313,8 +313,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                                         write(logfile,propertyFile,sheet2.title,None,'Same name and mobile number is given for multiple owners of a property ', propSheetABASId)  
                                         config["error_in_multiple_owner"].append(cityname)
                                         break
-                                if len(config.error_in_multiple_owner) > 0 :
-                                    break
+                                
                 propUsgType=getValue(row[7], str, "")
                 if pd.isna(row[7]):
                     validated = False
@@ -686,7 +685,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         if(property.usageCategory == "NONRESIDENTIAL.OTHERS"):
                             property.subUsageCategory = "NONRESIDENTIAL.OTHERS.PUBLICFACILITY.CREMATIONBURIAL"
                         else:
-                            property.subUsageCategory = process_sub_usage_type(str(row[8]).strip())     
+                            property.subUsageCategory = process_sub_usage_type(row[8])     
                     else:
                         property.subUsageCategory = ''
                     if pd.isna(row[13]):
@@ -961,10 +960,6 @@ def process_occupancy_type(value):
     }
     return OC_MAP[value]
 
-
- 
-        
-
 ## As its static data so need to load it again
 USAGE_MAP = {
         "Residential": "RESIDENTIAL",
@@ -1054,7 +1049,7 @@ def getLocalityData(cityname):
         
 
 if __name__ == "__main__":
-    # print(process_usage_type("Slum",True))
+    # print(USAGE_MAP)
     main()
     
     
