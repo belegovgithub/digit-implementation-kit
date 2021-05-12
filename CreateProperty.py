@@ -17,8 +17,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
@@ -71,7 +71,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if  cityname == 'agra' :
+                    if cityname == 'agra' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile)
@@ -145,6 +145,7 @@ def cbMain(cityname, successlogfile):
         if(validate == False):                
             print('Data validation Failed for mobile entry, Please check the log file.') 
             return
+    return
     if os.path.exists(propertyFile) : 
         localityDict = getLocalityData(cityname) 
         validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname, multiple_owner_obj)
@@ -200,7 +201,6 @@ def cbMain(cityname, successlogfile):
     except Exception as ex: 
         print("Error in parsing json file",ex)
 
-
 def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multiple_owner_obj):
     validated = True
     reason = ''
@@ -224,21 +224,21 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                 
                 # if emptyRows > 10 :
                 #     break
-                if pd.isna(row[1]) and pd.isna(row[2]):
+                if isna(row[1]) and isna(row[2]):
                     emptyRows =emptyRows +1
                     continue
-                if pd.isna(row[0]):
+                if isna(row[0]):
                     validated = False
                     reason = 'Sl no. column is empty'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),reason, getValue(row[1], str, ''))
                     #logfile.write(reason)
-                if pd.isna(row[1]):
+                if isna(row[1]):
                     validated = False
                     #print("Property ID ",row[1])
                     reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ', abas property id  is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas property id  is empty',getValue(row[1], str, ''))
                     #logfile.write(reason)
-                if pd.isna(row[27]):
+                if isna(row[27]):
                     validated = False
                     reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ',  ownership type is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'ownership type is empty',getValue(row[1], str, ''))
@@ -254,32 +254,32 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''), str(locality) +' Locality/ Mohalla does not exist in system ',getValue(row[1], str, ''))
                 
                 if(str(row[27]).lower() != "multiple owners"):
-                    if pd.isna(row[28]):
+                    if isna(row[28]):
                         validated = False
                         reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ', name is empty.\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'name is empty',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                    # elif not pd.isna(row[28]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):                    
+                    # elif not isna(row[28]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):                    
                     #     validated = False
                     #     reason = 'Name has invalid characters for sl no. '+ getValue(row[0], int, '') +'\n'
                     #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Name has invalid characters',getValue(row[], str, ''))
                     #     #logfile.write(reason)
-                    if config.INSERT_DATA  and pd.isna(row[29]):
+                    if config.INSERT_DATA  and isna(row[29]):
                         validated = False
                         reason = 'Property File data sheet1 validation failed for sl no. '+ str(getValue(row[0], str, '')) + ', mobile no. is empty.\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'mobile no. is empty',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                    elif not pd.isna(row[29])  and  not bool(re.match(config.MOBILE_PATTERN, getMobileNumber(row[29],str,""))) :
+                    elif not isna(row[29])  and  not bool(re.match(config.MOBILE_PATTERN, getMobileNumber(row[29],str,""))) :
                         validated = False
                         count = count + 1
                         reason = 'Property File data sheet1 validation failed, Mobile number not correct for sl no. '+ getValue(row[0], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Mobile number not correct',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                    # if not pd.isna(row[41])  and  ( len(getMobileNumber(row[41],str,"")) != 11):
+                    # if not isna(row[41])  and  ( len(getMobileNumber(row[41],str,"")) != 11):
                     #     validated = False
                     #     reason = 'Property File data sheet1 validation failed, landline number not correct for sl no. '+ getValue(row[0], str, '') +'\n'
                     #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'landline number not correct',getValue(row[1], str, ''))
-                    # if not pd.isna(row[33]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[33]))):                        
+                    # if not isna(row[33]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[33]))):                        
                     #     validated = False
                     #     reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ getValue(row[0], int, '') +'\n'
                     #     write(logfile,propertyFile,sheet1.title,None,'Guardian Name has invalid characters',getValue(row[0], int, ''))
@@ -289,7 +289,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                         reason = 'Property File data validation failed, Email id is not proper for abas id '+ getValue(row[1], str, '') +'\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Email id is not proper',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                    if not pd.isna(row[32]) and getTime(row[32]) is None:
+                    if not isna(row[32]) and getTime(row[32]) is None:
                         validated = False
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
                 
@@ -306,16 +306,16 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                                 obj = multiple_owner_obj[propSheetABASId][i]
                                 for j in range(i+1, len(multiple_owner_obj[propSheetABASId])):
                                     obj1 = multiple_owner_obj[propSheetABASId][j]
-                                    if( not pd.isna(obj.mobileNumber) and not pd.isna(obj1.mobileNumber) 
-                                        and obj.mobileNumber == obj1.mobileNumber and not pd.isna(obj.name) and 
-                                        not pd.isna(obj1.name) and obj.name == obj1.name) :
+                                    if( not isna(obj.mobileNumber) and not isna(obj1.mobileNumber) 
+                                        and obj.mobileNumber == obj1.mobileNumber and not isna(obj.name) and 
+                                        not isna(obj1.name) and obj.name == obj1.name) :
                                         validated = False                        
                                         write(logfile,propertyFile,sheet2.title,None,'Same name and mobile number is given for multiple owners of a property ', propSheetABASId)  
                                         config["error_in_multiple_owner"].append(cityname)
                                         break
                                 
                 propUsgType=getValue(row[7], str, "")
-                if pd.isna(row[7]):
+                if isna(row[7]):
                     validated = False
                     reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', usage type is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'usage type is empty',getValue(row[1], str, ''))
@@ -327,7 +327,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                     #logfile.write(reason)    
                 elif propUsgType.find("(") != -1 and propUsgType != 'Nonresidential ( Nonresidential )' :
                     subUsageValue =getValue(row[8], str, '')
-                    if pd.isna(row[8]):
+                    if isna(row[8]):
                         validated = False
                         reason = 'Property File data validation failed for sl no. '+ getValue(row[0], str, '') + ', sub usage type is empty.\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'sub usage type is empty',getValue(row[1], str, ''))
@@ -346,7 +346,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
 
         for index in range(3, sheet1.max_row +1):
             try: 
-                if pd.isna(sheet1['B{0}'.format(index)].value):                    
+                if isna(sheet1['B{0}'.format(index)].value):                    
                     break
                 propSheetABASId = getValue(sheet1['B{0}'.format(index)].value, str, '')
                 abas_ids.append(propSheetABASId)
@@ -371,34 +371,34 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                 if  len(abasId)==0  and len(ownerName) > 0   : 
                      write(logfile,propertyFile,sheet2.title,sheet2_index,'ABAS ID is empty ',None)
                 validateMobile =False      
-                if not pd.isna(row[0]):
-                    if validateMobile and pd.isna(row[3]):
+                if not isna(row[0]):
+                    if validateMobile and isna(row[3]):
                         validated = False
                         reason = 'Property File data validation failed for abas id  '+ getValue(row[0], str, '') + ', mobile no. is empty in multiple owner sheet.\n'
                         write(logfile,propertyFile,sheet2.title,None,'mobile no. is empty',getValue(row[0], str, ''))
                         #logfile.write(reason) 
-                    elif not pd.isna(row[3]) and not bool(re.match(config.MOBILE_PATTERN, getMobileNumber(row[3],str,""))) :
+                    elif not isna(row[3]) and not bool(re.match(config.MOBILE_PATTERN, getMobileNumber(row[3],str,""))) :
                         validated = False
                         reason = 'Property File data validation failed, Mobile number not correct for abas id '+ getValue(row[0], str, '') +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Mobile number not correct',getValue(row[0], str, ''))
                         #logfile.write(reason)
-                    if pd.isna(row[2]):
+                    if isna(row[2]):
                         validated = False
                         reason = 'Property File data validation failed for abas id  '+ getValue(row[0], str, '') + ', name is empty.\n'
                         write(logfile,propertyFile,sheet2.title,None,'name is empty',getValue(row[0], str, ''))
                         #logfile.write(reason)
                     
-                    # elif not pd.isna(row[2]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):                        
+                    # elif not isna(row[2]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[2]))):                        
                     #     validated = False
                     #     reason = 'Property File data validation failed, Name has invalid characters for abas id '+ getValue(row[0], str, '') +'\n'
                     #     write(logfile,propertyFile,sheet2.title,None,'Name has invalid characters',getValue(row[0], int, ''))
                     #     #logfile.write(reason)
-                    # if not pd.isna(row[7]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[7]))):                        
+                    # if not isna(row[7]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[7]))):                        
                     #     validated = False
                     #     reason = 'Property File data validation failed, Guardian Name has invalid characters for abas id '+ getValue(row[0], str, '') +'\n'
                     #     write(logfile,propertyFile,sheet2.title,None,'Guardian Name has invalid characters',getValue(row[0], int, ''))
                     #     #logfile.write(reason)
-                    if not pd.isna(row[4]) and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[4]))):                        
+                    if not isna(row[4]) and not bool(re.match("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9]+.(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$",str(row[4]))):                        
                         validated = False
                         reason = 'Property File data validation failed, Email id is not proper for abas id '+ str(getValue(row[0], str, '')) +'\n'
                         write(logfile,propertyFile,sheet2.title,None,'Email id is not proper',getValue(row[0], str, ''))
@@ -466,7 +466,7 @@ def createOwnerObj(propertyFile) :
             sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')        
             for i in range(3, sheet1.max_row +1):
                 #print('B{0}'.format(i))
-                if pd.isna(getValue(sheet1['B{0}'.format(i)].value, str, None)):                    
+                if isna(getValue(sheet1['B{0}'.format(i)].value, str, None)):                    
                     continue
                 abas_id = getValue(sheet1['B{0}'.format(i)].value, str, '')
                 for row in sheet1.iter_rows(min_row=i, max_col=42, max_row=i,values_only=True):                    
@@ -478,7 +478,7 @@ def createOwnerObj(propertyFile) :
                     property_owner_obj[abas_id].append(owner)       
             wb_property.close()
             for i in range(2, sheet2.max_row +1):
-                if pd.isna(getValue(sheet2['A{0}'.format(i)].value, str, None)):                    
+                if isna(getValue(sheet2['A{0}'.format(i)].value, str, None)):                    
                     continue     
                 abas_id = getValue(sheet2['A{0}'.format(i)].value, str, None)
                 for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
@@ -494,15 +494,59 @@ def createOwnerObj(propertyFile) :
         print(config.CITY_NAME," createOwnerObj Exception: ",ex)
         traceback.print_exc()
     
-
-def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile, logfile, owner_obj):
-    validated = True
+def getMaxDefaulNumber(propertyFile, tenantMapping, cityname, waterFile, sewerageFile):
     search_key = 'pb.'+ cityname
     res = list(tenantMapping.keys()).index(search_key)
     res = res+1
-    res = res* 100000
-    mobileNumber = 3000000000 + res + 0
-    # mobileNumber = 3002401400
+    mobileFiveDigit = str(30000 + res)
+    defaultMobArr = []
+    try:
+        if os.path.exists(propertyFile):
+            wb_property = openpyxl.load_workbook(propertyFile) 
+            sheet1 = wb_property.get_sheet_by_name('Property Assembly Detail')   
+            sheet2 = wb_property.get_sheet_by_name('Property Ownership Details')  
+            for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):
+                mobNo = getValue(row[29],str,'')
+                if mobNo.startswith(mobileFiveDigit) :
+                    defaultMobArr.append(int(mobNo))
+            for row in sheet2.iter_rows(min_row=2, max_col=42, max_row=sheet1.max_row ,values_only=True):
+                mobNo = getValue(row[3],str,'')
+                if mobNo.startswith(mobileFiveDigit) :
+                    defaultMobArr.append(int(mobNo))
+            
+        if os.path.exists(waterFile):
+            wb_water = openpyxl.load_workbook(waterFile) 
+            water_sheet = wb_water.get_sheet_by_name('Water Connection Details') 
+            for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
+                mobNo = getValue(row[4],str,'')
+                if mobNo.startswith(mobileFiveDigit) :
+                    defaultMobArr.append(int(mobNo))
+        if os.path.exists(sewerageFile):
+            wb_sewerage = openpyxl.load_workbook(sewerageFile) 
+            sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
+            for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
+                mobNo = getValue(row[4],str,'')
+                if mobNo.startswith(mobileFiveDigit) :
+                    defaultMobArr.append(int(mobNo))
+        defaultMobArr.sort()
+        if(len(defaultMobArr)> 0):
+            return defaultMobArr.pop()
+        res = res* 100000
+        return 3000000000 + res + 0
+    except Exception as ex:
+        print(config.CITY_NAME," getMaxDefaulNumber Exception: ",ex)
+        traceback.print_exc()
+
+
+def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewerageFile, logfile, owner_obj):
+    validated = True
+    # search_key = 'pb.'+ cityname
+    # res = list(tenantMapping.keys()).index(search_key)
+    # res = res+1
+    # res = res* 100000
+    # mobileNumber = 3000000000 + res + 0
+    mobileNumber = getMaxDefaulNumber(propertyFile, tenantMapping, cityname, waterFile, sewerageFile)
+    print(mobileNumber)
     try:
         if os.path.exists(propertyFile) : 
             wb_property = openpyxl.load_workbook(propertyFile) 
@@ -511,10 +555,10 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             index = 2
             for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True):
                 index = index + 1
-                if pd.isna(row[1]):
+                if isna(row[1]):
                     continue 
                 if (str(row[27]).strip() != 'Multiple Owners'):
-                    if pd.isna(row[29]):
+                    if isna(row[29]):
                         mobileNumber = mobileNumber + 1                    
                         value = 'AD{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
                         # logfile.write(value)
@@ -522,15 +566,15 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             index = 1
             for row in sheet2.iter_rows(min_row=2, max_col=5, max_row=sheet2.max_row ,values_only=True): 
                 index = index + 1 
-                if pd.isna(row[0]) :  
-                    if (not pd.isna(row[1]) or not pd.isna(row[2])):
+                if isna(row[0]) :  
+                    if (not isna(row[1]) or not isna(row[2])):
                         print("empty abas id in property file sheet2 while property validation")
                         write(logfile,propertyFile,sheet2.title,None,"empty abas id in property file sheet2 while property validation",None)
                         continue 
                     else : 
                         continue
                 
-                if pd.isna(row[3]):
+                if isna(row[3]):
                     mobileNumber = mobileNumber + 1
                     value = 'D{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
                     # logfile.write(value)
@@ -546,10 +590,10 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             index = 2
             for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
                 index = index + 1
-                if pd.isna(row[0]):
+                if isna(row[0]):
                     continue
                 if(str(row[3]).strip().lower() == 'no'):
-                    if pd.isna(row[4]):
+                    if isna(row[4]):
                         mobileNumber = mobileNumber + 1
                         value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
                         logfile.write(value)
@@ -560,7 +604,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             # wb_water = openpyxl.load_workbook(waterFile) 
             # water_sheet = wb_water.get_sheet_by_name('Water Connection Details')
             # for row in water_sheet.iter_rows(min_row=3, max_col=5, max_row=water_sheet.max_row ,values_only=True):
-            #     if pd.isna(getValue(row[1],str,None)):
+            #     if isna(getValue(row[1],str,None)):
             #         continue
             #     if(str(row[3]).strip().lower() == 'yes'):
             #         for obj in owner_obj[getValue(row[1],str,"")]:
@@ -577,10 +621,10 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             index = 2
             for row in sewerage_sheet.iter_rows(min_row=3, max_col=5, max_row=sewerage_sheet.max_row ,values_only=True):
                 index = index + 1
-                if pd.isna(row[0]):
+                if isna(row[0]):
                     continue
                 if(str(row[3]).strip().lower() == 'no'):
-                    if pd.isna(row[4]):
+                    if isna(row[4]):
                         mobileNumber = mobileNumber + 1
                         value = 'E{0}'.format(index) + '    ' +str(mobileNumber) + '\n'
                         logfile.write(value)
@@ -591,7 +635,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
             # wb_sewerage = openpyxl.load_workbook(sewerageFile) 
             # sewerage_sheet = wb_sewerage.get_sheet_by_name('Sewerage Connection Details') 
             # for row in sewerage_sheet.iter_rows(min_row=3, max_col=10, max_row=sewerage_sheet.max_row ,values_only=True):
-            #     if pd.isna(getValue(row[1],str,None)):
+            #     if isna(getValue(row[1],str,None)):
             #         continue
             #     if(str(row[3]).strip().lower() == 'yes'):
             #         for obj in owner_obj[getValue(row[1],str,"")]:
@@ -620,7 +664,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
     multiple_owner_obj = {}
     for i in range(2, sheet2.max_row +1):   
         try:
-            if pd.isna(getValue(sheet2['A{0}'.format(i)].value, str, None)):                    
+            if isna(getValue(sheet2['A{0}'.format(i)].value, str, None)):                    
                 continue     
             abas_id = getValue(sheet2['A{0}'.format(i)].value, str, None)
             for row in sheet2.iter_rows(min_row=i, max_col=12, max_row=i,values_only=True):                    
@@ -630,7 +674,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 owner.mobileNumber =  getMobileNumber( row[3] ,str,"3000000000")
                 owner.emailId = getValue( row[4] ,str,"")
                 owner.gender = process_gender(row[5])
-                if not pd.isna(row[6]):
+                if not isna(row[6]):
                     owner.dob = getTime(row[6])
                 owner.fatherOrHusbandName = getValue( row[7] ,str,"Guardian")
                 owner.relationship =  process_relationship(row[8])
@@ -651,7 +695,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
             index = index + 1  
             property = Property()  
             property.abasPropertyId =  getValue( row[1] ,str,None)
-            if pd.isna(property.abasPropertyId):
+            if isna(property.abasPropertyId):
                 print("empty Abas id in property file for sl no. ", row[0])
                 continue     
             
@@ -688,7 +732,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                             property.subUsageCategory = process_sub_usage_type(row[8])     
                     else:
                         property.subUsageCategory = ''
-                    if pd.isna(row[13]):
+                    if isna(row[13]):
                         locality.code = "LOCAL_OTHERS"   
                     else:    
                         locality.code = locality_data[getValue(row[13] ,str,"Others")]
@@ -713,7 +757,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     property.units = []
                     property.units.append(unit)
                     property.owners = []
-                    # converter = lambda  x,y  : x  if x is not pd.isna else y
+                    # converter = lambda  x,y  : x  if x is not isna else y
                     property.noOfFloors = getValue(row[10],int,1) 
                     if(int(property.noOfFloors) == 0):
                         property.noOfFloors = getValue(1,int,1)
@@ -727,7 +771,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                         owner.mobileNumber = getValue(row[29],str,"3000000000")
                         owner.emailId = getValue(row[30] ,str,"")
                         owner.gender = process_gender(row[31] )
-                        if not pd.isna(row[32]):
+                        if not isna(row[32]):
                             owner.dob = getTime(row[32])
                         owner.fatherOrHusbandName = getValue(row[33],str,"Guardian")
                         owner.relationship =  process_relationship(row[34])
