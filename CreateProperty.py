@@ -145,7 +145,6 @@ def cbMain(cityname, successlogfile):
         if(validate == False):                
             print('Data validation Failed for mobile entry, Please check the log file.') 
             return
-    return
     if os.path.exists(propertyFile) : 
         localityDict = getLocalityData(cityname) 
         validate =  validateDataForProperty(propertyFile, logfile,localityDict, cityname, multiple_owner_obj)
