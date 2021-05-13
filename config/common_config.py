@@ -5,76 +5,13 @@ import os
 import sys
 from datetime import datetime, timedelta,date
 
-config.ROLE_CODE_MAP = {
-  "CITIZEN": "Citizen",
-  "EMPLOYEE": "Employee",
-  "SUPERUSER": "Super User",
-  "TL_CEMP": "TL Counter Employee",
-  "TL_APPROVER": "TL Approver",
-  "EGF_ADMINISTRATOR": "Finance Adminsitrator",
-  "TL_FIELD_INSPECTOR": "TL Field Inspector",
-  "TL_DOC_VERIFIER": "TL doc verifier",
-  "UC_EMP": "Universal Collection Employee",
-  "SYSTEM": "System user",
-  "DGDE": "DGDE user",
-  "CSR": "Customer Support Representative",
-  "PGR-ADMIN": "PGR Administrator",
-  "GRO": "Grievance Routing Officer",
-  "RO": "Redressal Officer",
-  "ANONYMOUS": "ANONYMOUS",
-  "STADMIN": "State Administrator",
-  "WS_CEMP": "WS Counter Employee",
-  "WS_DOC_VERIFIER": "WS doc verifier",
-  "WS_FIELD_INSPECTOR": "WS Field Inspector",
-  "WS_APPROVER": "WS Approver",
-  "WS_CLERK": "WS Clerk",
-  "SW_CEMP": "SW Counter Employee",
-  "SW_DOC_VERIFIER": "SW Document Verifier",
-  "SW_FIELD_INSPECTOR": "SW Field Inspector",
-  "SW_APPROVER": "SW Approver",
-  "SW_CLERK": "SW Clerk",
-  "PT_CEMP": "PT Counter Employee",
-  "PT_DOC_VERIFIER": "PT Document Verifier",
-  "PT_FIELD_INSPECTOR": "PT Field Inspector",
-  "PT_APPROVER": "PT Approver",
-  "LR_CEMP":"LR Counter Employee",
-  "LR_APPROVER_CEO":"LR Approver CEO",
-  "LR_APPROVER_DEO":"LR Approver DEO",
-  "DEO_DELHI":"DEO Delhi",
-  "DEO_KOLKATA":"DEO Kolkata",
-  "DEO_SILIGURI":"DEO Siliguri",
-  "DEO_AGRA":"DEO Agra",
-  "DEO_ALLAHABAD":"DEO Allahbad",
-  "DEO_BAREILLY":"DEO Bareilly",
-  "DEO_DANAPUR":"DEO Danapur",
-  "DEO_LUCKNOW":"DEO Lucknow",
-  "DEO_MEERUT":"DEO Meerut",
-  "DEO_MHOW":"DEO Mhow",
-  "DEO_JABALPUR":"DEO Jabalpur",
-  "DEO_AHMEDABAD":"DEO Ahmedabad",
-  "DEO_BANGALORE":"DEO Bangalore",
-  "DEO_BHOPAL":"DEO Bhopal",
-  "DEO_CHENNAI":"DEO Chennai",
-  "DEO_COCHIN":"DEO Cochin",
-  "DEO_JODHPUR":"DEO Jodhpur",
-  "DEO_MUMBAI":"DEO Mumbai",
-  "DEO_PUNE":"DEO Pune",
-  "DEO_SECUNDERABAD":"DEO Secundrabad",
-  "DEO_AMBALA":"DEO Ambala",
-  "DEO_JALANDHAR":"DEO Jalandhar",
-  "DEO_JAMMU":"DEO Jammu",
-  "DEO_PATHANKOT":"DEO Pathankot",
-  "DEO_TESTING": "DEO Testing"
-}
-
-
 def load_config():
-    config.INSERT_DATA =True
+    config.INSERT_DATA = False
     config.MOBILE_PATTERN = "^[3-9][0-9]{9}$"
     config.CREATE_PROPERTY =False
-    config.CREATE_WATER =True
+    config.CREATE_WATER =False
     config.CREATE_SEWERAGE =False    
-    config.isUpdateallowed = False
+    config.isUpdateallowed = True
     config.ASSUME_YES = False
     config.GOOGLE_AUTH_CONFIG = config.BASE_PATH + '/SpreadSheetDBService-2be6caceda84.json'
     config.URL_LOGIN = config.HOST + "/user/oauth/token"
@@ -152,7 +89,67 @@ def load_config():
     config.PERSQFEET = "PER SQ FEET"
     config.UNIT = "PER UNIT"
     
-
+config.ROLE_CODE_MAP = {
+  "CITIZEN": "Citizen",
+  "EMPLOYEE": "Employee",
+  "SUPERUSER": "Super User",
+  "TL_CEMP": "TL Counter Employee",
+  "TL_APPROVER": "TL Approver",
+  "EGF_ADMINISTRATOR": "Finance Adminsitrator",
+  "TL_FIELD_INSPECTOR": "TL Field Inspector",
+  "TL_DOC_VERIFIER": "TL doc verifier",
+  "UC_EMP": "Universal Collection Employee",
+  "SYSTEM": "System user",
+  "DGDE": "DGDE user",
+  "CSR": "Customer Support Representative",
+  "PGR-ADMIN": "PGR Administrator",
+  "GRO": "Grievance Routing Officer",
+  "RO": "Redressal Officer",
+  "ANONYMOUS": "ANONYMOUS",
+  "STADMIN": "State Administrator",
+  "WS_CEMP": "WS Counter Employee",
+  "WS_DOC_VERIFIER": "WS doc verifier",
+  "WS_FIELD_INSPECTOR": "WS Field Inspector",
+  "WS_APPROVER": "WS Approver",
+  "WS_CLERK": "WS Clerk",
+  "SW_CEMP": "SW Counter Employee",
+  "SW_DOC_VERIFIER": "SW Document Verifier",
+  "SW_FIELD_INSPECTOR": "SW Field Inspector",
+  "SW_APPROVER": "SW Approver",
+  "SW_CLERK": "SW Clerk",
+  "PT_CEMP": "PT Counter Employee",
+  "PT_DOC_VERIFIER": "PT Document Verifier",
+  "PT_FIELD_INSPECTOR": "PT Field Inspector",
+  "PT_APPROVER": "PT Approver",
+  "LR_CEMP":"LR Counter Employee",
+  "LR_APPROVER_CEO":"LR Approver CEO",
+  "LR_APPROVER_DEO":"LR Approver DEO",
+  "DEO_DELHI":"DEO Delhi",
+  "DEO_KOLKATA":"DEO Kolkata",
+  "DEO_SILIGURI":"DEO Siliguri",
+  "DEO_AGRA":"DEO Agra",
+  "DEO_ALLAHABAD":"DEO Allahbad",
+  "DEO_BAREILLY":"DEO Bareilly",
+  "DEO_DANAPUR":"DEO Danapur",
+  "DEO_LUCKNOW":"DEO Lucknow",
+  "DEO_MEERUT":"DEO Meerut",
+  "DEO_MHOW":"DEO Mhow",
+  "DEO_JABALPUR":"DEO Jabalpur",
+  "DEO_AHMEDABAD":"DEO Ahmedabad",
+  "DEO_BANGALORE":"DEO Bangalore",
+  "DEO_BHOPAL":"DEO Bhopal",
+  "DEO_CHENNAI":"DEO Chennai",
+  "DEO_COCHIN":"DEO Cochin",
+  "DEO_JODHPUR":"DEO Jodhpur",
+  "DEO_MUMBAI":"DEO Mumbai",
+  "DEO_PUNE":"DEO Pune",
+  "DEO_SECUNDERABAD":"DEO Secundrabad",
+  "DEO_AMBALA":"DEO Ambala",
+  "DEO_JALANDHAR":"DEO Jalandhar",
+  "DEO_JAMMU":"DEO Jammu",
+  "DEO_PATHANKOT":"DEO Pathankot",
+  "DEO_TESTING": "DEO Testing"
+}
 
 def load_admin_boundary_config():
     config.SHEET_ZONES = "Admin Zone"
