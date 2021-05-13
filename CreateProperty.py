@@ -17,20 +17,26 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Temp'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
             'ranikhet','roorkee','saugor','shahjahanpur','shillong','wellington','belgaum']
 
+cityToInclude = ['agra','pune','mathura','mhow','dehuroad','ahmednagar','jalapahar','almora','landour',
+                'lansdowne','badamibagh','ajmer','aurangabad','babina','belgaum','cannanore','morar',
+                'ranikhet']
+
 def main() :    
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
     print('cityToSkip', len(cityToSkip))
     root = FOLDER_PATH
-    errorlogfile = open(os.path.join(root, "errorCBs.txt"), "w")  
+    errorlogfile = open(os.path.join(root, "error CBs.txt"), "w")  
     successlogfile = open(os.path.join(root, "CB With ProperData.txt"), "w")
+    notsuccesslogfile = open(os.path.join(root, "CB With ImProperData.txt"), "w")
     config.error_in_excel=[]
     config.error_in_multiple_owner=[]
     config.DATA_ENTRY_ISSUES_FOLDER =os.path.join(root,date_time + '-Data_Entries_Issues')
@@ -41,17 +47,16 @@ def main() :
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         ####Only for some CBs
-        # cityToInclued = getCitiesToInclude(cityToSkip,cb_module_data)
-        # print('cityToInclued', len(cityToInclued)-1)
-        # for found_index, cityname in enumerate(cityToInclued):
+        # cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
+        # for found_index, cityname in enumerate(cityToInclude):
         #     config.errormsg=[]
         #     name = 'CB ' + cityname.lower()
         #     if  os.path.exists( os.path.join(root,name)):                
         #         try : 
-        #             if cityname == 'allahabad' :
+        #             if cityname == 'agra' :
         #                 print("Processing for CB "+cityname.upper())
         #                 config.CITY_NAME = cityname
-        #                 cbMain(cityname, successlogfile)
+        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
         #         except Exception as ex: 
         #             print("Error in processing CB ",cityname , ex)
         #             traceback.print_exc()
@@ -71,10 +76,10 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname == 'agra' :
+                    if True:# cityname == 'agra' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
-                        cbMain(cityname, successlogfile)
+                        cbMain(cityname, successlogfile, notsuccesslogfile)
                 except Exception as ex: 
                     print("Error in processing CB ",cityname , ex)
                     traceback.print_exc()
@@ -98,12 +103,10 @@ def main() :
             cbHaveMultipleOwnerIssue.write(element + "\n") 
         cbHaveMultipleOwnerIssue.close()
 
-def getCitiesToInclude(cityToSkip,cb_module_data):
-    
+def getCitiesToInclude(cityToSkip,cb_module_data):    
     cityToSkip.sort()
     allCities = []
-    cityToInclued = []
-
+    cityToInclude = []
     for found_index, module in enumerate(cb_module_data["tenants"]):
         if module["city"]["ulbGrade"]=="ST":
             continue
@@ -111,13 +114,13 @@ def getCitiesToInclude(cityToSkip,cb_module_data):
         allCities.append(cityname)    
     try:
         allCities.sort()
-        cityToInclued = np.setdiff1d(allCities, cityToSkip)
-        # cityToInclued = set(allCities.sort()) - set(cityToSkip.sort())            
+        cityToInclude = np.setdiff1d(allCities, cityToSkip)
+        # cityToInclude = set(allCities.sort()) - set(cityToSkip.sort())            
     except:
         traceback.print_exc() 
-    return cityToInclued
+    return cityToInclude
 
-def cbMain(cityname, successlogfile):
+def cbMain(cityname, successlogfile,notsuccesslogfile):
     Flag =False
     tenantMapping={}
     count = 0
@@ -127,7 +130,6 @@ def cbMain(cityname, successlogfile):
             if module["city"]["ulbGrade"]=="ST":
                 continue
             tenantMapping[module["code"].lower()]=module["code"].lower()[3:]
-
 
     # Doing for one cb at a time
     # cityname = 'wellington'
@@ -189,12 +191,12 @@ def cbMain(cityname, successlogfile):
         
         if size > 2 : 
             df = pd.read_json (os.path.join(root, name, "Logfile.json"))
-            
+            notsuccesslogfile.write(cityname)
+            notsuccesslogfile.write("\n")  
             df.to_excel(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER ,    name+ " Data Entries Issues.xlsx"), index = None)
             #df.to_excel(os.path.join(root, "WS_Data_Entry_Issues","CB "+ cityname+ " - Data Entries Issues.xlsx"), index = None)
             #df.to_csv (os.path.join(root, name, "DataValidation.csv"), index = None)
         else : 
-            successlogfile.write("\n")
             successlogfile.write(cityname)
             successlogfile.write("\n")            
     except Exception as ex: 
@@ -496,7 +498,7 @@ def createOwnerObj(propertyFile) :
 def getMaxDefaulNumber(propertyFile, tenantMapping, cityname, waterFile, sewerageFile):
     search_key = 'pb.'+ cityname
     res = list(tenantMapping.keys()).index(search_key)
-    res = res+1
+    res = res + 1
     mobileFiveDigit = str(30000 + res)
     defaultMobArr = []
     try:
