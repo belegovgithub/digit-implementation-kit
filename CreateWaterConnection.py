@@ -365,6 +365,10 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.proposedTaps = getValue(row[23],int,1)
                     waterConnection.usageCategory = process_usage_type(row[24])
                     waterConnection.subUsageCategory = process_subusage_type(row[25])
+                    if waterConnection.usageCategory == 'RESIDENTIAL' and len(waterConnection.subUsageCategory) == 0 :
+                        waterConnection.subUsageCategory = 'RESIDENTIAL.RESIDENTIAL'
+                    elif waterConnection.usageCategory == 'COMMERCIAL' and len(waterConnection.subUsageCategory) == 0 :
+                        waterConnection.subUsageCategory = 'COMMERCIAL.COMMERCIAL'
                     if( waterConnection.connectionType == 'Metered'):
                         waterConnection.meterId = getValue(row[20],str,None)
                         additionalDetail.initialMeterReading = getValue(row[21],float,None)
