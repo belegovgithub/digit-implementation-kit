@@ -547,7 +547,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
     # res = res* 100000
     # mobileNumber = 3000000000 + res + 0
     mobileNumber = getMaxDefaulNumber(propertyFile, tenantMapping, cityname, waterFile, sewerageFile)
-    print('initial mobile number: 'mobileNumber)
+    print('initial mobile number: ',mobileNumber)
     try:
         if os.path.exists(propertyFile) : 
             wb_property = openpyxl.load_workbook(propertyFile) 
