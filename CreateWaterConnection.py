@@ -497,6 +497,8 @@ def process_gender(value):
     return gender_MAP[value]
 
 def process_connection_type(value):
+    if value is None : 
+        value ="None"
     value = value.strip().lower()
     connection_MAP = {
         "metered": "Metered",
@@ -507,6 +509,8 @@ def process_connection_type(value):
     return connection_MAP[value]
 
 def process_motor_info(value):
+    if value is None : 
+        value ="None"
     value = value.strip()
     motor_info_MAP = {
         "None": "WITHOUTPUMP",
@@ -518,6 +522,8 @@ def process_motor_info(value):
     return motor_info_MAP[value]
 
 def process_propertyOwnership(value):
+    if value is None:
+        value = "None"
     value = value.strip()
     propertyOwnership_MAP = {
         "None": None,
@@ -527,6 +533,8 @@ def process_propertyOwnership(value):
     return propertyOwnership_MAP[value]
 
 def process_connection_permission(value):
+    if value is None : 
+        value ="None"
     value = value.strip()
     connection_permission_MAP = {
         "Authorized": "AUTHORIZED",
