@@ -102,7 +102,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
                 if not isna(row[8]) and getTime(row[8]) is None : 
                     validated = False
-                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[8])+'  Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+                    write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[8])+' Any future date or  Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
 
                 # elif not isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
@@ -118,13 +118,13 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
             #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
             # elif isna(getTime(row[18])):
             #     validated = False
-            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Any future date or  Invalid Billing date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
             if isna(row[17]):
                 validated = False
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'Activation date is empty',getValue(row[1], str, ''))
             elif isna(getTime(row[17])):
                 validated = False
-                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[17]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),str(row[17]) +' Any future date or  Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
 
             if not isna(row[1]):
                 abasid = getValue(row[1], str, '')

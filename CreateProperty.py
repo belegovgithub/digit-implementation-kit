@@ -17,17 +17,19 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-FOLDER_PATH  =r'D:\eGov\Data\WS\Temp'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
             'ranikhet','roorkee','saugor','shahjahanpur','shillong','wellington','belgaum']
 
-cityToInclude = ['agra','pune','mathura','mhow','dehuroad','ahmednagar','jalapahar','almora','landour',
-                'lansdowne','badamibagh','ajmer','aurangabad','babina','belgaum','cannanore','morar',
-                'ranikhet']
+# cityToInclude = ['agra','pune','mathura','mhow','dehuroad','ahmednagar','jalapahar','almora','landour',
+#                 'lansdowne','badamibagh','ajmer','aurangabad','babina','belgaum','cannanore','morar',
+#                 'ranikhet','stm']
+# cityToInclude = ['varanasi']
+cityToInclude = ['dehradun','nasirabad','saugor','shillong']
+
 
 def main() :    
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
@@ -48,35 +50,12 @@ def main() :
         cb_module_data = json.load(f)
         ####Only for some CBs
         # cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
-        # for found_index, cityname in enumerate(cityToInclude):
-        #     config.errormsg=[]
-        #     name = 'CB ' + cityname.lower()
-        #     if  os.path.exists( os.path.join(root,name)):                
-        #         try : 
-        #             if cityname == 'agra' :
-        #                 print("Processing for CB "+cityname.upper())
-        #                 config.CITY_NAME = cityname
-        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
-        #         except Exception as ex: 
-        #             print("Error in processing CB ",cityname , ex)
-        #             traceback.print_exc()
-        #             errorlogfile.write(cityname+"\n")
-        #     if len(config.errormsg ) > 0 : 
-        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
-        #         for element in config.errormsg:
-        #             dateerror.write(element + "\n") 
-        #         dateerror.close()
-
-        #### For all CBs
-        for found_index, module in enumerate(cb_module_data["tenants"]):
-            if module["city"]["ulbGrade"]=="ST":
-                continue
-            cityname =module["code"].lower()[3:]
+        for found_index, cityname in enumerate(cityToInclude):
             config.errormsg=[]
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True:# cityname == 'agra' :
+                    if True:#cityname == 'agra' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -89,6 +68,29 @@ def main() :
                 for element in config.errormsg:
                     dateerror.write(element + "\n") 
                 dateerror.close()
+
+        #### For all CBs
+        # for found_index, module in enumerate(cb_module_data["tenants"]):
+        #     if module["city"]["ulbGrade"]=="ST":
+        #         continue
+        #     cityname =module["code"].lower()[3:]
+        #     config.errormsg=[]
+        #     name = 'CB ' + cityname.lower()
+        #     if  os.path.exists( os.path.join(root,name)):                
+        #         try : 
+        #             if  cityname == 'danapur' :
+        #                 print("Processing for CB "+cityname.upper())
+        #                 config.CITY_NAME = cityname
+        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
+        #         except Exception as ex: 
+        #             print("Error in processing CB ",cityname , ex)
+        #             traceback.print_exc()
+        #             errorlogfile.write(cityname+"\n")
+        #     if len(config.errormsg ) > 0 : 
+        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+        #         for element in config.errormsg:
+        #             dateerror.write(element + "\n") 
+        #         dateerror.close()
     errorlogfile.close()
     successlogfile.close()   
     if len(config.error_in_excel) > 0 :   
@@ -292,7 +294,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                         #logfile.write(reason)
                     if not isna(row[32]) and getTime(row[32]) is None:
                         validated = False
-                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
+                        write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Any future date or Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
                 
                 elif(str(row[27]).lower() == "multiple owners"):
                     propSheetABASId = getValue(row[1], str, "")
@@ -406,7 +408,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                         #logfile.write(reason)
                     if not isna(row[6]) and getTime(row[6]) is None : 
                         validated = False
-                        write(logfile,propertyFile,sheet2.title,None, str(row[6]) +' Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[0], str, ''))
+                        write(logfile,propertyFile,sheet2.title,None, str(row[6]) +' Any future date or Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[0], str, ''))
   
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], str, ''), '  ',ex)

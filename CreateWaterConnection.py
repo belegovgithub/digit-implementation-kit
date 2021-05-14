@@ -83,7 +83,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                 reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
                 #logfile.write(reason)
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'same as property address cell is empty',getValue(row[1], str, ''))
-            if getValue(row[16], str, '') == "Metered":
+            if getValue(row[16], str, '').lower() == "metered":
                 if isna(row[20]):
                     validated = False
                     reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', Meter Id is empty.\n'
@@ -103,13 +103,13 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'last billed date is empty',getValue(row[1], str, ''))
                 elif isna(getTime(row[22])):
                     validated = False
-                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[22]) +' Invalid last billed date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[22]) +' Any future date or Invalid last billed date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
             if isna(row[18]):
                     validated = False
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'Activation date is empty',getValue(row[1], str, ''))
             elif getTime(row[18]) is None:
                 validated = False
-                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[18]) +' Any future date or Invalid Activation date format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
             if(str(row[3]).strip().lower() == 'no'):
                 # if isna(row[4]) :
                 #     validated = False
@@ -128,7 +128,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),' name is empty',getValue(row[1], str, ''))
                 if not isna(row[8]) and getTime(row[8]) is None : 
                     validated = False
-                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[8])+'  Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
+                    write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(row[8])+' Any future date or Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))
 
                 # elif not isna(row[5]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[5]))):
                 #     validated = False
@@ -372,6 +372,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     if( waterConnection.connectionType == 'Metered'):
                         waterConnection.meterId = getValue(row[20],str,None)
                         additionalDetail.initialMeterReading = getValue(row[21],float,None)
+                        # meter installation date is last billed date of water template
+                        waterConnection.meterInstallationDate = getTime(row[22])
                     if not isna(row[18]):
                         waterConnection.connectionExecutionDate = getTime(row[18])
                     additionalDetail.locality = ''

@@ -103,6 +103,7 @@ class WaterConnection:
     applicationStatus: Optional[str]
     oldApplication: Optional[bool]
     connectionExecutionDate: Optional[date]
+    meterInstallationDate: Optional[date]
     usageCategory: Optional[str]
     subUsageCategory: Optional[str]
     def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None,
@@ -118,7 +119,7 @@ class WaterConnection:
                  additionalDetails: Optional[AdditionalDetail] =None, 
                  property: Optional[Property] = None, source: Optional[str] = None, channel: Optional[str] = None,
                  creationReason: Optional[str] = None, applicationStatus: Optional[str] = None, oldApplication: Optional[bool] = False,
-                 connectionExecutionDate: Optional[date] = None , usageCategory: Optional[str] = None, 
+                 connectionExecutionDate: Optional[date] = None , meterInstallationDate: Optional[date] = None , usageCategory: Optional[str] = None, 
                  subUsageCategory: Optional[str] = None) -> None:
         self.tenantId = tenantId
         self.propertyId = propertyId
@@ -152,6 +153,7 @@ class WaterConnection:
         self.applicationStatus = applicationStatus
         self.oldApplication = oldApplication
         self.connectionExecutionDate = connectionExecutionDate
+        self.meterInstallationDate = meterInstallationDate
         self.usageCategory = usageCategory
         self.subUsageCategory = subUsageCategory
 
@@ -170,7 +172,7 @@ class WaterConnection:
                 self.get_water_json()            
         }
         # print(json.dumps(request_data, indent=2)) 
-        # with io.open(os.path.join(root, name,"water_create_req.json"), mode="w", encoding="utf-8") as f:
+        # with io.open(os.path.join(root, name, oldConnectionNo + "_water_create_req.json"), mode="w", encoding="utf-8") as f:
         #     json.dump(request_data, f, indent=2,  ensure_ascii=False) 
         
         response = requests.post(
