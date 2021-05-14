@@ -6,10 +6,10 @@ import sys
 from datetime import datetime, timedelta,date
 
 def load_config():
-    config.INSERT_DATA = False
+    config.INSERT_DATA = True
     config.MOBILE_PATTERN = "^[3-9][0-9]{9}$"
     config.CREATE_PROPERTY =False
-    config.CREATE_WATER =False
+    config.CREATE_WATER =True
     config.CREATE_SEWERAGE =False    
     config.isUpdateallowed = True
     config.ASSUME_YES = False
@@ -301,6 +301,9 @@ def getTime(dateObj,defValue=None) :
             else : 
                 dateObj=datetime.strptime(dateStr, '%d-%m-%Y') 
         milliseconds = int((dateObj - datetime(1970, 1, 1)).total_seconds())*1000
+        today_milliseconds = 1622485800000   #01/06/2021
+        if(milliseconds > today_milliseconds):
+            return defValue
         return milliseconds
     except Exception as ex:
         config["errormsg"].append(str(dateObj))
