@@ -1,0 +1,35 @@
+{
+  "tenantId": "pb.testing",
+  "businessService": "LegacyWS",
+  "business": "ws-services",
+  "businessServiceSla": 1036800000,
+  "states": [
+    {
+      "sla": null,
+      "state": null,
+      "applicationStatus": null,
+      "docUploadRequired": false,
+      "isStartState": true,
+      "isTerminateState": false,
+      "isStateUpdatable": false,
+      "actions": [
+        {
+          "action": "ACTIVATE_CONNECTION",
+          "nextState": "CONNECTION_ACTIVATED",
+          "roles": [
+            "SUPERUSER"
+          ]
+        }
+      ]
+    },
+    {
+      "sla": null,
+      "state": "CONNECTION_ACTIVATED",
+      "applicationStatus": "CONNECTION_ACTIVATED",
+      "isStateUpdatable": false,
+      "docUploadRequired": false,
+      "isStartState": false,
+      "isTerminateState": true
+    }
+  ]
+}

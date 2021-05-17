@@ -40,20 +40,20 @@ attributeMasterData={
         "key" : "OwnerType",
     },
     "buildingSubType":{
-        "path" : r"PropertyTax\UsageCategory.json",
-        "key" : "UsageCategory",
+        "path": r"ws-services-masters\waterUsage.json",
+        "key" : "waterUsage",
     },
     "majorUsageType":{
-        "path": r"PropertyTax\UsageCategory.json",
-        "key" : "UsageCategory",
+        "path": r"ws-services-masters\waterUsage.json",
+        "key" : "waterUsage",
     },
     "PropertyLocation":{
         "path": r"PropertyTax\PropertyLocation.json",
         "key" : "PropertyLocation",
     },
     "buildingType":{
-        "path":r"PropertyTax\UsageCategory.json",
-        "key" : "UsageCategory",
+        "path": r"ws-services-masters\waterUsage.json",
+        "key" : "waterUsage",
     },
     "waterSource":{
         "path":r"ws-services-masters\waterSource.json",
@@ -270,7 +270,7 @@ def main ():
     df.to_excel(os.path.join(config.MDMS_LOCATION,"Consolidate Water Bill Parameter.xlsx"), index = None,
         columns=["CB Name","Bill Applicable","Billing Cycle","Connection Type","Data Filter Param",
         "Billing Slab Id",
-        "Location Of Property","Water Major Usage","Water Usage ","Water Sub Usage", "Owner Type Of Property", 
+        "Location Of Property" ,"Water Usage ","Water Sub Usage", "Owner Type Of Property", 
          "Connection Owned By","Category Of Connection Holder","Source Of Water","Connection Authorization","Category Of Connection Holder",
          "Unit Of Measurement",
           "Calculation Type",
@@ -287,10 +287,8 @@ def main ():
         master_data=attributeMasterData[key]["data"]
 
         if key =="buildingSubType" :
-            master_data =[x for x in master_data if len(x["code"].split(".")) > 2 ]
-        elif key =="buildingType" :
-            master_data =[x for x in master_data if len(x["code"].split(".")) <=2 ]
-        elif key =="majorUsageType":
+            master_data =[x for x in master_data if len(x["code"].split(".")) == 2 ]
+        elif key =="buildingType" or  key =="majorUsageType" : 
             master_data =[x for x in master_data if len(x["code"].split(".")) == 1 ]
         data =[]
         for d in master_data : 
