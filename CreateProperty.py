@@ -17,8 +17,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
@@ -28,7 +28,7 @@ cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','amba
 #                 'lansdowne','badamibagh','ajmer','aurangabad','babina','belgaum','cannanore','morar',
 #                 'ranikhet','stm']
 # cityToInclude = ['varanasi']
-cityToInclude = ['dehradun','nasirabad','saugor','shillong']
+cityToInclude = ['allahabad']
 
 
 def main() :    
@@ -50,35 +50,12 @@ def main() :
         cb_module_data = json.load(f)
         ####Only for some CBs
         # cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
-        for found_index, cityname in enumerate(cityToInclude):
-            config.errormsg=[]
-            name = 'CB ' + cityname.lower()
-            if  os.path.exists( os.path.join(root,name)):                
-                try : 
-                    if True:#cityname == 'agra' :
-                        print("Processing for CB "+cityname.upper())
-                        config.CITY_NAME = cityname
-                        cbMain(cityname, successlogfile, notsuccesslogfile)
-                except Exception as ex: 
-                    print("Error in processing CB ",cityname , ex)
-                    traceback.print_exc()
-                    errorlogfile.write(cityname+"\n")
-            if len(config.errormsg ) > 0 : 
-                dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
-                for element in config.errormsg:
-                    dateerror.write(element + "\n") 
-                dateerror.close()
-
-        #### For all CBs
-        # for found_index, module in enumerate(cb_module_data["tenants"]):
-        #     if module["city"]["ulbGrade"]=="ST":
-        #         continue
-        #     cityname =module["code"].lower()[3:]
+        # for found_index, cityname in enumerate(cityToInclude):
         #     config.errormsg=[]
         #     name = 'CB ' + cityname.lower()
         #     if  os.path.exists( os.path.join(root,name)):                
         #         try : 
-        #             if  cityname == 'danapur' :
+        #             if cityname == 'allahabad' :
         #                 print("Processing for CB "+cityname.upper())
         #                 config.CITY_NAME = cityname
         #                 cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -91,6 +68,29 @@ def main() :
         #         for element in config.errormsg:
         #             dateerror.write(element + "\n") 
         #         dateerror.close()
+
+        #### For all CBs
+        for found_index, module in enumerate(cb_module_data["tenants"]):
+            if module["city"]["ulbGrade"]=="ST":
+                continue
+            cityname =module["code"].lower()[3:]
+            config.errormsg=[]
+            name = 'CB ' + cityname.lower()
+            if  os.path.exists( os.path.join(root,name)):                
+                try : 
+                    if True:# cityname == 'danapur' :
+                        print("Processing for CB "+cityname.upper())
+                        config.CITY_NAME = cityname
+                        cbMain(cityname, successlogfile, notsuccesslogfile)
+                except Exception as ex: 
+                    print("Error in processing CB ",cityname , ex)
+                    traceback.print_exc()
+                    errorlogfile.write(cityname+"\n")
+            if len(config.errormsg ) > 0 : 
+                dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+                for element in config.errormsg:
+                    dateerror.write(element + "\n") 
+                dateerror.close()
     errorlogfile.close()
     successlogfile.close()   
     if len(config.error_in_excel) > 0 :   
