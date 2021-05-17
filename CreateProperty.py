@@ -17,8 +17,8 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
@@ -28,7 +28,7 @@ cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','amba
 #                 'lansdowne','badamibagh','ajmer','aurangabad','babina','belgaum','cannanore','morar',
 #                 'ranikhet','stm']
 # cityToInclude = ['varanasi']
-cityToInclude = ['allahabad']
+cityToInclude = ['stm', 'pune']
 
 
 def main() :    
@@ -50,35 +50,12 @@ def main() :
         cb_module_data = json.load(f)
         ####Only for some CBs
         # cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
-        # for found_index, cityname in enumerate(cityToInclude):
-        #     config.errormsg=[]
-        #     name = 'CB ' + cityname.lower()
-        #     if  os.path.exists( os.path.join(root,name)):                
-        #         try : 
-        #             if cityname == 'allahabad' :
-        #                 print("Processing for CB "+cityname.upper())
-        #                 config.CITY_NAME = cityname
-        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
-        #         except Exception as ex: 
-        #             print("Error in processing CB ",cityname , ex)
-        #             traceback.print_exc()
-        #             errorlogfile.write(cityname+"\n")
-        #     if len(config.errormsg ) > 0 : 
-        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
-        #         for element in config.errormsg:
-        #             dateerror.write(element + "\n") 
-        #         dateerror.close()
-
-        #### For all CBs
-        for found_index, module in enumerate(cb_module_data["tenants"]):
-            if module["city"]["ulbGrade"]=="ST":
-                continue
-            cityname =module["code"].lower()[3:]
+        for found_index, cityname in enumerate(cityToInclude):
             config.errormsg=[]
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True:# cityname == 'danapur' :
+                    if True:# cityname == 'allahabad' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -91,6 +68,29 @@ def main() :
                 for element in config.errormsg:
                     dateerror.write(element + "\n") 
                 dateerror.close()
+
+        #### For all CBs
+        # for found_index, module in enumerate(cb_module_data["tenants"]):
+        #     if module["city"]["ulbGrade"]=="ST":
+        #         continue
+        #     cityname =module["code"].lower()[3:]
+        #     config.errormsg=[]
+        #     name = 'CB ' + cityname.lower()
+        #     if  os.path.exists( os.path.join(root,name)):                
+        #         try : 
+        #             if  cityname == 'secunderabad' :
+        #                 print("Processing for CB "+cityname.upper())
+        #                 config.CITY_NAME = cityname
+        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
+        #         except Exception as ex: 
+        #             print("Error in processing CB ",cityname , ex)
+        #             traceback.print_exc()
+        #             errorlogfile.write(cityname+"\n")
+        #     if len(config.errormsg ) > 0 : 
+        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+        #         for element in config.errormsg:
+        #             dateerror.write(element + "\n") 
+        #         dateerror.close()
     errorlogfile.close()
     successlogfile.close()   
     if len(config.error_in_excel) > 0 :   
@@ -167,7 +167,7 @@ def cbMain(cityname, successlogfile,notsuccesslogfile):
         for ind in df.index: 
             locality_data[df['Locality Name'][ind]] =  df['Code'][ind]   
         if config.INSERT_DATA and config.CREATE_PROPERTY: 
-            createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile, root, name)                
+            createPropertyJson(sheet1, sheet2, localityDict,cityname, logfile, root, name)                
             wb_property.save(propertyFile)        
         wb_property.close()
     else:
@@ -738,7 +738,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     if isna(row[13]):
                         locality.code = "LOCAL_OTHERS"   
                     else:    
-                        locality.code = locality_data[getValue(row[13] ,str,"Others")]
+                        locality.code = locality_data[getValue(row[13] ,str,"Others").lower()]
                     address.city = cityname
                     address.locality = locality
                     address.location = process_location(str(row[20]).strip())
@@ -1089,7 +1089,7 @@ def getLocalityData(cityname):
         for tenant_boundary in tenantboundary["boundary"]["children"]:
             for t1 in tenant_boundary["children"]:
                 for t2 in t1["children"]:
-                    localityDict[t2["name"].lower()] =t2["code"]
+                    localityDict[t2["name"].lower().strip()] =t2["code"].strip()
     return localityDict
 
 
