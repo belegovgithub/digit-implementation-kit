@@ -352,7 +352,6 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.pipeSize = getValue(row[14],float,0.25)
                     waterConnection.proposedPipeSize = getValue(row[14],float,0.25)
                     waterConnection.waterSource = process_water_source(row[15])
-                    print(waterConnection.waterSource)
                     if(waterConnection.waterSource != 'MES'):
                         waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
                     else:
