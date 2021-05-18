@@ -513,35 +513,34 @@ def process_connection_type(value):
 def process_motor_info(value):
     if value is None : 
         value ="None"
-    value = value.strip()
+    value = value.lower().strip()
     motor_info_MAP = {
-        "None": "WITHOUTPUMP",
-        "NA": "WITHOUTPUMP",
+        "none": "WITHOUTPUMP",
         "na": "WITHOUTPUMP",
-        "With Pump": "WITHPUMP",
-        "Without Pump": "WITHOUTPUMP"
+        "with pump": "WITHPUMP",
+        "without pump": "WITHOUTPUMP"
     }
     return motor_info_MAP[value]
 
 def process_propertyOwnership(value):
     if value is None:
         value = "None"
-    value = value.strip()
+    value = value.lower().strip()
     propertyOwnership_MAP = {
-        "None": None,
-        "HOR": "HOR",
-        "Tenant": "TENANT"
+        "none": None,
+        "hor": "HOR",
+        "tenant": "TENANT"
     }
     return propertyOwnership_MAP[value]
 
 def process_connection_permission(value):
     if value is None : 
         value ="None"
-    value = value.strip()
+    value = value.lower().strip()
     connection_permission_MAP = {
-        "Authorized": "AUTHORIZED",
-        "Unauthorized": "UNAUTHORIZED",
-        "None": "AUTHORIZED"
+        "authorized": "AUTHORIZED",
+        "unauthorized": "UNAUTHORIZED",
+        "none": "AUTHORIZED"
     }
     return connection_permission_MAP[value]
     
