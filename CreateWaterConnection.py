@@ -176,6 +176,10 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
             # if process_subusage_type(waterUsgType,True) is None:
             #     validated = False
             #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'water sub usage type is not correct', getValue(row[1], str, ''))
+            waterSource=getValue(row[15], str, None)
+            if  process_water_source(waterSource,True) is None:
+                validated = False
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'water source "'+waterSource+'" not correct',getValue(row[1], str, ''))  
         except Exception as ex:
             # write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),str(ex) ,getValue(row[1], str, ''))
             print(config.CITY_NAME," validateWaterData Exception: ", getValue(row[0], int, ''), '  ', ex)
@@ -348,6 +352,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
                     waterConnection.pipeSize = getValue(row[14],float,0.25)
                     waterConnection.proposedPipeSize = getValue(row[14],float,0.25)
                     waterConnection.waterSource = process_water_source(row[15])
+                    print(waterConnection.waterSource)
                     if(waterConnection.waterSource != 'MES'):
                         waterConnection.waterSubSource = waterConnection.waterSource.split('.')[1]                
                     else:
@@ -448,11 +453,8 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
 
-def process_water_source(value):
-    if value is None : 
-        value ="Pipe-Treated"
-    value = value.strip().lower()
-    water_source_MAP = {
+water_source_MAP = {
+        'None': 'PIPE.TREATED',
         'Ground-Borewell': 'GROUND.BOREWELL',
         'Ground-Handpump':'GROUND.HANDPUMP',
         'Ground-Well':'GROUND.WELL',
@@ -464,13 +466,25 @@ def process_water_source(value):
         'Surface-Recycled Water':'SURFACE.RECYCLEDWATER',
         'Pipe-Treated':'PIPE.TREATED',
         'Pipe-Raw':'PIPE.RAW',
-        'MES': 'MES'
+        'MES': 'MES',
+        'Pipe-Public Stand post':'PIPE.PUBLICSTDPOST'
     }
-    for key in water_source_MAP :
-        if key.lower() == value : 
-            return water_source_MAP[key]    
 
-    return water_source_MAP['Pipe-Treated']
+water_source_MAP = { k.strip().lower():water_source_MAP[k] for k in water_source_MAP} 
+
+def process_water_source(value,  isValidation =False):
+    if value is None : 
+        value ="None"
+    value =value.strip().lower()
+    if isValidation : 
+        if value in water_source_MAP : 
+            return water_source_MAP[value] 
+        return None
+    return water_source_MAP[value]
+    
+    # for key in water_source_MAP :
+    #     if key.lower() == value : 
+    #         return water_source_MAP[key]    
 
 def process_relationship(value):
     if value is None : 
@@ -478,6 +492,7 @@ def process_relationship(value):
     value = value.strip().lower()
     relationship_MAP = {
         "parent": "PARENT",
+        "parents": "PARENT",
         "spouse": "SPOUSE",
         "gurdian": "GUARDIAN",
         "guardian": "GUARDIAN",
