@@ -17,9 +17,9 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\Verified_Data'
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\Verified_Data'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
             'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
@@ -78,7 +78,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True:#  cityname == 'secunderabad' :
+                    if  cityname == 'testing' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -957,7 +957,7 @@ def process_gender(value):
     gender_MAP = {
         "male": "MALE",
         "female": "FEMALE",
-        "transgender": "TRANSGENDER",
+        "transgender": "OTHERS",
         "none": "MALE"       
     }
     return gender_MAP[value]
