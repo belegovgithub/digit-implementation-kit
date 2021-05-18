@@ -386,7 +386,7 @@ def process_gender(value):
     gender_MAP = {
         "male": "MALE",
         "female": "FEMALE",
-        "transgender": "TRANSGENDER",
+        "transgender": "OTHERS",
         "none": "MALE"       
     }
     return gender_MAP[value]
