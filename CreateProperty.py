@@ -19,23 +19,22 @@ date_time = now.strftime("%d-%m-%Y")
 lastMobileNo = ''
 # FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
 # FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\Verified_Data'
-cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
-            'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
-            'jalandhar','jalapahar','kirkee','lansdowne','lucknow','mathura','mhow','morar','nasirabad',
-            'ranikhet','roorkee','saugor','shahjahanpur','shillong','wellington','belgaum']
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\Legacy_Data'
+cityToSkip = ['Bakloh','Bareilly','Dagshai','Dalhousie','Deolali','Ferozepur','Jabalpur','Jammu','Jutogh','Kanpur',
+                'Kasauli','Khasyol','Meerut','Nainital','Pachmarhi','Ramgarh','Secunderabad','Subathu', 'roorkee']
 
-# cityToInclude = ['agra','pune','mathura','mhow','dehuroad','ahmednagar','jalapahar','almora','landour',
-#                 'lansdowne','badamibagh','ajmer','aurangabad','babina','belgaum','cannanore','morar',
-#                 'ranikhet','stm']
+# cityToInclude = ['Agra','Ahmedabad','Ahmednagar','Ajmer','Allahabad','Almora','Ambala','Amritsar','Aurangabad','Babina','Badamibagh','Barrackpore',
+#                 'Belgaum','Cannanore','Chakrata','ClementTown','Danapur','Dehradun','Dehuroad','Delhi','Faizabad','Fatehgarh','Jalandhar','Jalapahar',
+#                 'Jhansi','Kamptee','Kirkee','Landour','Lansdowne','Lebong','Lucknow','Mathura','Mhow','Morar','Nasirabad','Pune','Ranikhet','Saugor',
+#                 'Shahjahanpur','Shillong','Stm','Varanasi','Wellington']
 cityToInclude = ['testing']
 
 
 def main() :    
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
-    print('cityToSkip', len(cityToSkip))
+    # print('cityToSkip', len(cityToSkip))
     root = FOLDER_PATH
     errorlogfile = open(os.path.join(root, "error CBs.txt"), "w")  
     successlogfile = open(os.path.join(root, "CB With ProperData.txt"), "w")
@@ -50,36 +49,14 @@ def main() :
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         ####Only for some CBs
-        # cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
-        # for found_index, cityname in enumerate(cityToInclude):
-        #     config.errormsg=[]
-        #     name = 'CB ' + cityname.lower()
-        #     if  os.path.exists( os.path.join(root,name)):                
-        #         try : 
-        #             if True:# cityname == 'allahabad' :
-        #                 print("Processing for CB "+cityname.upper())
-        #                 config.CITY_NAME = cityname
-        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
-        #         except Exception as ex: 
-        #             print("Error in processing CB ",cityname , ex)
-        #             traceback.print_exc()
-        #             errorlogfile.write(cityname+"\n")
-        #     if len(config.errormsg ) > 0 : 
-        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
-        #         for element in config.errormsg:
-        #             dateerror.write(element + "\n") 
-        #         dateerror.close()
-
-        #### For all CBs
-        for found_index, module in enumerate(cb_module_data["tenants"]):
-            if module["city"]["ulbGrade"]=="ST":
-                continue
-            cityname =module["code"].lower()[3:]
+        cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
+        for found_index, cityname in enumerate(cityToInclude):
+            cityname =cityname.lower()
             config.errormsg=[]
-            name = 'CB ' + cityname.lower()
+            name = 'CB ' + cityname
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if cityname == 'secunderabad' :
+                    if True:# cityname == 'allahabad' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -92,6 +69,29 @@ def main() :
                 for element in config.errormsg:
                     dateerror.write(element + "\n") 
                 dateerror.close()
+
+        #### For all CBs
+        # for found_index, module in enumerate(cb_module_data["tenants"]):
+        #     if module["city"]["ulbGrade"]=="ST":
+        #         continue
+        #     cityname =module["code"].lower()[3:]
+        #     config.errormsg=[]
+        #     name = 'CB ' + cityname.lower()
+        #     if  os.path.exists( os.path.join(root,name)):                
+        #         try : 
+        #             if cityname == 'secunderabad' :
+        #                 print("Processing for CB "+cityname.upper())
+        #                 config.CITY_NAME = cityname
+        #                 cbMain(cityname, successlogfile, notsuccesslogfile)
+        #         except Exception as ex: 
+        #             print("Error in processing CB ",cityname , ex)
+        #             traceback.print_exc()
+        #             errorlogfile.write(cityname+"\n")
+        #     if len(config.errormsg ) > 0 : 
+        #         dateerror = open(os.path.join(config.DATA_ENTRY_ISSUES_FOLDER,"DATE_ERROR",cityname+ "dateError.txt"), "w")  
+        #         for element in config.errormsg:
+        #             dateerror.write(element + "\n") 
+        #         dateerror.close()
     errorlogfile.close()
     successlogfile.close()   
     if len(config.error_in_excel) > 0 :   
@@ -107,7 +107,10 @@ def main() :
         cbHaveMultipleOwnerIssue.close()
 
 def getCitiesToInclude(cityToSkip,cb_module_data):    
-    cityToSkip.sort()
+    cityToSkipLower = []
+    for found_index, cityname in enumerate(cityToSkip):
+        cityToSkipLower.append(cityname.lower())
+    cityToSkipLower.sort()
     allCities = []
     cityToInclude = []
     for found_index, module in enumerate(cb_module_data["tenants"]):
@@ -117,8 +120,8 @@ def getCitiesToInclude(cityToSkip,cb_module_data):
         allCities.append(cityname)    
     try:
         allCities.sort()
-        cityToInclude = np.setdiff1d(allCities, cityToSkip)
-        # cityToInclude = set(allCities.sort()) - set(cityToSkip.sort())            
+        cityToInclude = np.setdiff1d(allCities, cityToSkipLower)
+        # cityToInclude = set(allCities.sort()) - set(cityToSkipLower.sort())            
     except:
         traceback.print_exc() 
     return cityToInclude
