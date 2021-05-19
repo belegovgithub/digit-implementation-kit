@@ -17,8 +17,9 @@ import traceback
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
 lastMobileNo = ''
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
+FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\Verified_Data'
 cityToSkip = ['agra','ahmedabad','ahmednagar','allahabad','ajmer','almora','ambala','amritsar','babina',
             'badamibagh','barrackpore','chakrata','clementtown','dehradun','dehuroad','delhi','faizabad',
@@ -78,7 +79,7 @@ def main() :
             name = 'CB ' + cityname.lower()
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if  cityname == 'testing' :
+                    if cityname == 'secunderabad' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -295,7 +296,12 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                     if not isna(row[32]) and getTime(row[32]) is None:
                         validated = False
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),str(row[32]) +' Any future date or Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[1], str, ''))    
-                
+                    # if isna(row[35]):
+                    #     validated = False
+                    #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Enter Yes or No for Column AJ, If No then enter correspondance address in Column AK',getValue(row[1], str, ''))
+                    # elif not isna(row[35]) and not (getValue(row[35],str,"").lower() == 'yes' or  getValue(row[35],str,"").lower() == 'no'):
+                    #     validated = False
+                    #     write(logfile,propertyFile,sheet2.title,getValue(row[0], int, ''),'elif Enter Yes or No for Column AJ, If No then enter correspondance address in Column AK',getValue(row[1], str, ''))    
                 elif(str(row[27]).lower() == "multiple owners"):
                     propSheetABASId = getValue(row[1], str, "")
                     if propSheetABASId not in multiple_owner_obj:
@@ -409,7 +415,12 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                     if not isna(row[6]) and getTime(row[6]) is None : 
                         validated = False
                         write(logfile,propertyFile,sheet2.title,None, str(row[6]) +' Any future date or Invalid DOB format,Valid format is : dd/mm/yyyy(24/04/2021) ',getValue(row[0], str, ''))
-  
+                    # if isna(row[9]):
+                    #     validated = False
+                    #     write(logfile,propertyFile,sheet2.title,None,'Enter Yes or No for Column J, If No then enter correspondance address in Column K',getValue(row[0], str, ''))
+                    # elif not isna(row[9]) and not (getValue(row[9],str,"").lower() == 'yes' or  getValue(row[9],str,"").lower() == 'no'):
+                    #     validated = False
+                    #     write(logfile,propertyFile,sheet2.title,None,'Enter Yes or No for Column J, If No then enter correspondance address in Column K',getValue(row[0], str, ''))
             except Exception as ex:
                 print(config.CITY_NAME," validateDataForProperty Exception: ",getValue(row[0], str, ''), '  ',ex)
                 traceback.print_exc()
