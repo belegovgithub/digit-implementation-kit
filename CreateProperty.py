@@ -16,26 +16,24 @@ import traceback
 
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
-lastMobileNo = ''
 # FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
+FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
-FOLDER_PATH  =r'C:\Users\Admin\Downloads\Legacy_Data'
+# FOLDER_PATH  =r'C:\Users\Admin\Downloads\Legacy_Data'
 cityToSkip = ['Bakloh','Bareilly','Dagshai','Dalhousie','Deolali','Ferozepur','Jabalpur','Jammu','Jutogh','Kanpur',
                 'Kasauli','Khasyol','Meerut','Nainital','Pachmarhi','Ramgarh','Secunderabad','Subathu', 'roorkee']
 
-# cityToInclude = ['Agra','Ahmedabad','Ahmednagar','Ajmer','Allahabad','Almora','Ambala','Amritsar','Aurangabad','Babina','Badamibagh','Barrackpore',
-#                 'Belgaum','Cannanore','Chakrata','ClementTown','Danapur','Dehradun','Dehuroad','Delhi','Faizabad','Fatehgarh','Jalandhar','Jalapahar',
-#                 'Jhansi','Kamptee','Kirkee','Landour','Lansdowne','Lebong','Lucknow','Mathura','Mhow','Morar','Nasirabad','Pune','Ranikhet','Saugor',
-#                 'Shahjahanpur','Shillong','Stm','Varanasi','Wellington']
-cityToInclude = ['testing']
+# cityToInclude = ['Landour','Lansdowne','Lebong','Lucknow','Mathura','Mhow','Morar','Nasirabad','Pune','Ranikhet','Saugor',
+#                 'Shahjahanpur','Shillong','Varanasi','Wellington']
+cityToInclude = ['Jalapahar','Jhansi','Kamptee','Lansdowne','Lebong','Lucknow','Mathura', 'babina', 'belgaum', 'delhi']
+cityToInclude = ['mhow']
 
 
 def main() :    
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
     # print('cityToSkip', len(cityToSkip))
-    root = FOLDER_PATH
+    root = FOLDER_PATH    
     errorlogfile = open(os.path.join(root, "error CBs.txt"), "w")  
     successlogfile = open(os.path.join(root, "CB With ProperData.txt"), "w")
     notsuccesslogfile = open(os.path.join(root, "CB With ImProperData.txt"), "w")
@@ -49,7 +47,7 @@ def main() :
     with io.open(config.TENANT_JSON, encoding="utf-8") as f:
         cb_module_data = json.load(f)
         ####Only for some CBs
-        cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
+        # cityToInclude = getCitiesToInclude(cityToSkip,cb_module_data)
         for found_index, cityname in enumerate(cityToInclude):
             cityname =cityname.lower()
             config.errormsg=[]
@@ -79,7 +77,7 @@ def main() :
         #     name = 'CB ' + cityname.lower()
         #     if  os.path.exists( os.path.join(root,name)):                
         #         try : 
-        #             if cityname == 'secunderabad' :
+        #             if True: # cityname == 'secunderabad' :
         #                 print("Processing for CB "+cityname.upper())
         #                 config.CITY_NAME = cityname
         #                 cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -145,6 +143,7 @@ def cbMain(cityname, successlogfile,notsuccesslogfile):
     waterFile = os.path.join(root, name, "Template for Existing Water Connection Detail.xlsx")
     sewerageFile = os.path.join(root, name, "Template for Existing Sewerage Connection Detail.xlsx")
     logfile = open(os.path.join(root, name, "Logfile.json"), "w")   
+    countfile = open(os.path.join(root, name, "count.txt"), "w")  
     logfile.write("[ ")
     property_owner_obj = {}
     property_owner_obj, multiple_owner_obj = createOwnerObj(propertyFile)  
@@ -171,19 +170,19 @@ def cbMain(cityname, successlogfile,notsuccesslogfile):
         for ind in df.index: 
             locality_data[df['Locality Name'][ind]] =  df['Code'][ind]   
         if config.INSERT_DATA and config.CREATE_PROPERTY: 
-            createPropertyJson(sheet1, sheet2, localityDict,cityname, logfile, root, name)                
+            createPropertyJson(sheet1, sheet2, localityDict,cityname, logfile, root, name, countfile)                
             wb_property.save(propertyFile)        
         wb_property.close()
     else:
         print("Property File doesnot exist for ", cityname) 
     
     if os.path.exists(waterFile) : 
-        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj)          
+        ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, countfile, property_owner_obj)          
     else:
         print("Water File doesnot exist for ", cityname) 
 
     if os.path.exists(sewerageFile) : 
-        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, property_owner_obj)  
+        ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, countfile, property_owner_obj)  
     else:
         print("Sewerage File doesnot exist for ", cityname) 
 
@@ -670,7 +669,7 @@ def enterDefaultMobileNo(propertyFile, tenantMapping, cityname, waterFile, sewer
 
     return validated
 
-def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, name):
+def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, name, countfile):
     # abas_ids_multiple_owner = []
     # for index in range(2, sheet2.max_row +1):
     #     abas_ids_multiple_owner.append(sheet2['A{0}'.format(index)].value)
@@ -920,10 +919,16 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
 
     reason = 'property created count: '+ str(createdCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'property not created count: '+ str(notCreatedCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'property searched count: '+ str(searchedCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
 
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):

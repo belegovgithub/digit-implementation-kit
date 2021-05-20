@@ -10,7 +10,7 @@ import openpyxl
 import collections
 import traceback
     
-def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, property_owner_obj = {}) :
+def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityname, countfile, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_water = openpyxl.load_workbook(waterFile) 
@@ -24,7 +24,7 @@ def ProcessWaterConnection(propertyFile, waterFile, logfile, root, name,  cityna
     else:
         print('Data validation for water success.')
     if config.INSERT_DATA and config.CREATE_WATER: 
-        createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name)   
+        createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name, countfile)   
         wb_water.save(waterFile)        
     wb_water.close()
 
@@ -246,7 +246,7 @@ def ValidateCols(waterFile, sheet, logfile):
         traceback.print_exc()
     return validated   
 
-def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
+def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name, countfile):
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
@@ -441,13 +441,24 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name):
 
     reason = 'Water created count: '+ str(createdCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'Water not created count: '+ str(notCreatedCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'Water searched count: '+ str(searchedCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'Property not available count: '+ str(propertyNotAvailableCount)
     print(reason)
-    print("Property not available arr: ", str(propertyNotAvailableArr))
+    countfile.write(reason)
+    countfile.write('\n')
+    reason = "Property not available arr: " + str(propertyNotAvailableArr)
+    print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname

@@ -11,7 +11,7 @@ import openpyxl
 import collections
 import traceback
     
-def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, property_owner_obj = {}) :
+def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  cityname, countfile, property_owner_obj = {}) :
     wb_property = openpyxl.load_workbook(propertyFile) 
     propertySheet = wb_property.get_sheet_by_name('Property Assembly Detail') 
     wb_sewerage = openpyxl.load_workbook(sewerageFile) 
@@ -25,7 +25,7 @@ def ProcessSewerageConnection(propertyFile, sewerageFile, logfile, root, name,  
     else:
         print('Data validation for sewerage success.')
     if config.INSERT_DATA and config.CREATE_SEWERAGE: 
-        createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name)   
+        createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name, countfile)   
         wb_sewerage.save(sewerageFile)        
     wb_sewerage.close()
 
@@ -197,7 +197,7 @@ def ValidateCols(sewerageFile, sheet, logfile):
         traceback.print_exc()
     return validated 
     
-def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name):
+def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, name, countfile):
     createdCount = 0
     searchedCount = 0
     notCreatedCount = 0
@@ -353,13 +353,24 @@ def createSewerageJson(propertySheet, sewerageSheet, cityname, logfile, root, na
 
     reason = 'sewerage created count: '+ str(createdCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'sewerage not created count: '+ str(notCreatedCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'sewerage searched count: '+ str(searchedCount)
     print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
     reason = 'Property not available count: '+ str(propertyNotAvailableCount)
     print(reason)
-    print("Property not available arr: ", str(propertyNotAvailableArr))
+    countfile.write(reason)
+    countfile.write('\n')
+    reason = "Property not available arr: "+ str(propertyNotAvailableArr)
+    print(reason)
+    countfile.write(reason)
+    countfile.write('\n')
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
