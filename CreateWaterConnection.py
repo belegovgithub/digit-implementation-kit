@@ -476,8 +476,10 @@ water_source_MAP = {
         'Surface-Recycled Water':'SURFACE.RECYCLEDWATER',
         'Pipe-Treated':'PIPE.TREATED',
         'Pipe-Raw':'PIPE.RAW',
+        'Pipe-Public Stand post':'PIPE.PUBLICSTDPOST', 
+        'Underground-Spring': 'UNDERGROUND.SPRING',
         'MES': 'MES',
-        'Pipe-Public Stand post':'PIPE.PUBLICSTDPOST'
+        
     }
 
 water_source_MAP = { k.strip().lower():water_source_MAP[k] for k in water_source_MAP} 

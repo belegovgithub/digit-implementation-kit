@@ -48,14 +48,16 @@ class AdditionalDetails:
     isRainwaterHarvesting: Optional[bool]
     isPropertyDisputed: Optional[bool]
     isPropertyAuthorized: Optional[bool]
+    isPropertyEncroached: Optional[bool]
 
     def __init__(self, isRainwaterHarvesting: Optional[bool] = False,
                 isPropertyDisputed: Optional[bool] = False,
-                isPropertyAuthorized: Optional[bool] = False) -> None:
+                isPropertyAuthorized: Optional[bool] = False,
+                isPropertyEncroached: Optional[bool]= False) -> None:
         self.isRainwaterHarvesting = isRainwaterHarvesting
         self.isPropertyDisputed = isPropertyDisputed
         self.isPropertyAuthorized = isPropertyAuthorized
-
+        self.isPropertyEncroached = isPropertyEncroached
 
 
 class Document:

@@ -16,8 +16,8 @@ import traceback
 
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
-# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+# FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
 # FOLDER_PATH  =r'C:\Users\Admin\Downloads\Legacy_Data'
 cityToSkip = ['Bakloh','Bareilly','Dagshai','Dalhousie','Deolali','Ferozepur','Jabalpur','Jammu','Jutogh','Kanpur',
@@ -25,8 +25,8 @@ cityToSkip = ['Bakloh','Bareilly','Dagshai','Dalhousie','Deolali','Ferozepur','J
 
 # cityToInclude = ['Landour','Lansdowne','Lebong','Lucknow','Mathura','Mhow','Morar','Nasirabad','Pune','Ranikhet','Saugor',
 #                 'Shahjahanpur','Shillong','Varanasi','Wellington']
-cityToInclude = ['Jalapahar','Jhansi','Kamptee','Lansdowne','Lebong','Lucknow','Mathura', 'babina', 'belgaum', 'delhi']
-cityToInclude = ['mhow']
+# cityToInclude = ['Jalapahar','Jhansi','Kamptee','Lebong','Lucknow','Mathura']
+cityToInclude = ['agra']
 
 
 def main() :    
@@ -54,7 +54,7 @@ def main() :
             name = 'CB ' + cityname
             if  os.path.exists( os.path.join(root,name)):                
                 try : 
-                    if True:# cityname == 'allahabad' :
+                    if True:# cityname == 'jutogh' :
                         print("Processing for CB "+cityname.upper())
                         config.CITY_NAME = cityname
                         cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -77,7 +77,7 @@ def main() :
         #     name = 'CB ' + cityname.lower()
         #     if  os.path.exists( os.path.join(root,name)):                
         #         try : 
-        #             if True: # cityname == 'secunderabad' :
+        #             if True:# cityname == 'subathu' :
         #                 print("Processing for CB "+cityname.upper())
         #                 config.CITY_NAME = cityname
         #                 cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -874,6 +874,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                     additionalDetail.isRainwaterHarvesting = False
                     additionalDetail.isPropertyDisputed = process_YesNo(str(row[24]).strip())
                     additionalDetail.isPropertyAuthorized = process_YesNo(str(row[25]).strip())
+                    additionalDetail.isPropertyEncroached = process_YesNo(str(row[26]).strip())
                     property.additional_details= additionalDetail
                     property.source = 'LEGACY_RECORD'
                     property.channel = 'MIGRATION'
@@ -884,7 +885,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 # print('property ', property.get_property_json())            
                 
                 req_data,statusCode, res = property.upload_property(auth_token, tenantId, property.abasPropertyId,root, name)
-                # with io.open(os.path.join(root, name,"property_create_res.json"), mode="w", encoding="utf-8") as f:
+                # with io.open(os.path.join(root, name,str(property.abasPropertyId) + "_property_create_res.json"), mode="w", encoding="utf-8") as f:
                 #     json.dump(res, f, indent=2,  ensure_ascii=False)
                 propertyId = ''
                 if(statusCode == 200 or statusCode == 201):
@@ -932,6 +933,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
 
 
 def get_propertyaddress(doorNo, buildingName,locality,cityname):
+    # print(doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname)
     return doorNo + ' ' + buildingName + ' ' +locality + ' ' + cityname
 
 def process_YesNo(value):
