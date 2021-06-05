@@ -106,6 +106,8 @@ class WaterConnection:
     meterInstallationDate: Optional[date]
     usageCategory: Optional[str]
     subUsageCategory: Optional[str]
+    proposedUsageCategory: Optional[str]
+    proposedSubUsageCategory: Optional[str]
     def __init__(self, tenantId: Optional[str] = None, propertyId: Optional[str] = None,
                  status: Optional[str]  =None, connectionNo: Optional[str] = None, oldConnectionNo: Optional[str] = None,
                  proposedTaps: Optional[int] = None, proposedPipeSize: Optional[float] = None, propertyOwnership: Optional[str]= None,
@@ -120,7 +122,8 @@ class WaterConnection:
                  property: Optional[Property] = None, source: Optional[str] = None, channel: Optional[str] = None,
                  creationReason: Optional[str] = None, applicationStatus: Optional[str] = None, oldApplication: Optional[bool] = False,
                  connectionExecutionDate: Optional[date] = None , meterInstallationDate: Optional[date] = None , usageCategory: Optional[str] = None, 
-                 subUsageCategory: Optional[str] = None) -> None:
+                 subUsageCategory: Optional[str] = None, proposedUsageCategory: Optional[str] = None,
+                 proposedSubUsageCategory: Optional[str] = None,) -> None:
         self.tenantId = tenantId
         self.propertyId = propertyId
         self.status = status
@@ -156,6 +159,8 @@ class WaterConnection:
         self.meterInstallationDate = meterInstallationDate
         self.usageCategory = usageCategory
         self.subUsageCategory = subUsageCategory
+        self.proposedUsageCategory = proposedUsageCategory 
+        self.proposedSubUsageCategory = proposedSubUsageCategory 
 
 
     def get_water_json(self):
