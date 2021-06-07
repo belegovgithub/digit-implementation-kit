@@ -58,6 +58,14 @@ attributeMasterData={
     "waterSource":{
         "path":r"ws-services-masters\waterSource.json",
         "key" : "waterSource",
+    },
+    "uom":{
+        "path":r"ws-services-masters\uomDetail.json",
+        "key" : "uomDetail",
+    },
+    "motorInfo":{
+        "path":r"ws-services-masters\motorInfo.json",
+        "key" : "motorInfo",
     }
 
 }
@@ -90,6 +98,8 @@ CANNONICAL_NAME ={
   "billingAppliable":"Bill Applicable",
   "billingCycle":"Billing Cycle",
   "connectionType" :"Connection Type",
+  "uom" :"UOM Detail",
+  "motorInfo" :"Motor Detail"
 #   "demandGenerationDateMillis":"Bill Generation Day",
 #   "demandExpiryDate":"Bill Expiry Day",
 #   "demandEndDateMillis":"Bill Due Day",
@@ -271,7 +281,8 @@ def main ():
         columns=["CB Name","Bill Applicable","Billing Cycle","Connection Type","Data Filter Param",
         "Billing Slab Id",
         "Location Of Property" ,"Water Usage ","Water Sub Usage", "Owner Type Of Property", 
-         "Connection Owned By","Category Of Connection Holder","Source Of Water","Connection Authorization","Category Of Connection Holder",
+         "Connection Owned By","Category Of Connection Holder","Source Of Water","Connection Authorization",
+         "Motor Detail",
          "Unit Of Measurement",
           "Calculation Type",
          "Slab From","Slab To","Meter Charges","Per Unit Charge",
