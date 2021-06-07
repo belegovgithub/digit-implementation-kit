@@ -1,0 +1,67 @@
+    {
+      "tenantId": "pb.testing",
+      "businessService": "BS.AMENDMENT",
+      "business": "BS",
+      "businessServiceSla": null,
+      "states": [
+        {
+          "sla": null,
+          "state": null,
+          "applicationStatus": "INWORKFLOW",
+          "docUploadRequired": false,
+          "isStartState": true,
+          "isTerminateState": false,
+          "actions": [
+            {
+              "action": "OPEN",
+              "nextState": "APPROVALPENDING",
+              "roles": [
+                "EMPLOYEE"
+              ]
+            }
+          ]
+        },
+        {
+          "sla": null,
+          "state": "APPROVALPENDING",
+          "applicationStatus": "INWORKFLOW",
+          "docUploadRequired": false,
+          "isStartState": true,
+          "isTerminateState": false,
+          "actions": [
+            {
+              "action": "APPROVE",
+              "nextState": "APPROVED",
+              "roles": [
+                "EMPLOYEE"
+              ]
+            },
+            {
+              "action": "REJECT",
+              "nextState": "REJECTED",
+              "roles": [
+                "EMPLOYEE"
+              ]
+            }
+          ]
+        },
+        {
+          "sla": null,
+          "state": "REJECTED",
+          "applicationStatus": "INACTIVE",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "actions": null
+        },
+        {
+          "sla": null,
+          "state": "APPROVED",
+          "applicationStatus": "ACTIVE",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "actions": null
+        }
+      ]
+    }
