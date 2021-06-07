@@ -25,12 +25,13 @@ def main():
     #     print(sheetName)
     #     localization_data=[]
     #     for ind in df.index: 
-    #         localization_data.append({
-    #                         "code":df['code'][ind]  ,
-    #                         "message": df['message'][ind],
-    #                         "module": "rainmaker-" + sheetName,
-    #                         "locale": "ml_IN" 
-    #                     })
+    #         if not isna(getValue(df['code'][ind],str,'')) :
+    #             localization_data.append({
+    #                             "code":df['code'][ind]  ,
+    #                             "message": df['message'][ind],
+    #                             "module": "rainmaker-" + sheetName,
+    #                             "locale": "ml_IN" 
+    #                         })
 
     #     data = {
     #         "RequestInfo": {
