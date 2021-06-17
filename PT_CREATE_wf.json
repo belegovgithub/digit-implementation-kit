@@ -1,0 +1,113 @@
+{
+    "tenantId": "pb.testing",
+    "businessService": "PT.CREATE",
+    "business": "PT",
+    "businessServiceSla": null,
+    "states": [
+        {
+            
+            "sla": null,
+            "state": null,
+            "applicationStatus": "INWORKFLOW",
+            "docUploadRequired": false,
+            "isStartState": true,
+            "isTerminateState": false,
+            "actions": [
+                {
+                    
+                    "action": "OPEN",
+                    "nextState": "OPEN",
+                    "roles": [
+                        "CITIZEN",
+                        "EMPLOYEE"
+                    ]
+                }
+            ]
+        },
+        {
+            
+            "sla": null,
+            "state": "OPEN",
+            "applicationStatus": "INWORKFLOW",
+            "docUploadRequired": false,
+            "isStartState": true,
+            "isTerminateState": false,
+            "actions": [
+                {
+                    
+                    "action": "VERIFY",
+                    "nextState": "DOCVERIFIED",
+                    "roles": [
+                        "PT_DOC_VERIFIER"
+                    ]
+                }
+            ]
+        },
+        {
+            
+            "sla": null,
+            "state": "DOCVERIFIED",
+            "applicationStatus": "INWORKFLOW",
+            "docUploadRequired": false,
+            "isStartState": false,
+            "isTerminateState": false,
+            "actions": [
+                {
+                    
+                    "action": "FORWARD",
+                    "nextState": "FIELDVERIFIED",
+                    "roles": [
+                        "PT_FIELD_INSPECTOR"
+                    ]
+                }
+            ]
+        },
+        {
+            
+            "sla": null,
+            "state": "FIELDVERIFIED",
+            "applicationStatus": "INWORKFLOW",
+            "docUploadRequired": false,
+            "isStartState": false,
+            "isTerminateState": false,
+            "actions": [
+                {
+                    
+                    "action": "APPROVE",
+                    "nextState": "APPROVED",
+                    "roles": [
+                        "PT_APPROVER"
+                    ]
+                },
+                {
+                    
+                    "action": "REJECT",
+                    "nextState": "REJECTED",
+                    "roles": [
+                        "PT_APPROVER"
+                    ]
+                }
+            ]
+        },
+        {
+            
+            "sla": null,
+            "state": "REJECTED",
+            "applicationStatus": "INACTIVE",
+            "docUploadRequired": false,
+            "isStartState": false,
+            "isTerminateState": true,
+            "actions": null
+        },
+        {
+            
+            "sla": null,
+            "state": "APPROVED",
+            "applicationStatus": "ACTIVE",
+            "docUploadRequired": false,
+            "isStartState": false,
+            "isTerminateState": true,
+            "actions": null
+        }
+    ]
+}
