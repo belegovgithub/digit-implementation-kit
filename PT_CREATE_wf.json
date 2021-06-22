@@ -26,7 +26,7 @@
         },
         {
             
-            "sla": null,
+            "sla": 259200000,
             "state": "OPEN",
             "applicationStatus": "INWORKFLOW",
             "docUploadRequired": false,
@@ -45,7 +45,7 @@
         },
         {
             
-            "sla": null,
+            "sla": 259200000,
             "state": "DOCVERIFIED",
             "applicationStatus": "INWORKFLOW",
             "docUploadRequired": false,
@@ -64,7 +64,7 @@
         },
         {
             
-            "sla": null,
+            "sla": 259200000,
             "state": "FIELDVERIFIED",
             "applicationStatus": "INWORKFLOW",
             "docUploadRequired": false,
