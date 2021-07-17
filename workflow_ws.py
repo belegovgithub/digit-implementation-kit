@@ -93,11 +93,119 @@ def updateWorkflowSLA(authToken,fileName,tenantId, existingData,fileN):
             print("Error in workflow creation for ",tenantId)
 
 
+def updateWorkflow(authToken,fileName,tenantId, existingData,fileN,obsolateStates):
+    print("File Name ",fileName)
+ 
+    obsolateAction=[]
+    with io.open(fileName, encoding="utf-8") as file : 
+        workflow = json.load(file)
+        workflow['tenantId']=tenantId 
+
+        ######### modification #########
+        print(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+".json" ))
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+"_before.json" ), mode="w", encoding="utf-8") as f:
+            json.dump(existingData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+"_master.json" ), mode="w", encoding="utf-8") as f:
+            json.dump(workflow, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        existingData['businessServiceSla']=workflow['businessServiceSla']
+
+        dictForMasterState =dict()
+        for state in workflow["states"] :
+            dictForMasterState[state["applicationStatus"]] =state 
+
+
+        dictForExistingState =dict()
+        dictForUUIDStates =dict()
+        for state in existingData["states"] :
+            if state["applicationStatus"] not in dictForMasterState :
+                obsolateStates.append( state["uuid"] )   
+            else : 
+                dictForExistingState[state["applicationStatus"]] =state 
+                dictForUUIDStates[state["uuid"]]=state["applicationStatus"]
+
+        
+        for masterState in workflow["states"]:
+            flagForPrint=False
+            if masterState["applicationStatus"] not in dictForExistingState : 
+                if "actions" in masterState and  masterState["actions"] is not None : 
+                    for masterAction in masterState["actions"] :
+                        if masterAction["nextState"] in dictForExistingState :
+                            print(dictForExistingState[masterAction["nextState"]])
+                            masterAction["nextState"] =dictForExistingState[masterAction["nextState"]]["uuid"]
+
+                existingData["states"].append(masterState) 
+            else : 
+                state =dictForExistingState[masterState["applicationStatus"]]
+                if masterState["applicationStatus"] =="INITIATED" :
+                    flagForPrint=True
+                state["sla"] =masterState["sla"]
+                if "actions" not in state or state["actions"] is None : 
+                    state["actions"]=[]
+                if "actions" not in masterState or masterState["actions"] is None : 
+                    masterState["actions"]=[]
+                masterActionList =[]
+                for mAction in masterState["actions"] :
+                    masterActionList.append(mAction["action"])
+                    isActionFound =False
+                    if flagForPrint : 
+                        print(mAction)
+                    for action in state["actions"] :
+                        
+                        if mAction["action"] ==action["action"]:
+                            if flagForPrint :
+                                print ("M ",action)
+                            isActionFound =True
+                            action["roles"]=mAction["roles"]
+                            if action["nextState"] not in dictForUUIDStates or dictForUUIDStates[action["nextState"]] !=mAction["nextState"]:
+                                action["nextState"]=mAction["nextState"]
+
+                    if not isActionFound : 
+                        if mAction["nextState"] in dictForExistingState : 
+                            mAction["nextState"] =dictForExistingState[mAction["nextState"]]["uuid"]
+                        state["actions"].append(mAction)
+                    for action in state["actions"] :
+                        if action not in masterActionList and "uuid" in action and action['uuid'] is not None: 
+                            print(action)
+                            obsolateAction.append(action["uuid"])
+
+
+                    
+             
+        print("States which should be deleted manually ",obsolateStates)
+        print("Actions which should be deleted manually ",obsolateAction)
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+"_modified.json"), mode="w", encoding="utf-8") as f:
+            json.dump(existingData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        jsonObj ={
+        "RequestInfo": {
+            "apiId": "Rainmaker",
+            "action": "",
+            "did": 1,
+            "key": "",
+            "msgId": "20170310130900|en_IN",
+            "requesterId": "",
+            "ts": 1513579888683,
+            "ver": ".01",
+            "authToken": authToken 
+             
+        },
+        "BusinessServices": [existingData]}
+        url = urljoin(config.HOST, '/egov-workflow-v2/egov-wf/businessservice/_update')
+        params = {"tenantId":tenantId}
+        data = requests.post(url, params=params, json=jsonObj)
+        with io.open(os.path.join(config.LOG_PATH,"workflow-"+str(tenantId.split(".")[1])+fileN+"_m_res.json"), mode="w", encoding="utf-8") as f:
+            json.dump(existingData, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
+        if(data.status_code == 200):
+           print("Workflow updated for ",tenantId ," successfully")
+        else : 
+            print("Error in workflow creation for ",tenantId)
+
+
  
          
          
 def main():
     # load default config
+    obsolateStates=[]
     print("TENANT_JSON", config.CITY_MODULES_JSON)
     auth_token =superuser_login()["access_token"] 
     config.LOG_PATH=r"D:\workflow"
@@ -117,6 +225,7 @@ def main():
                         createWorkflow(auth_token, os.path.join("ws_workflow",bs +str(".json")),tenantId)
                     else : 
                         updateWorkflowSLA(auth_token, os.path.join("ws_workflow",bs +str(".json")),tenantId,resp["BusinessServices"][0],bs  )
+                        #updateWorkflow(auth_token, os.path.join("ws_workflow",bs +str(".json")),tenantId,resp["BusinessServices"][0],bs,obsolateStates  )
                 propRes =search_Workflow(auth_token,tenantId,"PT.CREATEWITHWNS")
                 if(len(propRes['BusinessServices'])== 0) :
                     createWorkflow(auth_token, os.path.join("ws_workflow","createwithWS" +str(".json")),tenantId)
@@ -131,7 +240,7 @@ def main():
         json.dump(post_data_resp_list, f, indent=2,  ensure_ascii=False, cls=DateTimeEncoder)
     print("OUTPUT FOLDER PATH ",config.LOG_PATH)
             
-
+    print("States which should be deleted manually ",obsolateStates)
 
 if __name__ == "__main__":
     main()
