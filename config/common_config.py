@@ -8,8 +8,8 @@ from datetime import datetime, timedelta,date
 def load_config():
     config.INSERT_DATA = True
     config.MOBILE_PATTERN = "^[3-9][0-9]{9}$"
-    config.CREATE_PROPERTY =False
-    config.CREATE_WATER =True
+    config.CREATE_PROPERTY =True
+    config.CREATE_WATER =False
     config.CREATE_SEWERAGE =False    
     config.isUpdateallowed = True
     config.ASSUME_YES = False

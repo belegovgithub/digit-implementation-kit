@@ -16,19 +16,15 @@ import traceback
 
 now = datetime.now()
 date_time = now.strftime("%d-%m-%Y") 
-FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
-# FOLDER_PATH  =r'D:\eGov\Data\WS\UAT Insertion'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\WaterSewerageTemplates'
-# FOLDER_PATH  =r'C:\Users\Admin\Downloads\Legacy_Data'
-cityToSkip = ['Bakloh','Bareilly','Dagshai','Dalhousie','Deolali','Ferozepur','Jabalpur','Jammu','Jutogh','Kanpur',
-                'Kasauli','Khasyol','Meerut','Nainital','Pachmarhi','Ramgarh','Secunderabad','Subathu', 'roorkee']
+# FOLDER_PATH  =r'D:\eGov\Data\WS\Azure Insertion'
+FOLDER_PATH  =r'D:\eGov\Data\WS\Prod Insertion'
+# FOLDER_PATH  =r'C:\Users\Administrator\Downloads\WaterSewerageTemplates'
+# FOLDER_PATH  =r'C:\Users\Administrator\Downloads\Legacy_Data'
+cityToSkip = ['Bakloh','Bareilly','Dagshai']
 
-# cityToInclude = ['Landour','Lansdowne','Lebong','Lucknow','Mathura','Mhow','Morar','Nasirabad','Pune','Ranikhet','Saugor',
-#                 'Shahjahanpur','Shillong','Varanasi','Wellington']
-# cityToInclude = ['Jalapahar','Jhansi','Kamptee','Lebong','Lucknow','Mathura']
-cityToInclude = ['agra']
-
-
+cityToInclude = ['deolali']
+# cityToInclude = ['Nasirabad']
+# cityToInclude = ['ferozepur']
 def main() :    
     print("Replace 109 of C:\ProgramData\Miniconda3\envs\py36\lib\site-packages\openpyxl\worksheet\merge.py with below one ") 
     print ("if side is None or  side.style is None:")
@@ -77,7 +73,7 @@ def main() :
         #     name = 'CB ' + cityname.lower()
         #     if  os.path.exists( os.path.join(root,name)):                
         #         try : 
-        #             if True:# cityname == 'subathu' :
+        #             if True:# cityname == 'deolali' :
         #                 print("Processing for CB "+cityname.upper())
         #                 config.CITY_NAME = cityname
         #                 cbMain(cityname, successlogfile, notsuccesslogfile)
@@ -90,6 +86,7 @@ def main() :
         #         for element in config.errormsg:
         #             dateerror.write(element + "\n") 
         #         dateerror.close()
+        
     errorlogfile.close()
     successlogfile.close()   
     if len(config.error_in_excel) > 0 :   
@@ -225,6 +222,7 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
         # print('no. of rows in Property file sheet 1: ', sheet2.max_row ) 
         emptyRows=0
         count =0 
+        specialChars = [',']
         for row in sheet1.iter_rows(min_row=3, max_col=42, max_row=sheet1.max_row ,values_only=True): 
             try : 
                 
@@ -244,6 +242,18 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                     reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ', abas property id  is empty.\n'
                     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas property id  is empty',getValue(row[1], str, ''))
                     #logfile.write(reason)
+                elif type(row[1]) == datetime:
+                    validated = False
+                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas property id is date type',getValue(row[1], str, ''))
+                if not isna(row[2]) and type(row[2]) == datetime:
+                    validated = False
+                    write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'old property code is date type',getValue(row[1], str, ''))
+                # if  any((c in specialChars) for c in getValue(row[1],str,'')): 
+                #     validated = False
+                #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'abas property id  is having restricted characters like , &',getValue(row[1], str, ''))
+                # if  any((c in specialChars) for c in getValue(row[2],str,'')): 
+                #     validated = False
+                #     write(logfile,propertyFile,sheet1.title,getValue(row[2], int, ''),'old property code is having restricted characters like , &',getValue(row[1], str, ''))
                 if isna(row[27]):
                     validated = False
                     reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ',  ownership type is empty.\n'
@@ -265,8 +275,8 @@ def validateDataForProperty(propertyFile, logfile, localityDict, cityname, multi
                         reason = 'Property File sheet1 data validation failed for sl no. '+ getValue(row[0], str, '') + ', name is empty.\n'
                         write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'name is empty',getValue(row[1], str, ''))
                         #logfile.write(reason)
-                    # elif not isna(row[28]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):                    
                     #     validated = False
+                    # elif not isna(row[28]) and not bool(re.match("[a-zA-Z \\.]+$",str(row[28]))):                    
                     #     reason = 'Name has invalid characters for sl no. '+ getValue(row[0], int, '') +'\n'
                     #     write(logfile,propertyFile,sheet1.title,getValue(row[0], int, ''),'Name has invalid characters',getValue(row[], str, ''))
                     #     #logfile.write(reason)
@@ -732,7 +742,7 @@ def createPropertyJson(sheet1, sheet2, locality_data,cityname, logfile,root, nam
                 try:
                     print(cityname, "Property",property.abasPropertyId)
                     property.oldPropertyId =  getValue( row[2] ,str,None)
-                    property.propertyType = process_property_type(str(row[3]).strip())            
+                    property.propertyType = process_property_type(str(row[3]).strip())                              
                     property.landArea = getValue(row[4],float,1) 
                     property.superBuiltUpArea = getValue(row[5],float,1) 
                     if(int(property.landArea) == 0):
@@ -999,7 +1009,7 @@ def process_govt_institution_type(value):
     govt_institution_MAP = {
         "None": "OTHERGOVERNMENTINSTITUITION",
         "CB Government": "ULBGOVERNMENT",
-        "state Government": "INSTITUTIONALGOVERNMENT",
+        "state Government": "STATEGOVERNMENT",
         "Central Government": "CENTRALGOVERNMENT",
         "Other Government Institution": "OTHERGOVERNMENTINSTITUITION"
     }

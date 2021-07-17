@@ -53,7 +53,7 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
             abas_ids.append(str(propSheetABASId).strip())     
     except Exception as ex:
         print(config.CITY_NAME," validateWaterData Exception: ", ex)  
- 
+    specialChars = [',']
     emptyRows =0 
     for row in water_sheet.iter_rows(min_row=3, max_col=26, max_row=water_sheet.max_row ,values_only=True):
         index = index + 1
@@ -73,11 +73,23 @@ def validateWaterData(propertySheet, waterFile, logfile, cityname, property_owne
                 reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', abas id is empty.\n'
                 #logfile.write(reason) 
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'abas id is empty',getValue(row[1], str, ''))
+            elif type(row[1]) == datetime:
+                validated = False
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'abas id is date type',getValue(row[1], str, ''))
             if isna(row[2]):
                 validated = False
                 reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', existing water connection number is empty.\n'
                 #logfile.write(reason)
                 write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'existing water connection number is empty',getValue(row[1], str, ''))
+            elif type(row[2]) == datetime:
+                validated = False
+                write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'existing water connection number is date type',getValue(row[1], str, ''))
+            # if any((c in specialChars) for c in getValue(row[1],str,'')): 
+            #     validated = False
+            #     write(logfile,waterFile,water_sheet.title,getValue(row[0], int, ''),'abas property id  is having restricted characters like , &',getValue(row[1], str, ''))
+            # if any((c in specialChars) for c in getValue(row[2],str,'')): 
+            #     validated = False
+            #     write(logfile,waterFile,water_sheet.title,getValue(row[2], str, ''),'old connection no  is having restricted characters like , &',getValue(row[1], str, ''))
             if isna(row[3]):
                 validated = False
                 reason = 'Water File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'
@@ -310,8 +322,7 @@ def createWaterJson(propertySheet, waterSheet, cityname, logfile, root, name, co
 
         status, res = waterConnection.search_water_connection(auth_token, tenantId, waterConnection.oldConnectionNo)               
         # with io.open(os.path.join(root, name,waterConnection.oldConnectionNo+"water_search_res.json"), mode="w", encoding="utf-8") as f:
-        #     json.dump(res, f, indent=2,  ensure_ascii=False)  
-        
+        #     json.dump(res, f, indent=2,  ensure_ascii=False)              
         if(len(res['WaterConnection']) == 0):                
             status, res = property.search_abas_property(auth_token, tenantId, abasPropertyId)        
             # with io.open(os.path.join(root, name,"property_search_res.json"), mode="w", encoding="utf-8") as f:

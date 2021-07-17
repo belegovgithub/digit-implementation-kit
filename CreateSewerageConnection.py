@@ -54,6 +54,7 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
             abas_ids.append(str(propSheetABASId).strip())   
     except Exception as ex:
         print(config.CITY_NAME," validateSewerageData Exception: ", ex)
+    specialChars = [',', '&']
     emptyRows =0 
     for row in sewerage_sheet.iter_rows(min_row=3, max_col=22, max_row=sewerage_sheet.max_row +1 ,values_only=True):        
         index = index + 1
@@ -73,12 +74,23 @@ def validateSewerageData(propertySheet, sewerageFile, logfile, cityname, propert
                 reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', abas id is empty.\n'
                 #logfile.write(reason) 
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'abas id is empty',getValue(row[1], str, ''))
+            elif type(row[1]) == datetime:
+                validated = False
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'abas id is date type',getValue(row[1], str, ''))
             if isna(row[2]):
                 validated = False
                 reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', existing sewerage connection number is empty.\n'
                 #logfile.write(reason)
                 write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'existing sewerage connection number is empty',getValue(row[1], str, ''))
-
+            elif type(row[2]) == datetime:
+                validated = False
+                write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'existing sewerage connection number is date type',getValue(row[1], str, ''))
+            # if any((c in specialChars) for c in getValue(row[1],str,'')): 
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[0], int, ''),'abas property id  is having restricted characters like , &',getValue(row[1], str, ''))
+            # if any((c in specialChars) for c in getValue(row[2],str,'')): 
+            #     validated = False
+            #     write(logfile,sewerageFile,sewerage_sheet.title,getValue(row[2], str, ''),'old connection no  is having restricted characters like , &',getValue(row[1], str, ''))
             if isna(row[3]):
                 validated = False
                 reason = 'Sewerage File data validation failed for sl no. '+ getValue(row[0], str, '') + ', same as property address cell is empty.\n'

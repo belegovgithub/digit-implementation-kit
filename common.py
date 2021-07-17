@@ -1161,3 +1161,17 @@ def write(logfile,excelPath,sheetName, sNo,msg ,abasid=None) :
         "Data Entry Error Message" : msg
     } 
     logfile.write(json.dumps(logMsg, cls=DateTimeEncoder) +" ,")
+
+def writeDemandLog(logfile, sNo,msg ,oldConnectionNo=None) :
+    logMsg ={
+        "S No" : sNo,
+        "old Connection No" :oldConnectionNo,
+        "Data Entry Error Message" : msg
+    } 
+    logfile.write(json.dumps(logMsg, cls=DateTimeEncoder) +" ,")
+    
+def writeErrorDemandConn(logfile,oldConnectionNo=None) :
+    logMsg ={
+        "Error old Connection No" :oldConnectionNo
+    } 
+    logfile.write(json.dumps(logMsg, cls=DateTimeEncoder) +" ,")
